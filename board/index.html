@@ -377,7 +377,7 @@ window.eliseAuth = {
   --ok:#3F6B46;--warn:#9C7220;--crit:#9E3F2B;--clock:#0D6377;
   --acc-today:#0D6377;--acc-labour:#8C6A2E;--acc-crane:#9A5A1E;
   --acc-safety:#9E3F2B;--acc-pour:#8A3C6B;--acc-log:#3F6B46;--acc:var(--gold);
-  --acc-jobs:#2B5F8C;--acc-photos:#3F6B46;--acc-delays:#7A4FA3;--acc-carry:#8A6246;
+  --acc-jobs:#2B5F8C;--acc-photos:#3F6B46;--acc-delays:#7A4FA3;--acc-carry:#8A6246;--acc-prestart:#3D4F99;
   --ok-bg:#DDE7DC;--warn-bg:#F0E4C9;--crit-bg:#F2DDD6;
   --inverse-bg:#3A3835;--inverse-fg:#F2EDE4;--on-gold:#FBF8F3;
   --tint:14%;--tint-bd:38%;
@@ -394,7 +394,7 @@ window.eliseAuth = {
     --ok:#8FBF93;--warn:#DDB45F;--crit:#E08A72;--clock:#46BCCE;
     --acc-today:#46BCCE;--acc-labour:#D7AE63;--acc-crane:#E09A5C;
     --acc-safety:#E08A72;--acc-pour:#D78FC0;--acc-log:#8FBF93;
-    --acc-jobs:#7FB4E0;--acc-photos:#8FBF93;--acc-delays:#BE9BE6;--acc-carry:#CBA489;
+    --acc-jobs:#7FB4E0;--acc-photos:#8FBF93;--acc-delays:#BE9BE6;--acc-carry:#CBA489;--acc-prestart:#8FA2F0;
     --ok-bg:#243024;--warn-bg:#33260D;--crit-bg:#3A221B;
     --inverse-bg:#D8D2C7;--inverse-fg:#1A1917;--on-gold:#1A1917;
     --tint:26%;--tint-bd:52%;
@@ -408,7 +408,7 @@ window.eliseAuth = {
   --ok:#8FBF93;--warn:#DDB45F;--crit:#E08A72;--clock:#46BCCE;
   --acc-today:#46BCCE;--acc-labour:#D7AE63;--acc-crane:#E09A5C;
   --acc-safety:#E08A72;--acc-pour:#D78FC0;--acc-log:#8FBF93;
-  --acc-jobs:#7FB4E0;--acc-photos:#8FBF93;--acc-delays:#BE9BE6;--acc-carry:#CBA489;
+  --acc-jobs:#7FB4E0;--acc-photos:#8FBF93;--acc-delays:#BE9BE6;--acc-carry:#CBA489;--acc-prestart:#8FA2F0;
   --ok-bg:#243024;--warn-bg:#33260D;--crit-bg:#3A221B;
   --inverse-bg:#D8D2C7;--inverse-fg:#1A1917;--on-gold:#1A1917;
   --tint:26%;--tint-bd:52%;
@@ -530,6 +530,7 @@ button,input,select{font:inherit;color:inherit}
 .phead h2::before{content:"";display:inline-block;width:4px;height:13px;border-radius:2px;
   background:var(--acc);margin-right:8px;vertical-align:-1px}
 #v-today{--acc:var(--acc-today)}
+#v-prestart{--acc:var(--acc-prestart)}
 #v-labour{--acc:var(--acc-labour)}
 #v-crane{--acc:var(--acc-crane)}
 #cbapp .sechead{color:var(--acc-crane);border-bottom:2px solid var(--acc-crane)}
@@ -1441,6 +1442,27 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       <button class="mini" data-pdf="prepour">PDF</button></span></div>
     <div id="pourPhotos"></div>
     <p class="note">Everything that has to be right before the concrete goes in &mdash; penetrations, starter bars, formwork, clean-out. Items carry to the next day until they are ticked off, and a photo shot on a row clears with it. Anything marked <em>Hold the pour</em> sits at the top.</p>
+  </div>
+</section>
+
+<section id="v-prestart" class="view" hidden>
+  <div class="panel">
+    <div class="phead" data-acc="prestart">
+      <h2>Site prestart</h2><span class="meta" id="preMeta"></span>
+      <span class="right"><button class="mini" data-copy="prestart">Copy</button><button class="mini" data-pdf="all">PDF</button></span>
+    </div>
+    <div id="preChecks"></div>
+    <div class="subhead" data-acc="prestart"><span>On the board today</span><span id="preCtxMeta"></span></div>
+    <div id="preCtx"></div>
+    <div class="addrow top">
+      <input id="preNote" placeholder="Anything else raised at the prestart" autocomplete="off">
+    </div>
+    <div class="addrow">
+      <input id="preBy" class="who" list="crewNames" placeholder="Who ran it" autocomplete="off" spellcheck="false">
+      <button class="addbtn" id="preDone" type="button">Complete prestart</button>
+      <button class="mini" id="preReopen" type="button" hidden>Reopen</button>
+    </div>
+    <p class="note">The checks come from <em>config/prestart</em>, so the list is yours to change without touching the board. A completed prestart is saved against the day and lands in the Done log.</p>
   </div>
 </section>
 
@@ -3311,7 +3333,7 @@ var SUPPLIERS={ELISE:"#3A3835",WORKCON:"#0073EA",HARWELL:"#00C875"};
 var SKIND={CRIT:["Critical","#9E3F2B"],NCR:["NCR","#9C7220"]};
 var DCAUSE={WX:["Weather","#0073EA"],ACC:["Access","#9C7220"],SUB:["Subcontractor","#784BD1"],
   MAT:["Materials","#1E4FA3"],PLANT:["Plant","#5A6670"],DSN:["Design / RFI","#D92B20"],OTH:["Other","#8C8C8C"]};
-var VIEWS=[["today","Today"],["labour","Labour & jobs"],["crane","Crane & deliveries"],["safety","Safety"],["prepour","Pre-pour"],["log","Done log"]];
+var VIEWS=[["today","Today"],["prestart","Prestart"],["labour","Labour & jobs"],["crane","Crane & deliveries"],["safety","Safety"],["prepour","Pre-pour"],["log","Done log"]];
 var CUT=1260;      /* one cut a day, 9pm */
 var ROLLOVER=990;  /* 4:30pm - after knock-off you are planning tomorrow */
 /* the day the board opens on: today until 4:30pm, tomorrow after it */
@@ -3338,7 +3360,7 @@ function toast(m){var t=document.createElement("div");t.className="toast";t.text
 
 var state={date:"",view:"today",labour:[],labourDocs:{},lifts:[],
   cfg:null,progDoc:{rev:"",dataDate:"",tasks:[]},progress:{},done:{},jobDocs:{},photoDocs:{},safeDocs:{},
-  delayDocs:{},pourDocs:{},logDocs:{},feeds:{},ready:false,progAll:false,pending:null,upTo:"day",clip:null,lb:null,
+  delayDocs:{},pourDocs:{},logDocs:{},preDocs:{},preCfg:null,feeds:{},ready:false,progAll:false,pending:null,upTo:"day",clip:null,lb:null,
   linked:{},rolled:{},jobsIn:false,photosIn:false,pourIn:false,strip:null};
 var db=null,assets=null,downloads=null;
 
@@ -3386,6 +3408,11 @@ function renderTabs(){
 function tabCount(v){
   if(v==="crane"){var n=dayRows().length;return n?{n:n}:null;}
   if(v==="safety"){var s=openSafety();return s.length?{n:s.length,alert:s.some(function(i){return i.kind==="INC";})}:null;}
+  if(v==="prestart"){
+    var pd=preDoc(); if(pd.at) return null;
+    var left=preAll().filter(function(i){return !(pd.ticks||{})[i.n];}).length;
+    return left?{n:left}:null;
+  }
   if(v==="labour"){
     var o=dayJobs().filter(function(x){return !x.done;});
     return o.length?{n:o.length,alert:o.some(function(x){return x.pri;})}:null;
@@ -3507,7 +3534,7 @@ function progStatus(t,todayISO){
 
 function renderAll(){
   renderDayStrip();renderFront();renderLabour();renderJobs();renderPhotos();renderSafety();renderPour();
-  renderDelays();renderPour();renderProg();renderLog();renderFeeds();renderTabs();renderNowStrip();
+  renderDelays();renderPour();renderProg();renderLog();renderPrestart();renderFeeds();renderTabs();renderNowStrip();
 }
 function renderDayStrip(){
   var d=parseISO(state.date);
@@ -3667,6 +3694,130 @@ function logItems(){
     return (+b.ts||0)-(+a.ts||0);
   });
   return all;
+}
+/* ---------- site prestart ----------
+   The standing checks live in config/prestart so Harry can change the list
+   without anyone editing the board. Today's open safety items are pulled in
+   on top of them, because a prestart that ignores the live hazards is a
+   form, not a prestart. One document per day; completing it writes to the
+   Done log the same way a ticked job does. */
+function preDoc(){ return state.preDocs[state.date]||{}; }
+function preStanding(){
+  var c=state.preCfg&&state.preCfg.items;
+  return (c&&c.length?c:[]).map(function(i,n){
+    return {n:String(i.n||("c"+n)), text:String(i.text||"")};
+  }).filter(function(i){return i.text;});
+}
+/* open safety items ride along, keyed so a tick survives the text being edited */
+function preSafety(){
+  return openSafety().map(function(i,n){
+    return {n:"safety:"+(i.id||n), text:i.text, kind:i.kind||"HAZ"};
+  });
+}
+function preAll(){ return preSafety().concat(preStanding()); }
+
+function savePre(patch){
+  var d=preDoc(), body={
+    date:state.date,
+    ticks:d.ticks||{}, note:d.note||"", by:d.by||"", at:d.at||0, ts:Date.now()
+  };
+  for(var k in patch) body[k]=patch[k];
+  state.preDocs[state.date]=body; write("prestart",state.date,body);
+  renderPrestart(); renderTabs(); renderFront();
+}
+function togglePre(key,on){
+  var t={}, cur=preDoc().ticks||{}, k;
+  for(k in cur) t[k]=cur[k];
+  if(on) t[key]=Date.now(); else delete t[key];
+  savePre({ticks:t});
+}
+function completePre(){
+  var items=preAll(), ticks=preDoc().ticks||{};
+  var missing=items.filter(function(i){return !ticks[i.n];});
+  if(missing.length){
+    toast(missing.length+" still to tick off");
+    return;
+  }
+  var who=(el("preBy").value||whoAmI()||"").trim().toUpperCase();
+  if(!who){ toast("Put your name on it first"); el("preBy").focus(); return; }
+  setWhoAmI(who);
+  savePre({by:who, at:Date.now(), note:(el("preNote").value||"").trim()});
+  logPrestart(who);
+  toast("Prestart signed off");
+}
+function reopenPre(){ savePre({by:"", at:0}); }
+
+/* the signed prestart joins the done log, and comes back out if reopened */
+function logPrestart(who){
+  var m=state.date.slice(0,7), key=state.date+"|site prestart";
+  var cur=(state.logDocs[m]&&state.logDocs[m].items)||[];
+  if(cur.some(function(e){return e.key===key;}))return;
+  var out=cur.concat([{key:key,date:state.date,text:"Site prestart completed",who:who||"",ts:Date.now()}]);
+  var body={month:m,items:out,ts:Date.now()};
+  state.logDocs[m]=body; write("donelog",m,body,true); renderLog();
+}
+
+function renderPrestart(){
+  var box=el("preChecks"); if(!box) return;
+  var d=preDoc(), ticks=d.ticks||{}, items=preAll();
+  var done=items.filter(function(i){return ticks[i.n];}).length;
+  var signed=!!d.at;
+
+  var meta=el("preMeta");
+  if(meta) meta.textContent = signed
+    ? "Signed off by "+(d.by||"—")+" at "+fmtClock(new Date(d.at).getHours()*60+new Date(d.at).getMinutes())
+    : (items.length ? done+" of "+items.length+" checked" : "No checks set up yet");
+
+  if(!items.length){
+    box.innerHTML='<p class="empty">No prestart checks set. They live in config/prestart.</p>';
+  } else {
+    box.innerHTML = items.map(function(i){
+      var on=!!ticks[i.n], safety=i.n.indexOf("safety:")===0;
+      return '<div class="item wrap'+(on?' done':'')+'">'+
+        '<input type="checkbox" data-pre="'+esc(i.n)+'"'+(on?' checked':'')+
+          (signed?' disabled':'')+' aria-label="Check">'+
+        (safety?skChip(i.kind):'')+
+        '<span class="txt">'+esc(i.text)+'</span></div>';
+    }).join("");
+  }
+
+  /* what the board already knows about today - read only, so the person
+     running the prestart is looking at the same day everyone else is */
+  var cbox=el("preCtx");
+  if(cbox){
+    var lab=state.labour.filter(function(r){return r.date===state.date;});
+    var heads=lab.reduce(function(a,r){return a+(+r.qty||1);},0);
+    var rows=dayRows();
+    var lifts=rows.filter(function(b){return b.type==="lift";}).length;
+    var dels=rows.filter(function(b){return b.type==="del";}).length;
+    var pri=dayJobs().filter(function(j){return !j.done&&j.pri;});
+    var brk=breaksFor(rows);
+    var bits=[
+      ["On site", heads?heads+(heads===1?" head":" heads"):"nobody logged yet"],
+      ["Crane", lifts+(lifts===1?" lift":" lifts")+", "+brk.length+(brk.length===1?" break":" breaks")],
+      ["Deliveries", dels+(dels===1?" truck":" trucks")],
+      ["Priority jobs", pri.length?pri.map(function(j){return j.text;}).join(" · "):"none"]
+    ];
+    cbox.innerHTML=bits.map(function(b){
+      return '<div class="srow"><span class="tx"><b>'+esc(b[0])+'</b> &mdash; '+esc(b[1])+'</span></div>';
+    }).join("");
+    var cm=el("preCtxMeta"); if(cm) cm.textContent=longDate(state.date);
+  }
+
+  var noteEl=el("preNote"), byEl=el("preBy"), btn=el("preDone"), ro=el("preReopen");
+  if(noteEl && document.activeElement!==noteEl) noteEl.value=d.note||"";
+  if(byEl && document.activeElement!==byEl) byEl.value=d.by||whoAmI()||"";
+  if(noteEl) noteEl.disabled=signed;
+  if(byEl) byEl.disabled=signed;
+  if(btn){ btn.hidden=signed; btn.textContent="Complete prestart"; btn.onclick=completePre; }
+  if(ro){ ro.hidden=!signed; ro.onclick=reopenPre; }
+  if(noteEl) noteEl.onchange=function(){ savePre({note:(noteEl.value||"").trim()}); };
+
+  Array.prototype.forEach.call(box.querySelectorAll("[data-pre]"),function(cb){
+    cb.addEventListener("change",function(){
+      togglePre(cb.getAttribute("data-pre"), cb.checked);
+    });
+  });
 }
 function renderLog(){
   var box=el("logList");if(!box)return;
@@ -4773,6 +4924,13 @@ function headLine(){
 }
 function sectionText(which){
   if(which==="all")return prestartText();
+  if(which==="prestart"){
+    var pd=preDoc(), tk=pd.ticks||{}, o=[headLine(),"","SITE PRESTART"];
+    preAll().forEach(function(i){ o.push((tk[i.n]?"[x] ":"[ ] ")+i.text); });
+    if(pd.note)o.push("","NOTES","- "+pd.note);
+    o.push("", pd.at ? "Signed off by "+(pd.by||"-")+" "+stamp(pd.at) : "NOT SIGNED OFF");
+    return o.join("\n");
+  }
   var out=[headLine(),""];
   var rows=dayRows();
   if(which==="labour"){
@@ -6050,7 +6208,7 @@ var loadTimer=setTimeout(function(){if(!state.ready)el("dbState").textContent="S
     var m={};snap.docs.forEach(function(d){m[d.id]=d.data()||{};});
     state.labourDocs=m;flattenLabour();renderAll();
   },fail);
-  [["jobs","jobDocs"],["photos","photoDocs"],["safety","safeDocs"],["delays","delayDocs"],["donelog","logDocs"],["prepour","pourDocs"]].forEach(function(p){
+  [["jobs","jobDocs"],["photos","photoDocs"],["safety","safeDocs"],["delays","delayDocs"],["donelog","logDocs"],["prepour","pourDocs"],["prestart","preDocs"]].forEach(function(p){
     db.collection(p[0]).onSnapshot(function(snap){
       var m={};snap.docs.forEach(function(d){m[d.id]=d.data()||{};});
       state[p[1]]=m;
@@ -6062,6 +6220,9 @@ var loadTimer=setTimeout(function(){if(!state.ready)el("dbState").textContent="S
   });
   db.doc("config/board").onSnapshot(function(snap){
     state.cfg=snap.data()||null;renderFront();renderDayStrip();
+  },function(){});
+  db.doc("config/prestart").onSnapshot(function(snap){
+    state.preCfg=snap.data()||null;renderPrestart();renderTabs();
   },function(){});
   db.doc("programme/current").onSnapshot(function(snap){
     var o=snap.data()||{};
