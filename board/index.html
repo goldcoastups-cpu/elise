@@ -916,7 +916,9 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 #cbapp .slot .t.hour{color:var(--ink-2);font-size:13px}
 #cbapp .slot .bar{width:4px;align-self:stretch;border-radius:2px;flex:0 0 auto;background:transparent}
 #cbapp .slot.free .line{flex:1 1 auto;border-top:1px dashed var(--rule-soft);height:0}
-#cbapp .slot.now .t{color:var(--crit)}
+#cbapp .slot.now{box-shadow:inset 0 1px 0 var(--crit)}
+.slot.now .bar{background:var(--crit)}
+.slot.now .t{color:var(--crit);font-weight:800}
 #cbapp .gaprow{display:flex;align-items:center;gap:5px;margin:3px 0 5px}
 #cbapp .gaprow .t{width:38px;flex:0 0 auto}
 #cbapp .gaprow .g{flex:1 1 auto;border-top:1px dashed var(--rule);text-align:center;font-family:var(--display);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);line-height:0;margin-left:4px}
@@ -1772,6 +1774,23 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
              L.status!=="done"&&PANEL_KINDS.indexOf(L.kind)>=0;
     });
   }
+  function tickNowSlot(){
+    var g=$("grid"); if(!g) return;
+    var step=Math.max(5,(cfg&&cfg.per)||10);
+    var t=(cur===iso(new Date()))
+      ? Math.floor((new Date().getHours()*60+new Date().getMinutes())/step)*step
+      : -1;
+    var prev=g.querySelector(".slot.now");
+    if(prev){
+      if(+prev.getAttribute("data-t")===t) return;   /* already in the right place */
+      prev.classList.remove("now");
+    }
+    if(t<0) return;
+    var cell=g.querySelector('.slot[data-t="'+t+'"]');
+    if(cell) cell.classList.add("now");
+  }
+  setInterval(tickNowSlot,15000);
+
   function breaksFor(date){
     var B=cfg.breaks||[];
     return panelDay(date)?B.slice(0,1):B;
