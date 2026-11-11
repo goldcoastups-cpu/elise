@@ -272,7 +272,7 @@ var db = {
 var BUCKET = "photos";
 /* The board's photo <img> sites call this, so the project URL lives in
    config.js only - nothing is baked into the board file. */
-window.PHOTO = function(id){ return SB_URL + "/storage/v1/object/public/" + BUCKET + "/" + id + ".jpg"; };
+window.PHOTO = function(id, bkt){ return SB_URL + "/storage/v1/object/public/" + (bkt || BUCKET) + "/" + id + ".jpg"; };
 var STORE  = SB_URL + "/storage/v1/object/";
 
 function newId(){
@@ -3361,7 +3361,7 @@ function dcChip(k){var s=DCAUSE[k]||DCAUSE.OTH;return '<span class="chip" style=
 function thumbs(list,owner,i){
   if(!list||!list.length)return "";
   return '<span class="thumbs">'+list.map(function(p,n){
-    return '<span class="th"><img src="'+PHOTO(esc(p.id))+'" alt="'+esc(p.cap||"Photo")+'" loading="lazy" data-zoom="'+owner+'|'+i+'||'+n+'">'+
+    return '<span class="th"><img src="'+PHOTO(esc(p.id), p.bkt)+'" alt="'+esc(p.cap||"Photo")+'" loading="lazy" data-zoom="'+owner+'|'+i+'||'+n+'">'+
       (assets?'<button class="rmth" data-rmth="'+owner+'|'+i+'|'+n+'" title="Remove">&times;</button>':'')+'</span>';
   }).join("")+'</span>';
 }
@@ -3597,7 +3597,7 @@ function renderLabour(){
   var rows=state.labour.filter(function(r){return r.date===state.date;});
   var t=el("labourTable");
   if(!rows.length){
-    t.innerHTML='<tbody><tr><td><div class="empty"><b>Nobody on yet</b>Names come up at 7pm from the ELISE HOURS group.</div></td></tr></tbody>';
+    t.innerHTML='';
     el("labourMeta").textContent="";return;
   }
   var by={};rows.forEach(function(r){(by[r.supplier||"—"]=by[r.supplier||"—"]||[]).push(r);});
@@ -4325,7 +4325,7 @@ function renderPhotos(sc){
     return;
   }
   holder.innerHTML='<div class="pgrid">'+items.map(function(p,i){
-    return '<div class="ph'+(p[key]?' linked':'')+'"><img src="'+PHOTO(esc(p.id))+'" alt="'+esc(p.cap||"Site photo")+'" loading="lazy" data-zoom="'+sc+'||'+i+'">'+
+    return '<div class="ph'+(p[key]?' linked':'')+'"><img src="'+PHOTO(esc(p.id), p.bkt)+'" alt="'+esc(p.cap||"Site photo")+'" loading="lazy" data-zoom="'+sc+'||'+i+'">'+
       (p[key]?'<span class="jbadge" title="Clears when it is ticked off">'+tag+'</span>':'')+
       (assets?'<button class="rm" data-rmph="'+sc+'|'+i+'" title="Remove">&times;</button>':'')+
       '<button class="cap'+(p.cap?'':' none')+'" data-capbtn="'+sc+'|'+i+'">'+esc(p.cap||"Add caption")+'</button></div>';
@@ -4409,7 +4409,7 @@ function renderLb(){
         '<button class="lb-btn" id="lbClose">Close</button></span></div>'+
     '<div class="lb-stage">'+
       (list.length>1?'<button class="lb-nav prev" id="lbPrev" aria-label="Previous">&lsaquo;</button>':'')+
-      '<img src="'+PHOTO(esc(p.id))+'" alt="'+esc(p.cap||"Site photo")+'">'+
+      '<img src="'+PHOTO(esc(p.id), p.bkt)+'" alt="'+esc(p.cap||"Site photo")+'">'+
       (list.length>1?'<button class="lb-nav next" id="lbNext" aria-label="Next">&rsaquo;</button>':'')+
     '</div>'+
     '<div class="lb-foot">'+
@@ -4871,7 +4871,7 @@ function copyText(txt,what){
     ta.remove();
   }
 }
-function imgData(id){
+function imgData(id, bkt){
   return new Promise(function(res){
     var img=new Image();
     img.onload=function(){
@@ -4882,7 +4882,7 @@ function imgData(id){
       try{res({data:c.toDataURL("image/jpeg",0.8),w:w,h:h});}catch(e){res(null);}
     };
     img.onerror=function(){res(null);};
-    img.src=PHOTO(id);
+    img.src=PHOTO(id, bkt);
   });
 }
 var SECTIONS={all:"Day sheet",labour:"Labour",jobs:"Jobs",safety:"Safety",
@@ -4942,7 +4942,7 @@ async function buildPDF(which){
     var x0=opt.x0==null?M:opt.x0, cols=opt.cols||2;
     var cw=(W-x0-M-6*(cols-1))/cols,x=x0,n=0;
     for(var i=0;i<list.length;i++){
-      var im=await imgData(list[i].id);
+      var im=await imgData(list[i].id, list[i].bkt);
       if(!im)continue;
       var h=cw*(im.h/im.w);
       if(n%cols===0){brk(h+14);x=x0;}
