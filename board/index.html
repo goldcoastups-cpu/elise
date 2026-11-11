@@ -488,6 +488,8 @@ button,input,select{font:inherit;color:inherit}
 .linkbtn{background:none;border:1px solid var(--line-hard);border-radius:3px;padding:5px 10px;cursor:pointer;font-family:var(--f-cond);text-transform:uppercase;letter-spacing:.08em;font-size:12px}
 .linkbtn:hover{background:var(--surface-2)}
 .linkbtn.primary{background:var(--gold);border-color:var(--gold);color:var(--on-gold)}
+.pagelink{text-decoration:none;color:inherit;display:inline-flex;align-items:center;line-height:1}
+.stripdiv{width:1px;height:17px;background:var(--line-hard);opacity:.55;flex:none}
 
 .front{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;padding-block:16px;align-items:start}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:4px;min-width:0;overflow:hidden}
@@ -720,6 +722,7 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
   .daylabel{font-size:14px;letter-spacing:.02em}
   .daystrip input[type=date]{font-size:12px;padding:4px 5px}
   .strip-right{flex-basis:100%;margin-left:0;justify-content:flex-start}
+  .stripdiv{display:none}
   .navbtn{width:28px;height:28px}
   .strip-right{gap:6px}
   .linkbtn{font-size:11px;padding:4px 8px}
@@ -1091,7 +1094,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <button class="linkbtn" id="todayBtnDB">Today</button>
     <span class="daylabel" id="dayLabelDB">—</span>
     <span class="strip-right">
-      <button class="linkbtn primary" id="pdfBtn" data-pdf="all">Site prestart</button><button class="linkbtn primary" data-pdf="team">Team prestart</button><button class="linkbtn primary" data-pdf="prepour">Pre-pour</button><button class="linkbtn primary" data-pdf="logistics">Logistics</button>
+      <a class="linkbtn pagelink" href="../jobs/" target="_blank" rel="noopener">Labour jobs</a><a class="linkbtn pagelink" href="../lifts/" target="_blank" rel="noopener">Lifts &amp; deliveries</a><span class="stripdiv" aria-hidden="true"></span><button class="linkbtn primary" id="pdfBtn" data-pdf="all">Site prestart</button><button class="linkbtn primary" data-pdf="team">Team prestart</button><button class="linkbtn primary" data-pdf="prepour">Pre-pour</button><button class="linkbtn primary" data-pdf="logistics">Logistics</button>
     </span>
   </div>
 </div>
