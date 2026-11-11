@@ -11,7 +11,9 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
-body{padding:0 0 40px}
+body{padding:0 0 40px;text-transform:uppercase;letter-spacing:.015em}
+/* Buttons do not inherit text-transform from the UA sheet, and every job row is a button, so the list would stay sentence case without this. */
+button,select{text-transform:inherit;letter-spacing:inherit}
 .wrap{max-width:720px;margin:0 auto;padding:0 16px}
 header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--rule);
   padding:12px 0 10px}
