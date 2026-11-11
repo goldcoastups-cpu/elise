@@ -101,7 +101,7 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px so
   font-weight:800;color:var(--ink3)}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{display:inline-flex;flex-direction:column;gap:1px;border:1px solid var(--rule);
-  border-radius:7px;padding:7px 11px;min-width:0}
+  border-left:3px solid var(--rule);border-radius:7px;padding:7px 11px;min-width:0}
 .chip b{font-size:12.5px;font-weight:700;letter-spacing:.05em}
 .chip span{font-size:10.5px;color:var(--ink3);letter-spacing:.03em}
 .chip.me{border-color:var(--accent)}
@@ -221,6 +221,7 @@ var H={apikey:KEY,Authorization:"Bearer "+KEY};
 var JH={apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"};
 var BUCKET="job-photos";
 var day=0, rows=[], me="", pending=null, shotFile=null, daily=null, dlog={}, crew=[], priWant=false;
+var trades=null;
 
 function p2(n){return ("0"+n).slice(-2)}
 function iso(d){return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())}
@@ -281,16 +282,20 @@ function load(){
     fetch(URL_+"/rest/v1/v_labour_day?job_date=gte."+from+"&job_date=lte."+to+
           "&select=*",{headers:H}).then(function(r){ return r.ok?r.json():[]; })
   ];
-  if(!daily) jobs.push(
-    fetch(URL_+"/rest/v1/config?id=eq.daily&select=data",{headers:H})
+  var needCfg = (!daily || !trades);
+  if(needCfg) jobs.push(
+    fetch(URL_+"/rest/v1/config?id=in.(daily,board)&select=id,data",{headers:H})
       .then(function(r){ return r.ok?r.json():[]; }));
-  var cfgAt = daily ? -1 : 3;
+  var cfgAt = needCfg ? 3 : -1;
   Promise.all(jobs).then(function(res){
     rows=res[0]||[];
     dlog={};
     (res[1]||[]).forEach(function(l){ if(!dlog[l.item_id]) dlog[l.item_id]=l; });
     crew=res[2]||[];
-    if(cfgAt>0 && res[cfgAt] && res[cfgAt][0]) daily=res[cfgAt][0].data;
+    if(cfgAt>0 && res[cfgAt]) res[cfgAt].forEach(function(c){
+      if(c.id==="daily") daily=c.data;
+      if(c.id==="board" && c.data && c.data.trades) trades=c.data.trades;
+    });
     render();
     var n=new Date();
     el("stamp").textContent="Checked "+p2(n.getHours())+":"+p2(n.getMinutes());
@@ -404,6 +409,20 @@ function render(){
 
 /* Who is on the job. Context for the list above it, not something to act on,
    so it sits at the bottom and stays quiet. */
+/* Trade colour for a labour supplier. ELISE is in the board's trade table so
+   it gets the same olive it has everywhere else; the two labour-hire firms
+   are not trades and carry their own colours. */
+var SUPPLIER_COLOUR = { WORKCON:"#4FA3D1", HARWELL:"#C96A2E" };
+function supplierColour(name){
+  var n=String(name||"").trim().toUpperCase();
+  if(!n) return "";
+  if(SUPPLIER_COLOUR[n]) return SUPPLIER_COLOUR[n];
+  var hit=(trades||[]).filter(function(t){
+    return String(t[1]||"").toUpperCase()===n || String(t[0]||"").toUpperCase()===n;
+  })[0];
+  return (hit && hit[2]) ? hit[2] : "";
+}
+
 function paintCrew(want){
   var on=crew.filter(function(c){ return c.job_date===want; });
   var box=el("crew");
@@ -416,9 +435,12 @@ function paintCrew(want){
   box.innerHTML='<div class="crew"><h3>On site <span style="color:var(--ink3);'+
     'font-weight:700">'+on.length+'</span></h3><div class="chips">'+
     on.map(function(c){
-      var sub=[c.area,c.task,c.supplier].filter(Boolean)[0]||"";
-      return '<span class="chip'+(c.name===me?" me":"")+'"><b>'+esc(c.name)+'</b>'+
-             (sub?'<span>'+esc(sub)+'</span>':'')+'</span>';
+      var sub=[c.area,c.task].filter(Boolean)[0]||"";
+      var tint=supplierColour(c.supplier);
+      var line=[c.supplier,sub].filter(Boolean).join(" \u00b7 ");
+      return '<span class="chip'+(c.name===me?" me":"")+'"'+
+             (tint?' style="border-left-color:'+tint+'"':'')+'><b>'+esc(c.name)+'</b>'+
+             (line?'<span>'+esc(line)+'</span>':'')+'</span>';
     }).join("")+'</div></div>';
 }
 
