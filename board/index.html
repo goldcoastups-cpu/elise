@@ -244,7 +244,24 @@ function docRef(table, id){
         {code:(r.status===401||r.status===403)?"invalid_argument":"write"});
       return true;
     },
-    update: async function(body){ return this.set(body); },
+    /* A real PATCH, not an upsert. set() POSTs with merge-duplicates, which
+       makes Postgres attempt the INSERT first - and a partial update like a
+       move sends only {start}, so the insert dies on date NOT NULL and the
+       move comes back "try again". Every nudge, drag and slide hit this. */
+    update: async function(body){
+      if(!canWrite()) throw Object.assign(new Error("read only"), {code:"invalid_argument"});
+      var row = RELATIONAL[table] ? liftIn(body) : {data:body};
+      delete row.id;
+      if(!Object.keys(row).length) return true;
+      var r = await fetch(REST+table+"?id=eq."+encodeURIComponent(id), {
+        method:"PATCH",
+        headers:H({"Prefer":"return=minimal"}),
+        body:JSON.stringify(row)
+      });
+      if(!r.ok) throw Object.assign(new Error("update "+table+" "+r.status),
+        {code:(r.status===401||r.status===403)?"invalid_argument":"write"});
+      return true;
+    },
     delete: async function(){
       if(!canWrite()) throw Object.assign(new Error("read only"), {code:"invalid_argument"});
       var r = await fetch(REST+table+"?id=eq."+encodeURIComponent(id), {method:"DELETE", headers:H()});
@@ -2615,7 +2632,10 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
 
     /* ---- a truck at the street, or time on the hook ---- */
     var type="lift";
-    if(/\b(deliver(y|ies|ed)?|truck|semi|float|loads?|drop\s?off|pick\s?up|dropoff|pickup|agi|concrete|kibble|grout|blocks?|pallets?)\b/.test(low)) type="del";
+    if(/\b(deliver(y|ies|ed)?|truck|semi|float|loads?|drop\s?off|pick\s?up|dropoff|pickup|ag[iy]|aggi|concrete|grout|blocks?|pallets?)\b/.test(low)) type="del";
+    /* A kibble is crane time, not a delivery: the kibble is on the hook for
+       the whole pour. quickAdd adds the concrete delivery beside it. */
+    if(/\bkibble\b/.test(low)){ type="lift"; }
 
     /* ---- what sort of lift ----
        Read straight off the configured kinds so the board's own vocabulary
@@ -2655,14 +2675,22 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     var desc=raw;
     eaten.forEach(function(re){ desc=desc.replace(re," "); });
     desc=desc.replace(/\b(to|from|at|for|on|the|a|an)\b/gi," ")
-             .replace(/[\s,]{2,}/g," ").replace(/^[\s\-,]+|[\s\-,]+$/g,"").trim();
+             .replace(/[\s,]{2,}/g," ").replace(/\s-(?:\s*-)+\s*/g," ")
+             .replace(/^[\s\-,]+|[\s\-,]+$/g,"").trim();
     if(desc.length>90) desc=desc.slice(0,90);
     if(!desc) return null;
 
-    if(type==="del"){
-      if(/\bkibble\b/.test(low))        kind="KIB";
-      else if(/\bconcrete\b|\bagi\b/.test(low)) kind="CONC";
-      else if(/\bline\s?pump\b/.test(low))      kind="PUMP";
+    if(/\bkibble\b/.test(low)) kind="KIB";
+    else if(type==="del"){
+      if(/\bconcrete\b|\bagi\b/.test(low)) kind="CONC";
+      else if(/\bline\s?pump\b/.test(low))  kind="PUMP";
+    }
+
+    var statedDur=null, dm=raw.match(/\b(\d+(?:\.\d+)?)\s*(hours?|hrs?|minutes?|mins?)\b/i);
+    if(dm){
+      var nD=parseFloat(dm[1]);
+      statedDur=/^h/i.test(dm[2])?Math.round(nD*60):Math.round(nD);
+      statedDur=Math.max(5,Math.min(600,statedDur));
     }
 
     var out={co:co, start:start, desc:desc, to:to, from:from,
@@ -2671,7 +2699,9 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     if(qty!==null)   out.qty=qty;
     if(kg !==null)   out.kg =kg;
     /* a stated window is better information than the default slot length */
-    if(winMin!==null) out.dur=winMin;
+    if(winMin!==null)        out.dur=winMin;
+    else if(statedDur!==null) out.dur=statedDur;
+    else if(kind==="KIB")     out.dur=60;   /* a wet joint kibble runs about an hour */
     if(guessed) out.notes="Trade not recognised - set to OTH, check it";
     return out;
   }
@@ -2708,7 +2738,16 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
          it handles the regular shapes - and only fall back to the sheet,
          with an explanation, when it cannot make sense of the line. */
       var quick=parseShorthand(text);
-      if(quick){ return commitParsed([quick]); }
+      if(quick){
+        var items=[quick];
+        if(quick.kind==="KIB"){
+          items.push({co:quick.co, start:quick.start, dur:quick.dur||60, qty:0, kg:0,
+            type:"del", kind:"CONC", crane:"none", from:"STREET", to:"GROUND",
+            date:quick.date, status:quick.status,
+            desc:"Concrete for "+quick.desc, notes:"Added with the kibble - a pour is a delivery and crane time"});
+        }
+        return commitParsed(items);
+      }
       openSheet(null);$("fDesc").value=text.slice(0,90);
       toast("Couldn't read that automatically \u2014 fill it in here and hit save");
       return;
