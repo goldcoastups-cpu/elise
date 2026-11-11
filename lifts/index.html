@@ -63,13 +63,30 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);
 .now.soon .tag{color:var(--pri)}
 .now .cd{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--ink3);
   font-variant-numeric:tabular-nums;letter-spacing:.03em}
-.now .big{display:grid;grid-template-columns:62px 40px 1fr;gap:10px;align-items:start;
-  padding:11px 13px 12px}
+.now .slots{display:grid;grid-template-columns:1fr 1fr}
+@media (max-width:620px){ .now .slots{grid-template-columns:1fr} }
+.now .slot{padding:11px 13px 12px;border-left:1px solid var(--rule)}
+.now .slot:first-child{border-left:none}
+@media (max-width:620px){
+  .now .slot{border-left:none;border-top:1px solid var(--rule)}
+  .now .slot:first-child{border-top:none}
+}
+/* which queue this is - the hook or the gate. They run on different clocks
+   and the crew need to read them apart at a glance. */
+.now .slab{display:block;font-size:10px;font-weight:800;letter-spacing:.13em;
+  margin-bottom:7px;color:var(--ink3)}
+.now .slot.hook .slab{color:var(--accent)}
+.now .slot.gate .slab{color:var(--pri)}
+.now .slot.on .slab{color:var(--go)}
+.now .slot.empty{color:var(--ink3);font-size:12.5px}
+.now .big{display:grid;grid-template-columns:58px 40px 1fr;gap:9px;align-items:start}
 .now .big .bt{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
 .now .big .bt small{display:block;font-size:10px;font-weight:600;color:var(--ink3);margin-top:2px}
 .now .big .bd{font-size:15px;line-height:1.3;letter-spacing:.02em;overflow-wrap:anywhere}
 .now .big .bm{font-size:10.5px;color:var(--ink3);margin-top:3px;letter-spacing:.05em}
-.now ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.now .thenhd{font-size:10px;font-weight:800;letter-spacing:.13em;color:var(--ink3);padding:8px 13px 0;border-top:1px solid var(--rule)}
+.now ol{list-style:none;margin:0;padding:0}
+.now li .kt{font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--ink3)}
 .now li{display:grid;grid-template-columns:62px 40px 1fr;gap:10px;align-items:center;
   padding:7px 13px;border-top:1px solid var(--rule);font-size:12.5px}
 .now li:first-child{border-top:none}
@@ -78,7 +95,8 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);
 .now .done{padding:16px 13px;font-size:13.5px;color:var(--ink3);line-height:1.5}
 .now .done b{display:block;color:var(--ink2);font-size:15px;margin-bottom:3px}
 
-.sum{display:flex;gap:18px;flex-wrap:wrap;padding:12px 0;font-size:13px;color:var(--ink2)}
+.now{margin-bottom:4px}
+.sum{display:flex;gap:18px;flex-wrap:wrap;padding:12px 0 16px;margin-bottom:14px;border-bottom:2px solid var(--rule);font-size:13px;color:var(--ink2)}
 .sum b{color:var(--ink);font-variant-numeric:tabular-nums}
 
 /* Three columns, not two: the trade chip gets a lane of its own so the
@@ -299,11 +317,17 @@ function nowNext(){
   });
   items.sort(function(a,b){ return a.start-b.start; });
 
-  var live=items.filter(function(x){ return x.start<=mins && x.end>mins; })[0];
-  var rest=items.filter(function(x){ return x.start>mins; });
-  var head=live||rest[0];
+  /* The hook and the gate are two different queues. A crew waiting on a
+     truck does not care which lift is next, and the dogman does not care
+     which truck is at the street - so each gets its own slot. */
+  function pick(wantDel){
+    var f=items.filter(function(x){ return (x.r.type==="del")===wantDel; });
+    return f.filter(function(x){ return x.start<=mins && x.end>mins; })[0]
+        || f.filter(function(x){ return x.start>mins; })[0] || null;
+  }
+  var hook=pick(false), gate=pick(true);
 
-  if(!head){
+  if(!hook && !gate){
     var brk=brks.filter(function(b){ return b[0]<=mins && b[0]+b[1]>mins; })[0];
     box.innerHTML='<div class="now"><div class="done"><b>'+
       (brk?"Crane break":"That\u2019s the day")+'</b>'+
@@ -312,42 +336,62 @@ function nowNext(){
     return;
   }
 
-  var tr=trade(head.r.co), qty=+head.r.qty||0;
-  var isLive=!!live;
-  var mleft=isLive ? head.end-mins : head.start-mins;
-  var cd = isLive
-    ? (mleft<=1?"finishing":mleft+" min left")
-    : (mleft<=0?"now":(mleft<60? "in "+mleft+" min"
-       : "in "+Math.floor(mleft/60)+"h "+p2(mleft%60)));
-  var cls = isLive ? "now live" : (mleft<=20 ? "now soon" : "now");
+  function mleft(x){ return x.start<=mins ? x.end-mins : x.start-mins; }
+  function cdText(x){
+    if(!x) return "";
+    var m=mleft(x);
+    if(x.start<=mins) return m<=1 ? "finishing" : m+" min left";
+    return m<=0 ? "now" : (m<60 ? "in "+m+" min"
+      : "in "+Math.floor(m/60)+"h "+p2(m%60));
+  }
 
-  var bits=[];
-  if(head.p.of>1) bits.push("lift "+head.p.n+" of "+head.p.of);
-  else if(head.r.type==="lift"&&qty>1) bits.push(qty+" lifts");
-  if(head.r.from_loc||head.r.to_loc) bits.push((head.r.from_loc||"?")+" \u2192 "+(head.r.to_loc||"?"));
-  bits.push(tr.name);
+  var soon=[hook,gate].filter(Boolean).sort(function(a,b){
+    return (a.start<=mins?-1e6+a.end:a.start)-(b.start<=mins?-1e6+b.end:b.start); })[0];
+  var anyLive=(hook&&hook.start<=mins)||(gate&&gate.start<=mins);
+  var cls="now"+(anyLive?" live":(mleft(soon)<=20?" soon":""));
 
-  var next3=rest.filter(function(x){ return x!==head; }).slice(0,3);
+  function slot(x, isGate){
+    var label = isGate
+      ? (x&&x.start<=mins ? "AT THE GATE NOW" : "NEXT AT THE GATE")
+      : (x&&x.start<=mins ? "ON THE HOOK NOW" : "NEXT ON THE HOOK");
+    var k="slot "+(isGate?"gate":"hook")+(x&&x.start<=mins?" on":"");
+    if(!x){
+      return '<div class="'+k+' empty"><span class="slab">'+label+'</span>'+
+             (isGate?"No more trucks today.":"Nothing left on the hook today.")+'</div>';
+    }
+    var tr=trade(x.r.co), qty=+x.r.qty||0, bits=[];
+    if(x.p.of>1) bits.push("lift "+x.p.n+" of "+x.p.of);
+    else if(!isGate && qty>1) bits.push(qty+" lifts");
+    if(x.r.from_loc||x.r.to_loc) bits.push((x.r.from_loc||"?")+" \u2192 "+(x.r.to_loc||"?"));
+    bits.push(tr.name);
+    return '<div class="'+k+'">'+
+      '<span class="slab">'+label+' \u00b7 '+cdText(x).toUpperCase()+'</span>'+
+      '<div class="big">'+
+        '<div class="bt">'+hhmm(x.start)+'<small>'+(x.end-x.start)+' min</small></div>'+
+        '<div><span class="co" style="background:'+esc(chipBg(x.r))+'">'+esc(chipTxt(x.r))+'</span></div>'+
+        '<div><div class="bd">'+esc(x.r.descr)+
+          (x.r.status==="req"?'<span class="tbc">TBC</span>':'')+'</div>'+
+        '<div class="bm">'+esc(bits.join(" \u00b7 "))+'</div></div>'+
+      '</div></div>';
+  }
+
+  var taken=[hook,gate].filter(Boolean);
+  var rest=items.filter(function(x){
+    return x.start>mins && taken.indexOf(x)<0;
+  }).slice(0,3);
   var brkRows=brks.filter(function(b){ return b[0]>mins; });
 
   box.innerHTML='<div class="'+cls+'">'+
-    '<div class="hd"><span class="tag">'+
-      (isLive ? (head.r.type==="del"?"AT THE GATE NOW":"ON THE HOOK NOW") : "UP NEXT")+
-    '</span><span class="cd">'+cd+'</span></div>'+
-    '<div class="big">'+
-      '<div class="bt">'+hhmm(head.start)+'<small>'+(head.end-head.start)+' min</small></div>'+
-      '<div><span class="co" style="background:'+esc(chipBg(head.r))+'">'+esc(chipTxt(head.r))+'</span></div>'+
-      '<div><div class="bd">'+esc(head.r.descr)+
-        (head.r.status==="req"?'<span class="tbc">TBC</span>':'')+'</div>'+
-      '<div class="bm">'+(head.r.type==="del"?"TRUCK \u00b7 ":"")+esc(bits.join(" \u00b7 "))+'</div></div>'+
-    '</div>'+
-    (next3.length?'<ol>'+next3.map(function(x){
-      var t2=trade(x.r.co);
+    '<div class="hd"><span class="tag">UP NEXT</span>'+
+      '<span class="cd">'+cdText(soon)+'</span></div>'+
+    '<div class="slots">'+slot(hook,false)+slot(gate,true)+'</div>'+
+    (rest.length?'<div class="thenhd">THEN</div><ol>'+rest.map(function(x){
       var label = x.p.of>1 ? ("Lift "+x.p.n+" of "+x.p.of+" \u00b7 "+x.r.descr) : x.r.descr;
       var brkBefore = brkRows.filter(function(b){ return b[0]>mins && b[0]<=x.start; })[0];
       return (brkBefore?'<li><span class="lt" style="color:var(--stop)">'+hhmm(brkBefore[0])+
                '</span><span></span><span class="ld" style="color:var(--stop)">Crane break</span></li>':'')+
-             '<li><span class="lt">'+hhmm(x.start)+'</span>'+
+             '<li><span class="lt">'+hhmm(x.start)+
+               '<span class="kt" style="display:block">'+(x.r.type==="del"?"TRUCK":"LIFT")+'</span></span>'+
              '<span><span class="co" style="background:'+esc(chipBg(x.r))+'">'+esc(chipTxt(x.r))+'</span></span>'+
              '<span class="ld">'+esc(label)+'</span></li>';
     }).join("")+'</ol>':'')+
@@ -363,7 +407,9 @@ function render(){
   var dels =rows.filter(function(r){return r.type==="del"});
   var hook =lifts.filter(function(r){return r.kind!=="BOOM"})
                  .reduce(function(a,r){return a+(+r.dur||0)},0);
-  var nLift=lifts.filter(function(r){return r.kind!=="BOOM"}).length;
+  /* a run of 12 is 12 lifts, not one booking */
+  var nLift=lifts.filter(function(r){return r.kind!=="BOOM"})
+                 .reduce(function(a,r){return a+Math.max(1,+r.qty||1)},0);
   var nDel =dels.filter(function(r){return r.kind!=="BOOM"}).length;
   var tbc  =rows.filter(function(r){return r.status==="req"}).length;
 
