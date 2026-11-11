@@ -207,6 +207,14 @@ function trade(co){
   var t=((cfg&&cfg.trades)||[]).filter(function(x){return x[0]===co})[0];
   return {name:t?t[1]:co, colour:(t&&t[2])?t[2]:"#B9B2A6"};
 }
+/* background for a trade chip - flat normally, half and half when the run
+   alternates between two trades (formwork up, scaffold down) */
+function chipBg(r){
+  var c=trade(r.co).colour;
+  if(!r.co2) return c;
+  return "linear-gradient(100deg,"+c+" 0 50%,"+trade(r.co2).colour+" 50% 100%)";
+}
+function chipTxt(r){ return r.co2 ? r.co+"/"+r.co2 : r.co; }
 
 function rowHtml(r, piece){
   var qty=(+r.qty||0), kg=(+r.kg||0), tr=trade(r.co), bits=[];
@@ -234,7 +242,7 @@ function rowHtml(r, piece){
 
   return '<div class="row'+(r.type==="del"?" del":"")+(head?"":" cont")+'">'+
     '<div class="t">'+hhmm(start)+'<small>'+mins+' min</small></div>'+
-    '<div>'+(head?'<span class="co" style="background:'+esc(tr.colour)+'">'+esc(r.co)+'</span>':'')+'</div>'+
+    '<div>'+(head?'<span class="co" style="background:'+esc(chipBg(r))+'">'+esc(chipTxt(r))+'</span>':'')+'</div>'+
     '<div>'+body+'</div></div>';
 }
 
@@ -328,7 +336,7 @@ function nowNext(){
     '</span><span class="cd">'+cd+'</span></div>'+
     '<div class="big">'+
       '<div class="bt">'+hhmm(head.start)+'<small>'+(head.end-head.start)+' min</small></div>'+
-      '<div><span class="co" style="background:'+esc(tr.colour)+'">'+esc(head.r.co)+'</span></div>'+
+      '<div><span class="co" style="background:'+esc(chipBg(head.r))+'">'+esc(chipTxt(head.r))+'</span></div>'+
       '<div><div class="bd">'+esc(head.r.descr)+
         (head.r.status==="req"?'<span class="tbc">TBC</span>':'')+'</div>'+
       '<div class="bm">'+(head.r.type==="del"?"TRUCK \u00b7 ":"")+esc(bits.join(" \u00b7 "))+'</div></div>'+
@@ -340,7 +348,7 @@ function nowNext(){
       return (brkBefore?'<li><span class="lt" style="color:var(--stop)">'+hhmm(brkBefore[0])+
                '</span><span></span><span class="ld" style="color:var(--stop)">Crane break</span></li>':'')+
              '<li><span class="lt">'+hhmm(x.start)+'</span>'+
-             '<span><span class="co" style="background:'+esc(t2.colour)+'">'+esc(x.r.co)+'</span></span>'+
+             '<span><span class="co" style="background:'+esc(chipBg(x.r))+'">'+esc(chipTxt(x.r))+'</span></span>'+
              '<span class="ld">'+esc(label)+'</span></li>';
     }).join("")+'</ol>':'')+
   '</div>';
@@ -409,7 +417,7 @@ function paintTabs(){
 function load(){
   week=[]; for(var i=0;i<7;i++) week.push(dateFor(i));
   var from=iso(week[0]), to=iso(week[6]);
-  var cols="id,date,start_min,dur,co,descr,kind,crane,from_loc,to_loc,qty,kg,status,type";
+  var cols="id,date,start_min,dur,co,co2,descr,kind,crane,from_loc,to_loc,qty,kg,status,type";
   var jobs=[get("lifts?date=gte."+from+"&date=lte."+to+"&select="+cols+"&order=start_min")];
   if(!cfg) jobs.push(get("config?id=eq.board&select=data"));
   Promise.all(jobs).then(function(res){

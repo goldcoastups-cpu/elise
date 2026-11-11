@@ -1,0 +1,453 @@
+#!/usr/bin/env python3
+"""Build the crew's lifts-and-deliveries page. Reads the same Supabase the
+day board writes to, shows today and tomorrow, and nothing else."""
+import sys, json, os
+SB_URL = sys.argv[1].rstrip("/"); SB_KEY = sys.argv[2].strip()
+HTML = r"""<!doctype html>
+<html lang="en-AU"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>ELISE Lifts</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23141312'/><rect x='17' y='15' width='30' height='9' rx='2.5' fill='%23F2EDE4'/><rect x='17' y='27.5' width='23' height='9' rx='2.5' fill='%2346BCCE'/><rect x='17' y='40' width='30' height='9' rx='2.5' fill='%23F2EDE4'/></svg>">
+<style>
+:root{
+  --bg:#1B1A18; --card:#232120; --rule:#35322E; --ink:#F2EDE4; --ink2:#A49C8F;
+  --ink3:#6E675D; --accent:#46BCCE; --warn:#E0A33C; --brk:#2B2724;
+  --stop:#FF6B6B; --stopbg:#3A2524; --stopline:#6E3230;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-text-size-adjust:100%}
+/* All caps, the way the printed run sheet reads on site. Caps are denser
+   than mixed case, so the tracking opens up a touch to keep it legible at
+   arm's length in sun. */
+body{padding:0 0 48px;text-transform:uppercase;letter-spacing:.015em}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+
+header{position:sticky;top:0;z-index:5;background:var(--bg);
+  border-bottom:1px solid var(--rule);padding:12px 0 0}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.brand b{font-size:19px;letter-spacing:.16em;font-weight:700}
+.brand span{font-size:11.5px;letter-spacing:.09em;color:var(--ink3);text-transform:uppercase}
+.tabs{display:flex;gap:6px;margin:12px -16px 0;padding:0 16px 10px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;min-width:58px;appearance:none;border:1px solid var(--rule);
+  background:transparent;color:var(--ink2);font:inherit;font-size:17px;font-weight:700;
+  padding:7px 9px 8px;border-radius:8px;cursor:pointer;line-height:1.1;
+  font-variant-numeric:tabular-nums;text-align:center}
+.tab b{display:block;font-size:10px;letter-spacing:.09em;color:var(--ink3);
+  text-transform:uppercase;font-weight:700;margin-bottom:2px}
+.tab i{display:block;font-size:10.5px;font-style:normal;font-weight:600;
+  color:var(--ink3);margin-top:3px;letter-spacing:.03em;min-height:13px}
+.tab[aria-selected="true"]{background:var(--card);color:var(--ink);border-color:var(--accent)}
+.tab[aria-selected="true"] b,.tab[aria-selected="true"] i{color:var(--accent)}
+.tab[data-today="1"] b::after{content:" \2022"}
+
+/* lifts and deliveries, each foldable - a subbie usually only wants one */
+.grp{margin:20px 0 0;border-top:1px solid var(--rule)}
+.ghead{width:100%;appearance:none;background:transparent;border:none;color:inherit;
+  font:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;
+  padding:13px 0 11px;text-align:left}
+.ghead .gt{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.ghead .gn{font-size:12px;color:var(--ink3);letter-spacing:.03em;flex:1}
+.ghead .gc{font-size:13px;color:var(--ink3);transition:transform .15s}
+.grp[data-open="0"] .gc{transform:rotate(-90deg)}
+.grp[data-open="0"] .gbody{display:none}
+
+/* What is happening right now, and what is next. This is the only thing
+   on the page somebody checks while walking across the deck, so it gets
+   the weight and everything else stays quiet. */
+.now{margin:12px 0 0;border:1px solid var(--rule);border-radius:9px;overflow:hidden}
+.now .hd{display:flex;align-items:baseline;gap:9px;padding:10px 13px 9px;
+  background:var(--card);border-bottom:1px solid var(--rule)}
+.now .tag{font-size:10.5px;font-weight:800;letter-spacing:.14em;color:var(--accent)}
+.now.live .tag{color:var(--go)}
+.now.soon .tag{color:var(--pri)}
+.now .cd{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--ink3);
+  font-variant-numeric:tabular-nums;letter-spacing:.03em}
+.now .big{display:grid;grid-template-columns:62px 40px 1fr;gap:10px;align-items:start;
+  padding:11px 13px 12px}
+.now .big .bt{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.now .big .bt small{display:block;font-size:10px;font-weight:600;color:var(--ink3);margin-top:2px}
+.now .big .bd{font-size:15px;line-height:1.3;letter-spacing:.02em;overflow-wrap:anywhere}
+.now .big .bm{font-size:10.5px;color:var(--ink3);margin-top:3px;letter-spacing:.05em}
+.now ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.now li{display:grid;grid-template-columns:62px 40px 1fr;gap:10px;align-items:center;
+  padding:7px 13px;border-top:1px solid var(--rule);font-size:12.5px}
+.now li:first-child{border-top:none}
+.now li .lt{font-weight:700;font-variant-numeric:tabular-nums}
+.now li .ld{color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.now .done{padding:16px 13px;font-size:13.5px;color:var(--ink3);line-height:1.5}
+.now .done b{display:block;color:var(--ink2);font-size:15px;margin-bottom:3px}
+
+.sum{display:flex;gap:18px;flex-wrap:wrap;padding:12px 0;font-size:13px;color:var(--ink2)}
+.sum b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* Three columns, not two: the trade chip gets a lane of its own so the
+   colours run straight down the page. They used to sit inline in front of
+   the description, so a delivery - with its TRUCK marker ahead of the chip -
+   pushed its colour out of line with every lift above it. */
+.row{display:grid;grid-template-columns:54px 40px 1fr;gap:9px;padding:8px 0;
+  border-top:1px solid var(--rule);align-items:start}
+.row:first-of-type{border-top:none}
+.t{font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
+.t small{display:block;font-size:10px;font-weight:600;color:var(--ink3);
+  letter-spacing:.03em;margin-top:1px;white-space:nowrap}
+.co{display:block;width:100%;text-align:center;font-size:10.5px;font-weight:700;
+  letter-spacing:.04em;padding:3px 2px;border-radius:4px;color:#17150F;
+  margin-top:1px;overflow:hidden}
+.tk{font-size:9.5px;font-weight:700;letter-spacing:.08em;color:var(--ink3);
+  border:1px solid var(--rule);border-radius:3px;padding:0 3px;margin-right:5px}
+/* every lift of a run gets its own line, so the crew read times not totals */
+.of{font-size:10.5px;font-weight:700;letter-spacing:.07em;color:var(--ink3);
+  white-space:nowrap}
+.row.cont .d{color:var(--ink2)}
+.row.cont{padding:5px 0}
+.row.cont .t{font-size:13.5px}
+.d{font-size:14px;line-height:1.3;letter-spacing:.02em;overflow-wrap:anywhere}
+.meta{font-size:10.5px;color:var(--ink3);margin-top:2px;letter-spacing:.05em;line-height:1.35}
+.tbc{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.07em;
+  color:var(--warn);border:1px solid var(--warn);border-radius:3px;padding:0 4px;margin-left:6px}
+
+/* The breaks are the one thing on here that stops work, so they read as a
+   stop - red band, red rule, not the same grey as everything else. */
+.brk{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-top:1px solid var(--stopline);border-bottom:1px solid var(--stopline);
+  font-size:12px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;
+  color:var(--stop);background:var(--stopbg);
+  margin:0 -16px;padding-left:16px;padding-right:16px}
+.brk::before{content:"";width:3px;align-self:stretch;background:var(--stop);
+  border-radius:2px;margin-right:2px}
+.sec{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);
+  margin:26px 0 2px;font-weight:700}
+.empty{padding:34px 0;text-align:center;color:var(--ink3);font-size:14.5px;line-height:1.5}
+.empty b{display:block;color:var(--ink2);font-size:16px;margin-bottom:5px}
+footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--rule);
+  font-size:11.5px;color:var(--ink3);letter-spacing:.04em;display:flex;
+  justify-content:space-between;gap:12px;flex-wrap:wrap}
+.live{color:var(--accent)}
+@media(prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#F7F4EE;--card:#FFF;--rule:#DED7C9;--ink:#1F1D1A;
+    --ink2:#5F594F;--ink3:#8C8578;--brk:#EDE7DA;--stop:#B3261E;--stopbg:#F7E2DF;--stopline:#E0B4AF}
+  .co{color:#fff;text-shadow:0 0 1px rgba(0,0,0,.35)}
+}
+</style></head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><b>ELISE</b><span>Lifts &amp; deliveries &middot; 3 Twenty Fifth Ave</span></div>
+    <div class="tabs" id="tabs" role="tablist"></div>
+  </header>
+  <div id="now"></div>
+  <div class="sum" id="sum"></div>
+  <div id="list"></div>
+  <footer>
+    <span id="stamp">Loading&hellip;</span>
+    <span class="live">Updates on its own</span>
+  </footer>
+</div>
+<script>
+(function(){
+"use strict";
+var URL_="__SB_URL__", KEY="__SB_KEY__";
+var H={apikey:KEY,Authorization:"Bearer "+KEY};
+var cfg=null, day=0, week=[], all={}, open_={lift:1, del:1};
+
+function p2(n){return ("0"+n).slice(-2)}
+function iso(d){return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())}
+function dateFor(off){var d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+off);return d}
+function hhmm(m){var h=Math.floor(m/60),x=m%60,ap=h<12?"am":"pm",t=h%12;if(!t)t=12;
+  return t+(x?":"+p2(x):"")+ap}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+var DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+var MONS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function nice(d){return DAYS[d.getDay()]+" "+d.getDate()+" "+MONS[d.getMonth()]}
+
+function get(path){
+  return fetch(URL_+"/rest/v1/"+path,{headers:H}).then(function(r){
+    if(!r.ok) throw new Error(r.status); return r.json();
+  });
+}
+
+/* The crane takes two half-hour breaks, except on a panel day - a day with
+   Advanced Precast actually erecting (kind SPIN or SNGL) - which takes one.
+   Drawn here because the crew read this to know when the hook stops. */
+function breaksFor(rows){
+  var base=(cfg&&cfg.breaks)||[[600,30],[780,30]];
+  var panel=rows.some(function(r){
+    return r.type==="lift"&&r.co==="AP"&&(r.kind==="SPIN"||r.kind==="SNGL");
+  });
+  return panel?[base[0]]:base;
+}
+/* Minutes a single lift takes for this trade. Advanced Precast run 15, the
+   rest run 10, and both come off the board's config rather than being
+   hard-coded here. */
+function perLift(co){
+  var p15=(cfg&&cfg.per15)||[];
+  return (p15.indexOf(co)>=0) ? 15 : ((cfg&&+cfg.per) || 10);
+}
+
+/* Walk a multi-lift run out into its individual lifts, stepping over the
+   crane breaks exactly as the hook does: nothing may run through one, so a
+   lift that would cross a break starts again at the end of it. */
+function expand(r, brks){
+  var qty=Math.max(1, +r.qty||1), per=perLift(r.co), out=[], t=+r.start_min;
+  if(r.type!=="lift" || r.kind==="BOOM" || qty<2) return [{n:0, start:+r.start_min, end:+r.start_min+(+r.dur||0)}];
+  for(var i=1;i<=qty;i++){
+    for(var b=0;b<brks.length;b++){
+      var bs=brks[b][0], be=bs+brks[b][1];
+      if(t < be && t+per > bs) t = be;
+    }
+    out.push({n:i, of:qty, start:t, end:t+per});
+    t += per;
+  }
+  return out;
+}
+
+function trade(co){
+  var t=((cfg&&cfg.trades)||[]).filter(function(x){return x[0]===co})[0];
+  return {name:t?t[1]:co, colour:(t&&t[2])?t[2]:"#B9B2A6"};
+}
+/* background for a trade chip - flat normally, half and half when the run
+   alternates between two trades (formwork up, scaffold down) */
+function chipBg(r){
+  var c=trade(r.co).colour;
+  if(!r.co2) return c;
+  return "linear-gradient(100deg,"+c+" 0 50%,"+trade(r.co2).colour+" 50% 100%)";
+}
+function chipTxt(r){ return r.co2 ? r.co+"/"+r.co2 : r.co; }
+
+function rowHtml(r, piece){
+  var qty=(+r.qty||0), kg=(+r.kg||0), tr=trade(r.co), bits=[];
+  var boom = r.kind==="BOOM";
+  var one  = piece && piece.n > 0;                 // one lift of a run
+  var head = !piece || piece.n <= 1;               // carries the description
+
+  if(!one && r.type==="lift" && qty>1) bits.push(qty+" lifts");
+  if(kg) bits.push(kg>=1000?(Math.round(kg/100)/10)+"t":kg+"kg");
+  if(r.from_loc||r.to_loc) bits.push((r.from_loc||"?")+" → "+(r.to_loc||"?"));
+  bits.push(tr.name);
+
+  var start = piece ? piece.start : r.start_min;
+  var mins  = piece ? (piece.end - piece.start) : (+r.dur||0);
+
+  /* After the first lift of a run the description is already overhead, so
+     the line carries the time and which lift it is and nothing else - that
+     is what someone standing by the hook needs. */
+  var body = head
+    ? '<div class="d">'+esc(r.descr)+(r.status==="req"?'<span class="tbc">TBC</span>':'')+
+      (one?' <span class="of">· LIFT 1 OF '+piece.of+'</span>':'')+'</div>'+
+      '<div class="meta">'+(r.type==="del"?'<span class="tk">TRUCK</span>':'')+
+      (boom?'Crane stood down · ':'')+esc(bits.join(" · "))+'</div>'
+    : '<div class="d"><span class="of">LIFT '+piece.n+' OF '+piece.of+'</span></div>';
+
+  return '<div class="row'+(r.type==="del"?" del":"")+(head?"":" cont")+'">'+
+    '<div class="t">'+hhmm(start)+'<small>'+mins+' min</small></div>'+
+    '<div>'+(head?'<span class="co" style="background:'+esc(chipBg(r))+'">'+esc(chipTxt(r))+'</span>':'')+'</div>'+
+    '<div>'+body+'</div></div>';
+}
+
+function group(key,title,rows,note,withBreaks){
+  if(!rows.length) return "";
+  var body="";
+  if(withBreaks){
+    /* One timeline: every individual lift of every run, plus the breaks,
+       in the order they actually happen. A twelve-lift run reads as twelve
+       times with the break sitting where the hook stops, which is what the
+       printed run sheet does. */
+    var brks=breaksFor(rows), events=[];
+    rows.forEach(function(r){
+      expand(r, brks).forEach(function(p){ events.push({t:p.start, r:r, p:p}); });
+    });
+    brks.forEach(function(b){ events.push({t:b[0], brk:b}); });
+    events.sort(function(a,b){
+      if(a.t!==b.t) return a.t-b.t;
+      return (a.brk?0:1)-(b.brk?0:1);     // a break wins the tie
+    });
+    events.forEach(function(e){
+      body += e.brk
+        ? '<div class="brk">Crane break &middot; '+hhmm(e.brk[0])+' &ndash; '+
+          hhmm(e.brk[0]+e.brk[1])+'</div>'
+        : rowHtml(e.r, e.p);
+    });
+  } else {
+    body=rows.map(function(r){ return rowHtml(r, null); }).join("");
+  }
+  return '<section class="grp" data-grp="'+key+'" data-open="'+(open_[key]?1:0)+'">'+
+    '<button class="ghead" type="button" data-toggle="'+key+'" aria-expanded="'+(open_[key]?"true":"false")+'">'+
+      '<span class="gt">'+esc(title)+'</span>'+
+      '<span class="gn">'+esc(note)+'</span>'+
+      '<span class="gc">&#9660;</span>'+
+    '</button><div class="gbody">'+body+'</div></section>';
+}
+
+/* The banner. Works off the same expanded lift list the day below uses, so
+   "lift 7 of 24" in the banner is the same lift 7 the crew see further down.
+   Only ever shown on today - "next up" on a Friday you are reading on a
+   Wednesday means nothing. */
+function nowNext(){
+  var box=document.getElementById("now");
+  if(day!==0){ box.innerHTML=""; return; }
+  var rows=(all[iso(dateFor(0))]||[]);
+  if(!rows.length){ box.innerHTML=""; return; }
+
+  var n=new Date(), mins=n.getHours()*60+n.getMinutes();
+  var brks=breaksFor(rows), items=[];
+  rows.forEach(function(r){
+    expand(r, brks).forEach(function(p){
+      items.push({r:r, p:p, start:p.start, end:p.end!=null?p.end:(p.start+(+r.dur||0))});
+    });
+  });
+  items.sort(function(a,b){ return a.start-b.start; });
+
+  var live=items.filter(function(x){ return x.start<=mins && x.end>mins; })[0];
+  var rest=items.filter(function(x){ return x.start>mins; });
+  var head=live||rest[0];
+
+  if(!head){
+    var brk=brks.filter(function(b){ return b[0]<=mins && b[0]+b[1]>mins; })[0];
+    box.innerHTML='<div class="now"><div class="done"><b>'+
+      (brk?"Crane break":"That\u2019s the day")+'</b>'+
+      (brk?"Back on at "+hhmm(brk[0]+brk[1]) : "Nothing further booked today.")+
+      '</div></div>';
+    return;
+  }
+
+  var tr=trade(head.r.co), qty=+head.r.qty||0;
+  var isLive=!!live;
+  var mleft=isLive ? head.end-mins : head.start-mins;
+  var cd = isLive
+    ? (mleft<=1?"finishing":mleft+" min left")
+    : (mleft<=0?"now":(mleft<60? "in "+mleft+" min"
+       : "in "+Math.floor(mleft/60)+"h "+p2(mleft%60)));
+  var cls = isLive ? "now live" : (mleft<=20 ? "now soon" : "now");
+
+  var bits=[];
+  if(head.p.of>1) bits.push("lift "+head.p.n+" of "+head.p.of);
+  else if(head.r.type==="lift"&&qty>1) bits.push(qty+" lifts");
+  if(head.r.from_loc||head.r.to_loc) bits.push((head.r.from_loc||"?")+" \u2192 "+(head.r.to_loc||"?"));
+  bits.push(tr.name);
+
+  var next3=rest.filter(function(x){ return x!==head; }).slice(0,3);
+  var brkRows=brks.filter(function(b){ return b[0]>mins; });
+
+  box.innerHTML='<div class="'+cls+'">'+
+    '<div class="hd"><span class="tag">'+
+      (isLive ? (head.r.type==="del"?"AT THE GATE NOW":"ON THE HOOK NOW") : "UP NEXT")+
+    '</span><span class="cd">'+cd+'</span></div>'+
+    '<div class="big">'+
+      '<div class="bt">'+hhmm(head.start)+'<small>'+(head.end-head.start)+' min</small></div>'+
+      '<div><span class="co" style="background:'+esc(chipBg(head.r))+'">'+esc(chipTxt(head.r))+'</span></div>'+
+      '<div><div class="bd">'+esc(head.r.descr)+
+        (head.r.status==="req"?'<span class="tbc">TBC</span>':'')+'</div>'+
+      '<div class="bm">'+(head.r.type==="del"?"TRUCK \u00b7 ":"")+esc(bits.join(" \u00b7 "))+'</div></div>'+
+    '</div>'+
+    (next3.length?'<ol>'+next3.map(function(x){
+      var t2=trade(x.r.co);
+      var label = x.p.of>1 ? ("Lift "+x.p.n+" of "+x.p.of+" \u00b7 "+x.r.descr) : x.r.descr;
+      var brkBefore = brkRows.filter(function(b){ return b[0]>mins && b[0]<=x.start; })[0];
+      return (brkBefore?'<li><span class="lt" style="color:var(--stop)">'+hhmm(brkBefore[0])+
+               '</span><span></span><span class="ld" style="color:var(--stop)">Crane break</span></li>':'')+
+             '<li><span class="lt">'+hhmm(x.start)+'</span>'+
+             '<span><span class="co" style="background:'+esc(chipBg(x.r))+'">'+esc(chipTxt(x.r))+'</span></span>'+
+             '<span class="ld">'+esc(label)+'</span></li>';
+    }).join("")+'</ol>':'')+
+  '</div>';
+}
+
+function render(){
+  var rows=(all[iso(dateFor(day))]||[]).slice()
+    .sort(function(a,b){return (a.start_min-b.start_min)||(a.type==="del"?-1:1)});
+  var list=document.getElementById("list"), sum=document.getElementById("sum");
+
+  var lifts=rows.filter(function(r){return r.type==="lift"});
+  var dels =rows.filter(function(r){return r.type==="del"});
+  var hook =lifts.filter(function(r){return r.kind!=="BOOM"})
+                 .reduce(function(a,r){return a+(+r.dur||0)},0);
+  var nLift=lifts.filter(function(r){return r.kind!=="BOOM"}).length;
+  var nDel =dels.filter(function(r){return r.kind!=="BOOM"}).length;
+  var tbc  =rows.filter(function(r){return r.status==="req"}).length;
+
+  sum.innerHTML = rows.length
+    ? '<span><b>'+nLift+'</b> lift'+(nLift===1?"":"s")+'</span>'+
+      '<span><b>'+Math.floor(hook/60)+'h '+p2(hook%60)+'m</b> on the hook</span>'+
+      '<span><b>'+nDel+'</b> deliver'+(nDel===1?"y":"ies")+'</span>'+
+      (tbc?'<span><b>'+tbc+'</b> TBC</span>':'')
+    : "";
+
+  if(!rows.length){
+    list.innerHTML='<div class="empty"><b>Nothing booked</b>No lifts or deliveries on this day yet.</div>';
+    nowNext();
+    return;
+  }
+  nowNext();
+  list.innerHTML =
+    group("lift","Crane lifts",lifts,
+          nLift+(nLift===1?" lift":" lifts")+" · "+Math.floor(hook/60)+"h "+p2(hook%60)+"m",true)+
+    group("del","Deliveries",dels, nDel+(nDel===1?" truck":" trucks"),false);
+
+  Array.prototype.forEach.call(list.querySelectorAll("[data-toggle]"),function(b){
+    b.addEventListener("click",function(){
+      var k=b.getAttribute("data-toggle");
+      open_[k]=!open_[k];
+      var sec=list.querySelector('[data-grp="'+k+'"]');
+      sec.setAttribute("data-open",open_[k]?1:0);
+      b.setAttribute("aria-expanded",open_[k]?"true":"false");
+    });
+  });
+}
+
+function paintTabs(){
+  var box=document.getElementById("tabs");
+  box.innerHTML=week.map(function(d,i){
+    var key=iso(d), n=(all[key]||[]).length;
+    return '<button class="tab" role="tab" data-day="'+i+'" data-today="'+(i===0?1:0)+'" '+
+      'aria-selected="'+(i===day?"true":"false")+'">'+
+      '<b>'+DAYS[d.getDay()]+'</b>'+d.getDate()+
+      '<i>'+(n?n:"–")+'</i></button>';
+  }).join("");
+  Array.prototype.forEach.call(box.querySelectorAll("[data-day]"),function(b){
+    b.addEventListener("click",function(){
+      day=+b.getAttribute("data-day");
+      paintTabs(); render();
+      b.scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"});
+    });
+  });
+}
+
+function load(){
+  week=[]; for(var i=0;i<7;i++) week.push(dateFor(i));
+  var from=iso(week[0]), to=iso(week[6]);
+  var cols="id,date,start_min,dur,co,co2,descr,kind,crane,from_loc,to_loc,qty,kg,status,type";
+  var jobs=[get("lifts?date=gte."+from+"&date=lte."+to+"&select="+cols+"&order=start_min")];
+  if(!cfg) jobs.push(get("config?id=eq.board&select=data"));
+  Promise.all(jobs).then(function(res){
+    if(res[1]&&res[1][0]) cfg=res[1][0].data;
+    all={};
+    (res[0]||[]).forEach(function(r){ (all[r.date]=all[r.date]||[]).push(r); });
+    paintTabs(); render();
+    var n=new Date();
+    document.getElementById("stamp").textContent="Checked "+p2(n.getHours())+":"+p2(n.getMinutes());
+  }).catch(function(){
+    document.getElementById("stamp").textContent="Can't reach the board — showing the last load";
+  });
+}
+
+load();
+setInterval(load, 60000);
+/* the countdown moves on its own between data refreshes */
+setInterval(nowNext, 30000);
+document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState==="visible") load();
+});
+})();
+</script>
+</body></html>
+"""
+out = HTML.replace("__SB_URL__", SB_URL).replace("__SB_KEY__", SB_KEY)
+open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html"), "w").write(out)
+print("wrote index.html", len(out), "bytes")

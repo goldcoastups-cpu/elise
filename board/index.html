@@ -96,7 +96,7 @@ async function refreshIfStale(){
    ============================================================ */
 var LIFT_TO_DB = {date:"date",start:"start_min",dur:"dur",co:"co",desc:"descr",
   kind:"kind",crane:"crane",from:"from_loc",to:"to_loc",qty:"qty",kg:"kg",
-  status:"status",pair:"pair",notes:"notes",by:"booked_by",type:"type",ts:"ts"};
+  status:"status",pair:"pair",notes:"notes",by:"booked_by",type:"type",ts:"ts",co2:"co2"};
 var LIFT_FROM_DB = {};
 for(var k in LIFT_TO_DB) LIFT_FROM_DB[LIFT_TO_DB[k]] = k;
 
@@ -906,7 +906,7 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 #cbapp .cols .sp{width:4px;flex:0 0 auto}
 #cbapp .cols .h{padding:0 8px;display:flex;gap:7px;flex:1 1 auto;min-width:0}
 #cbapp .bk{flex:1 1 auto;min-width:0;border-radius:4px;padding:2px 8px;text-align:left;display:flex;align-items:center;gap:7px;
-    background:var(--tc);color:var(--tci);border:1px solid var(--tc);box-shadow:var(--shadow)}
+    background:var(--tc);background-image:var(--splitbg,none);color:var(--tci);border:1px solid var(--tc);box-shadow:var(--shadow)}
 #cbapp .bk.done{opacity:.45}
 #cbapp .bk.done .c-ds{text-decoration:line-through}
 #cbapp .bk.isclash{outline:2px solid var(--crit);outline-offset:1px}
@@ -1775,7 +1775,14 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
   }
   function vars(L){
     var t=trade(L.co),c=hex(t[2]),k=kind(L.type,L.kind),kc=hex(k[2]);
-    return {c:c,k:k,s:"--tc:"+c+";--tci:"+onColour(c)+";--kc:"+kc+";--kci:"+onColour(kc)};
+    var s="--tc:"+c+";--tci:"+onColour(c)+";--kc:"+kc+";--kci:"+onColour(kc);
+    /* a run that alternates between two trades belongs to both, so the block
+       is split down the middle rather than showing one and hiding the other */
+    if(L.co2){
+      var c2=hex(trade(L.co2)[2]);
+      s+=";--tc2:"+c2+";--splitbg:linear-gradient(100deg,"+c+" 0 50%,"+c2+" 50% 100%)";
+    }else{ s+=";--splitbg:none"; }
+    return {c:c,k:k,s:s};
   }
 
   /* fold a section away when you only care about the other one */
@@ -2194,7 +2201,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       var v=vars(L);
       return '<button draggable="true" class="bk'+(extra||"")+(sel[L.id]?" picked":"")+(L.status==="req"?" req":"")+(L.status==="done"?" done":"")+(cl[L.id]?" isclash":"")+
         '" data-id="'+esc(L.id)+'" style="'+v.s+'">'+
-        '<span class="c-tr">'+esc(L.co)+'</span>'+
+        '<span class="c-tr">'+esc(L.co2?L.co+"/"+L.co2:L.co)+'</span>'+
         '<span class="c-lf">'+esc(L.from||"—")+'</span>'+
         '<span class="c-lt">'+esc(L.to||"—")+'</span>'+
         '<span class="c-ds">'+esc(L.desc)+'</span>'+
@@ -2212,10 +2219,18 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     function liftNo(L,t){
       var q=+L.qty||0;
       if(q<2)return "";
-      var per=Math.max(1,Math.round((+L.dur||0)/q));
-      var n=Math.floor((t-L.start)/per)+1;
-      if(n<1)n=1;if(n>q)n=q;
-      return n+" of "+q;
+      var per=perCo(L.co);
+      var B=(L.crane==="none")?[]:breaksFor(L.date||cur);
+      var s=+L.start||0,i,b,bs,be;
+      for(i=1;i<=q;i++){
+        for(b=0;b<B.length;b++){
+          bs=B[b][0];be=bs+B[b][1];
+          if(s<be&&bs<s+per)s=be;
+        }
+        if(t<s+per)return i+" of "+q;
+        s+=per;
+      }
+      return q+" of "+q;
     }
     function contRow(L,last,slots,t){
       var v=vars(L),no=liftNo(L,t||L.start);
@@ -2230,7 +2245,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
          three rows deep still says what it is and where it is going */
       return '<button draggable="true" class="bk cont'+(sel[L.id]?" picked":"")+(last?" last":"")+(L.status==="req"?" req":"")+(L.status==="done"?" done":"")+
         (cl[L.id]?" isclash":"")+'" data-id="'+esc(L.id)+'" style="'+v.s+'">'+
-        '<span class="c-tr">'+esc(L.co)+'</span>'+
+        '<span class="c-tr">'+esc(L.co2?L.co+"/"+L.co2:L.co)+'</span>'+
         '<span class="c-lf">'+esc(L.from||"—")+'</span>'+
         '<span class="c-lt">'+esc(L.to||"—")+'</span>'+
         '<span class="c-ds">'+esc(L.desc)+'</span>'+
