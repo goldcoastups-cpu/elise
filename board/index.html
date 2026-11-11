@@ -609,6 +609,7 @@ input,textarea,select,option{text-transform:none}
 .flag:hover{color:var(--gold)}
 .star{color:var(--gold);flex:none;font-size:12px;line-height:1.3}
 .addrow{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line);background:var(--surface-2);flex-wrap:wrap}
+.addrow.top{border-top:0;border-bottom:1px solid var(--line)}
 .addrow input{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line-hard);border-radius:3px;padding:6px 8px;font-size:13px}
 .addrow select{background:var(--surface);border:1px solid var(--line-hard);border-radius:3px;padding:6px 8px;font-size:13px}
 .addbtn{background:var(--inverse-bg);color:var(--inverse-fg);border:none;border-radius:3px;padding:7px 14px;cursor:pointer;font-family:var(--f-cond);letter-spacing:.09em;text-transform:uppercase;font-size:12px;white-space:nowrap}
@@ -1164,14 +1165,14 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       <span class="actions"><button class="addbtn" type="submit">Add</button></span>
     </form>
     <div class="subhead" data-acc="jobs"><span>Jobs today</span><span id="jobsMeta"></span><span class="right"><button class="mini" id="rollJobsBtn" title="Carry anything still open from the last day over to this one">Carry over</button><button class="mini" data-copy="jobs">Copy</button><button class="mini" data-pdf="jobs">PDF</button></span></div>
-    <div id="jobs"></div>
-    <form class="addrow" id="jobForm">
+    <form class="addrow top" id="jobForm">
       <select id="jfPri"><option value="">Normal</option><option value="1">Priority</option></select>
       <input id="jfText" placeholder="Type a job and hit enter" autocomplete="off">
       <input id="jfWho" class="who" list="crewNames" placeholder="Who" autocomplete="off" spellcheck="false">
       <button class="jcam" id="jfCam" type="button" hidden title="Add the job and shoot a photo for it"></button>
       <button class="addbtn" type="submit">Add</button>
     </form>
+    <div id="jobs"></div>
     <div class="subhead" data-acc="photos"><span>Photos</span><span id="photoMeta"></span><span class="right"><button class="mini" id="addPhoto" hidden>Camera</button><button class="mini" id="addPhotoLib" hidden>Upload</button><button class="mini" id="matchPhotos" title="Work out which job each photo belongs to">Match</button><button class="mini" data-copy="photos">Copy</button><button class="mini" data-pdf="photos">PDF</button></span></div>
     <div id="photos"></div>
     <p class="note">Names come up nightly from the ELISE HOURS group. Hours stay in the Labour Matrix tab of <em>Elise - day to day.xlsx</em>.</p>
