@@ -1062,6 +1062,39 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 #cbapp .bk.cont.last{border-radius:0 0 4px 4px}
 #cbapp .bk.contd{border-radius:4px 4px 0 0;border-bottom:0}
 #cbapp .slot.joined{margin-bottom:0}
+
+/* ---- landscape ----
+   A day of ten-minute slots is a long way down on a wide screen. Side by
+   side it is one look: morning on the left, afternoon on the right. A slot
+   that carries a run into the next one refuses to be last in a column, so a
+   multi-lift block never gets cut in half by the gutter, and the column
+   headings run across the top of both. Phones are untouched - this only
+   starts once there is real width to use. */
+@media (min-width:1100px){
+  #cbapp #cb-grid{columns:2;column-gap:28px}
+  #cbapp #cb-grid .cols{column-span:all}
+  #cbapp .slot{break-inside:avoid;page-break-inside:avoid}
+  #cbapp .slot.joined,#cbapp .slot.brkrow:not(.last){break-after:avoid;page-break-after:avoid}
+}
+/* Half the width means half the row. The description is the thing you are
+   reading - what is actually going up - so the columns that are nearly
+   always blank or repeated give way to it rather than squeezing it to an
+   initial. They come back at full width. */
+@media (min-width:1100px) and (max-width:1699px){
+  /* the leg is Ground to Live deck on nearly every row, so it is the first
+     thing to give way - the description is what you are actually reading */
+  #cbapp .c-kg,#cbapp .w-kg,#cbapp .c-lf,#cbapp .c-lt,#cbapp .w-lf,#cbapp .w-lt{display:none}
+  #cbapp .kd{flex:0 0 auto;max-width:92px;font-size:11px;padding:1px 7px}
+  #cbapp .c-ds{flex:1 1 150px}
+}
+@media (min-width:1700px){
+  #cbapp #cb-grid{columns:3;column-gap:24px}
+  /* three across is tighter again, so the row keeps only what identifies the
+     lift: who, what, and which one of the run it is */
+  #cbapp .c-kg,#cbapp .w-kg,#cbapp .c-lf,#cbapp .c-lt,#cbapp .w-lf,#cbapp .w-lt{display:none}
+  #cbapp .kd{flex:0 0 auto;max-width:88px;font-size:10.5px;padding:1px 6px}
+  #cbapp .c-ds{flex:1 1 120px}
+}
 #cbapp .slot.dropinto, #cbapp .gaprow.dropinto{outline:2px dashed var(--gold);outline-offset:1px;border-radius:4px}
 #cbapp .bk.picked{outline:3px solid var(--gold);outline-offset:2px}
 #cbapp .selbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:35;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;max-width:min(96vw,620px);background:var(--panel);border:1px solid var(--gold);border-radius:6px;padding:9px 12px;box-shadow:0 6px 24px rgba(0,0,0,.35)}

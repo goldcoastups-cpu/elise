@@ -45,6 +45,35 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px so
 .sec.pri h2{color:var(--pri)}
 .sec.daily h2{color:var(--accent)}
 
+/* ---- landscape ----
+   On a phone held sideways, a tablet, or the shed screen, the page has twice
+   the width and half the height. One tall column wastes all of it, so the
+   list flows into columns and the rows tighten up: the whole day on screen
+   without a scroll. A section header never ends up stranded at the foot of a
+   column away from its own jobs. */
+@media (min-width:820px){
+  .wrap{max-width:1180px}
+  #list{columns:2;column-gap:38px}
+  #list .sec{break-after:avoid;page-break-after:avoid;margin-top:20px}
+  #list > .sec:first-child{margin-top:14px}
+  .job{break-inside:avoid;page-break-inside:avoid}
+}
+@media (min-width:1340px){
+  .wrap{max-width:1560px}
+  #list{columns:3}
+}
+/* a short screen - a phone on its side - wants the rows closer together
+   more than it wants the breathing room */
+@media (max-height:560px) and (orientation:landscape){
+  .wrap{max-width:none}
+  #list{columns:2;column-gap:28px}
+  #list .sec{break-after:avoid;margin-top:14px;padding-bottom:5px}
+  .job{break-inside:avoid;padding:8px 0}
+  .jt{font-size:14px;line-height:1.3}
+  header{padding:8px 0 7px}
+  .tabs{margin-top:7px}
+}
+
 /* A job is a line on a docket. Big square box you can hit with a glove on,
    the words at a readable size, and the age of the thing where you can see
    it - a job sitting since the 3rd is a different problem from one raised
