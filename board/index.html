@@ -581,6 +581,7 @@ button,input,select{font:inherit;color:inherit}
 #v-safety{--acc:var(--acc-safety)}
 #v-prepour{--acc:var(--acc-pour)}
 #v-log{--acc:var(--acc-log)}
+#v-weather{--acc:var(--clock)}
 .phead .meta{font-size:12px;color:var(--ink-2);font-family:var(--f-num)}
 .phead .right{margin-left:auto;display:flex;gap:6px}
 .mini{background:none;border:1px solid var(--line-hard);border-radius:3px;padding:3px 8px;font-size:11px;font-family:var(--f-cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
@@ -657,6 +658,37 @@ input,textarea,select,option{text-transform:none}
 .addrow.top{border-top:0;border-bottom:1px solid var(--line)}
 .addrow input{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line-hard);border-radius:3px;padding:6px 8px;font-size:13px}
 .addrow select{background:var(--surface);border:1px solid var(--line-hard);border-radius:3px;padding:6px 8px;font-size:13px}
+/* The Windy map. It is an iframe on their embed, so it needs the viewer to
+   have signal - the rest of the tab is drawn from the forecast we already
+   hold and still reads with the map blank. */
+.wxmap{position:relative;width:100%;aspect-ratio:16/10;max-height:62vh;background:var(--surface-2);
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.wxmap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.wxmap .fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:20px;font-size:13px;color:var(--ink-3)}
+#wxOverlays{display:flex;gap:5px;flex-wrap:wrap}
+#wxOverlays .mini.on{background:var(--clock);color:var(--bg);border-color:var(--clock)}
+.wxhours{display:flex;gap:0;min-width:max-content;padding:6px 14px 10px}
+.wxh{flex:0 0 auto;width:62px;text-align:center;font-family:var(--f-num);
+  border-right:1px solid var(--line);padding:2px 4px}
+.wxh:last-child{border-right:0}
+.wxh.now{background:var(--surface-2);border-radius:4px}
+.wxh .hh{font-size:10.5px;color:var(--ink-3);letter-spacing:.03em}
+.wxh .ws{font-size:16px;font-weight:800;color:var(--clock);line-height:1.25}
+.wxh .wg2{font-size:10px;color:var(--ink-3)}
+.wxh .wd{font-size:11px;color:var(--ink-2);font-weight:700}
+.wxh .arr{display:block;font-size:13px;line-height:1;color:var(--ink-3)}
+.wxrow{display:flex;gap:10px;align-items:baseline;padding:6px 14px;border-top:1px solid var(--line);
+  font-size:13px;min-width:0}
+.wxrow:first-child{border-top:0}
+.wxrow .d1{flex:0 0 104px;font-family:var(--f-cond);font-size:12px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-2)}
+.wxrow .d2{flex:1 1 auto;min-width:0;color:var(--ink)}
+.wxrow .d3{flex:0 0 auto;font-family:var(--f-num);font-weight:700;color:var(--clock)}
+.wxrow.today .d1{color:var(--clock)}
+@media (max-width:560px){.wxrow .d1{flex:0 0 74px;font-size:11px}
+  .wxmap{aspect-ratio:4/5}}
+
 /* The wind band under the clock. Read like a weather app: one curve, a wash
    of colour under it, hours along the bottom, and the hour under your finger
    reads out in a bubble. No axes - a ruler is not what anyone wants here. */
@@ -1602,6 +1634,20 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       <button class="mini" id="preReopen" type="button" hidden>Reopen</button>
     </div>
     <p class="note">The weather is pulled for Palm Beach each morning and can be typed over. Deliveries and crane lifts come straight off the board, so the prestart and the day board can never disagree. Safety carries the standing items from <em>config/prestart</em> plus whatever is open on the register. Completing it saves the day's prestart and lands it in Complete works.</p>
+  </div>
+</section>
+
+<section id="v-weather" class="view" hidden>
+  <div class="panel">
+    <div class="phead" data-acc="crane"><h2>Weather</h2><span class="meta" id="wxMeta"></span>
+      <span class="right" id="wxOverlays"></span>
+    </div>
+    <div class="wxmap" id="wxMap"></div>
+    <div class="subhead" data-acc="crane"><span>Today, hour by hour</span><span id="wxHoursMeta"></span></div>
+    <div class="scroll-x"><div class="wxhours" id="wxHours"></div></div>
+    <div class="subhead" data-acc="crane"><span>The week</span></div>
+    <div id="wxWeek"></div>
+    <p class="note">The map is Windy, live. The hours and the week come from the same forecast the banner and the prestart use, pulled for the site every five minutes.</p>
   </div>
 </section>
 
@@ -3579,7 +3625,7 @@ var SUPPLIERS={ELISE:"#3A3835",WORKCON:"#0073EA",HARWELL:"#00C875"};
 var SKIND={CRIT:["Critical","#9E3F2B"],NCR:["NCR","#9C7220"]};
 var DCAUSE={WX:["Weather","#0073EA"],ACC:["Access","#9C7220"],SUB:["Subcontractor","#784BD1"],
   MAT:["Materials","#1E4FA3"],PLANT:["Plant","#5A6670"],DSN:["Design / RFI","#D92B20"],OTH:["Other","#8C8C8C"]};
-var VIEWS=[["today","Today"],["prestart","Prestart"],["labour","Labour & jobs"],["crane","Crane & deliveries"],["safety","Safety"],["log","Completed works"]];
+var VIEWS=[["today","Today"],["prestart","Prestart"],["labour","Labour & jobs"],["crane","Crane & deliveries"],["safety","Safety"],["weather","Weather"],["log","Completed works"]];
 var CUT=1260;      /* one cut a day, 9pm */
 var ROLLOVER=990;  /* 4:30pm - after knock-off you are planning tomorrow */
 /* the day the board opens on: today until 4:30pm, tomorrow after it */
@@ -3806,6 +3852,7 @@ function renderFeeds(){
 
 function renderFront(){
   try{ renderWind(); }catch(e){}
+  try{ renderWeather(); }catch(e){}
   var lab=state.labour.filter(function(r){return r.date===state.date;});
   var heads=lab.reduce(function(a,r){return a+(+r.qty||1);},0);
   var jobs=dayJobs(),openJobs=jobs.filter(function(j){return !j.done;});
@@ -4021,6 +4068,7 @@ function wxFetch(force){
     try{ renderPrestart(); }catch(e){}
     try{ renderNowStrip(); }catch(e){}
     try{ renderWind(); }catch(e){}
+    try{ renderWeather(); }catch(e){}
   });
 }
 setInterval(function(){ wxFetch(true); },300000);
@@ -4306,6 +4354,92 @@ function renderPrestart(){
   }
   if(btn){ btn.hidden=signed; btn.textContent="Complete prestart"; btn.onclick=completePre; }
   if(ro){ ro.hidden=!signed; ro.onclick=reopenPre; }
+}
+/* ---------- the weather tab ----------
+   A live Windy map over the site, and the forecast we already hold drawn
+   underneath it so the tab still tells you something with the map blank. */
+var WXMAP={overlay:"radar", built:""};
+var WX_OVERLAYS=[["radar","Radar"],["rain","Rain"],["wind","Wind"],["gust","Gusts"],
+                 ["temp","Temp"],["clouds","Cloud"]];
+function windyUrl(ov){
+  return "https://embed.windy.com/embed2.html?lat="+WX.lat+"&lon="+WX.lon+
+    "&detailLat="+WX.lat+"&detailLon="+WX.lon+"&zoom=8&level=surface&overlay="+
+    encodeURIComponent(ov)+"&product=ecmwf&menu=&message=&marker=true&calendar=now"+
+    "&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C"+
+    "&radarRange=-1";
+}
+function arrowFor(deg){
+  /* the arrow points the way the wind is going, not where it came from */
+  var A=["\u2193","\u2199","\u2190","\u2196","\u2191","\u2197","\u2192","\u2198"];
+  if(deg==null||!isFinite(deg))return "";
+  return A[Math.round((((+deg)%360)+360)%360/45)%8];
+}
+function renderWeather(){
+  var map=el("wxMap"); if(!map) return;
+  if(WX.state==="idle")wxFetch();
+
+  /* the buttons that switch what the map is showing */
+  var ob=el("wxOverlays");
+  if(ob && ob.getAttribute("data-built")!=="1"){
+    ob.innerHTML=WX_OVERLAYS.map(function(o){
+      return '<button class="mini" data-ov="'+o[0]+'">'+esc(o[1])+'</button>';
+    }).join("");
+    ob.setAttribute("data-built","1");
+    Array.prototype.forEach.call(ob.querySelectorAll("[data-ov]"),function(b){
+      b.addEventListener("click",function(){
+        WXMAP.overlay=b.getAttribute("data-ov"); renderWeather();
+      });
+    });
+  }
+  if(ob) Array.prototype.forEach.call(ob.querySelectorAll("[data-ov]"),function(b){
+    b.classList.toggle("on", b.getAttribute("data-ov")===WXMAP.overlay);
+  });
+
+  /* only rebuild the iframe when the overlay actually changes - reloading it
+     on every render would restart the map under the person using it */
+  if(WXMAP.built!==WXMAP.overlay){
+    WXMAP.built=WXMAP.overlay;
+    map.innerHTML='<div class="fallback">Loading the Windy map\u2026 if it stays blank, this device has no signal or the site is blocked here.</div>'+
+      '<iframe src="'+esc(windyUrl(WXMAP.overlay))+'" title="Windy map over Palm Beach" '+
+      'loading="lazy" referrerpolicy="no-referrer-when-downgrade" '+
+      'allow="geolocation=()" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>';
+  }
+
+  var m=el("wxMeta");
+  if(m) m.textContent = WX.now
+    ? Math.round(WX.now.temp)+"\u00b0 \u00b7 "+(WXCODE[WX.now.code]||"")+" \u00b7 "+
+      (wxCompass(WX.now.dir)?wxCompass(WX.now.dir)+" ":"")+Math.round(WX.now.wind)+" km/h"
+    : (WX.state==="fail"?"forecast unreachable":"");
+
+  /* hour by hour across the site day */
+  var H=wxDayHours(state.date), hb=el("wxHours"), now=new Date();
+  if(hb){
+    hb.innerHTML = H.length
+      ? H.map(function(p){
+          var isNow = state.date===iso(now) && p.h===now.getHours();
+          return '<div class="wxh'+(isNow?' now':'')+'">'+
+            '<div class="hh">'+esc(fmtClock(p.h*60))+'</div>'+
+            '<div class="ws">'+Math.round(+p.w||0)+'</div>'+
+            '<div class="wg2">'+(p.g!=null?Math.round(p.g):"\u2014")+'</div>'+
+            '<div class="wd"><span class="arr">'+arrowFor(p.d)+'</span>'+esc(wxCompass(p.d))+'</div></div>';
+        }).join("")
+      : '<p class="empty">No hourly forecast.</p>';
+    var hm=el("wxHoursMeta");
+    if(hm) hm.textContent=H.length?"km/h \u00b7 gust under \u00b7 site hours":"";
+  }
+
+  /* and the week, same shape as the prestart line */
+  var wk=el("wxWeek");
+  if(wk){
+    var days=Object.keys(WX.by).sort();
+    wk.innerHTML = days.length
+      ? days.map(function(d){
+          return '<div class="wxrow'+(d===state.date?' today':'')+'">'+
+            '<span class="d1">'+esc(longDate(d))+'</span>'+
+            '<span class="d2">'+esc(WX.by[d])+'</span></div>';
+        }).join("")
+      : '<p class="empty">'+(WX.state==="loading"?"Reading the forecast\u2026":"No forecast held.")+'</p>';
+  }
 }
 function renderLog(){
   var box=el("logList");if(!box)return;
