@@ -434,10 +434,12 @@ window.eliseAuth = {
 /* The strip that answers "what is on the hook" without anyone opening a tab. */
 .nowstrip{display:flex;align-items:center;gap:12px;background:var(--surface);
   border-bottom:1px solid var(--line);padding-block:9px;min-width:0;overflow:hidden}
+/* the clock reads in the same blue as the wind beside it, so the strip is
+   one piece of information rather than two competing ones */
 .nowstrip .nsclock{font-family:var(--f-num);font-weight:800;font-size:25px;letter-spacing:-.03em;
-  font-variant-numeric:tabular-nums;flex:none;color:var(--alarm)}
+  font-variant-numeric:tabular-nums;flex:none;color:var(--clock)}
 .nowstrip .nsclock s{text-decoration:none;font-size:.62em;opacity:.7;margin-left:1px}
-.nowstrip .nscd{font-family:var(--f-num);font-weight:800;font-size:12px;color:var(--alarm);
+.nowstrip .nscd{font-family:var(--f-num);font-weight:800;font-size:12px;color:var(--clock);
   font-variant-numeric:tabular-nums;letter-spacing:.02em;display:block;margin-top:-2px;opacity:.82}
 .nowstrip .nsdot{width:15px;height:15px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.14) inset}
 /* the weather block mirrors the clock: one big line, one small line under */
@@ -491,13 +493,17 @@ window.eliseAuth = {
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.45;margin:0}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--inverse-bg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
 .gut{padding-left:var(--gut-l);padding-right:var(--gut-r)}
 button,input,select{font:inherit;color:inherit}
 [hidden]{display:none!important}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
-.mast{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--inverse-bg);color:var(--inverse-fg)}
+/* The masthead used to invert - a cream bar over a black page, and the
+   other way round in daylight - which made the board read as two apps
+   stacked. It is the same surface as everything under it now. */
+.mast{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;
+  background:var(--surface);color:var(--ink);border-bottom:1px solid var(--line)}
 .mast-in{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-block:9px}
 .wordmark{font-weight:400;letter-spacing:.42em;font-size:15px;text-transform:uppercase}
 .mast-sub{font-family:var(--f-cond);font-size:12px;letter-spacing:.09em;text-transform:uppercase;opacity:.72}
@@ -508,7 +514,7 @@ button,input,select{font:inherit;color:inherit}
   font-family:var(--f-cond);font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
   padding:7px 13px 6px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px}
 .tab:hover{opacity:.9}
-.tab[aria-current="true"]{opacity:1;border-bottom-color:currentColor}
+.tab[aria-current="true"]{opacity:1;border-bottom-color:var(--clock);color:var(--ink)}
 .tab b{font-family:var(--f-num);font-size:10px;font-weight:500;background:#8884;border-radius:8px;padding:1px 5px;letter-spacing:0}
 .tab b.alert{background:var(--crit);color:#fff}
 
@@ -532,11 +538,11 @@ button,input,select{font:inherit;color:inherit}
   border-bottom:2px solid var(--cacc,var(--line));cursor:pointer;text-align:left}
 /* each card wears the colour of the tab it opens, so the eye learns the
    board once and the colour means the same thing wherever it turns up */
-.card.k-labour{--cacc:var(--acc-labour)}
-.card.k-crane{--cacc:var(--acc-crane)}
-.card.k-del{--cacc:var(--acc-crane)}
-.card.k-safety{--cacc:var(--acc-safety)}
-.cardhead .t{color:var(--cacc,var(--ink))}
+.card{--cacc:var(--line)}
+.card.k-safety{--cacc:var(--crit)}
+.cardhead{border-bottom-width:1px}
+.cardhead .t{color:var(--ink)}
+.card.k-safety .cardhead .t{color:var(--crit)}
 .cardhead:hover{background:var(--surface-2)}
 .cardhead .t{font-family:var(--f-cond);font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .cardhead .c{font-family:var(--f-num);font-size:12px;color:var(--ink-2)}
@@ -568,20 +574,26 @@ button,input,select{font:inherit;color:inherit}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:4px;min-width:0;margin-block:16px}
 .phead{display:flex;align-items:baseline;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .phead h2{margin:0;font-family:var(--f-cond);font-size:15px;font-weight:700;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--acc)}
-.phead{border-bottom-color:color-mix(in srgb,var(--acc) 34%,var(--line))}
-.phead h2::before{content:"";display:inline-block;width:4px;height:13px;border-radius:2px;
-  background:var(--acc);margin-right:8px;vertical-align:-1px}
-#v-today{--acc:var(--acc-today)}
-/* the prestart reads in the clock's blue, same as the time on the strip */
-#v-prestart{--acc:var(--clock)}
-#v-labour{--acc:var(--acc-labour)}
-#v-crane{--acc:var(--acc-crane)}
-#cbapp .sechead{color:var(--acc-crane);border-bottom:2px solid var(--acc-crane)}
-#v-safety{--acc:var(--acc-safety)}
-#v-prepour{--acc:var(--acc-pour)}
-#v-log{--acc:var(--acc-log)}
-#v-weather{--acc:var(--clock)}
+  text-transform:uppercase;color:var(--acc-ink)}
+.phead{border-bottom-color:var(--line)}
+.phead h2::before{content:"";display:inline-block;width:3px;height:13px;border-radius:2px;
+  background:var(--acc-ink);margin-right:8px;vertical-align:-1px;opacity:.9}
+/* ---- three colours, not eleven ----
+   Structure is neutral, blue means live information, red means something
+   needs attention. The trade colours are the only other colour on the board
+   and they carry real meaning, so nothing competes with them. --acc draws
+   the rule, --acc-ink writes the heading; a neutral section gets a hairline
+   and ordinary heading ink rather than a coloured bar saying nothing. */
+:root{--acc:var(--line);--acc-ink:var(--ink-2)}
+#v-today,#v-prestart,#v-weather{--acc:var(--clock);--acc-ink:var(--clock)}
+#v-safety{--acc:var(--crit);--acc-ink:var(--crit)}
+#v-labour{--acc:var(--line);--acc-ink:var(--ink-2)}
+#v-crane{--acc:var(--line);--acc-ink:var(--ink-2)}
+#cbapp .sechead{color:var(--ink-2);border-bottom:1px solid var(--line)}
+
+
+#v-log{--acc:var(--line);--acc-ink:var(--ink-2)}
+
 .phead .meta{font-size:12px;color:var(--ink-2);font-family:var(--f-num)}
 .phead .right{margin-left:auto;display:flex;gap:6px}
 .mini{background:none;border:1px solid var(--line-hard);border-radius:3px;padding:3px 8px;font-size:11px;font-family:var(--f-cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
@@ -609,8 +621,8 @@ input,textarea,select,option{text-transform:none}
 .logrow .tick{color:#3F6B46;font-weight:700;flex:none;line-height:1}
 .logrow .ltext{flex:1;min-width:0;color:var(--ink-2)}
 .logrow .lwho{flex:none;font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--gold,#8C764E)}
-.subhead{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap;padding:10px 14px 6px;border-top:2px solid var(--acc);font-family:var(--f-cond);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2)}
-.subhead span:first-child{color:var(--acc);font-weight:700}
+.subhead{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap;padding:12px 14px 6px;border-top:1px solid var(--line);font-family:var(--f-cond);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+.subhead span:first-child{color:var(--acc-ink);font-weight:700}
 .sub2{border-top-color:var(--line)}
 
 .ltable{width:100%;border-collapse:collapse;font-size:13px}
@@ -4321,11 +4333,17 @@ function renderPrestart(){
   /* ---- weather ---- */
   var wx=wxLine(state.date);
   if(WX.state==="idle")wxFetch();
-  preRows(wx?'<div class="srow"><span class="tx">'+esc(wx)+'<small>Palm Beach, pulled this morning</small></span></div>':"",
+  /* the pulled line already sits in the box below, so printing it twice just
+     made the section look like it was stuttering - the line only appears
+     once someone has typed over it, to show what the forecast actually said */
+  var typed=(d.weather||"").trim();
+  var differs=wx&&typed&&typed!==wx;
+  preRows(differs?'<div class="srow"><span class="tx" style="color:var(--ink-3)">Forecast said: '+esc(wx)+'</span></div>':"",
           "preWx", WX.state==="loading"?"Reading the forecast\u2026"
                  : WX.state==="fail"?"Couldn't reach the forecast \u2014 type it in."
-                 : "No forecast for this day.");
-  var wm=el("preWxMeta"); if(wm) wm.textContent = wx?"Live":"";
+                 : (wx?"":"No forecast for this day."));
+  var wm=el("preWxMeta");
+  if(wm) wm.textContent = wx?(differs?"Typed over the forecast":"Pulled for Palm Beach"):"";
 
   /* ---- safety: the standing items, then whatever is open on the register ---- */
   var stand=preStanding(), reg=preSafetyAll();
