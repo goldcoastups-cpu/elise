@@ -4790,13 +4790,18 @@ function renderJobs(){
     inp.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();inp.blur();}});
   });
   renderCrewNames();
-  Array.prototype.forEach.call(el("jobs").querySelectorAll("[data-pri]"),function(b){
-    b.addEventListener("click",function(){
-      var i=+b.getAttribute("data-pri");
-      saveJobs(dayJobs().map(function(x,n){
-        if(n!==i)return x;
-        var o={};for(var k in x)o[k]=x[k];o.pri=!x.pri;return o;
-      }));
+  /* the stars live in two lists now - the running one and the completed one -
+     so binding only #jobs left the finished rows with a dead star */
+  ["jobs","jobsDone"].forEach(function(holder){
+    var box=el(holder); if(!box) return;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-pri]"),function(b){
+      b.addEventListener("click",function(){
+        var i=+b.getAttribute("data-pri");
+        saveJobs(dayJobs().map(function(x,n){
+          if(n!==i)return x;
+          var o={};for(var k in x)o[k]=x[k];o.pri=!x.pri;return o;
+        }));
+      });
     });
   });
 }
