@@ -2,6 +2,13 @@
 <html lang="en-AU"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Labour">
+<meta name="theme-color" content="#111110">
 <meta name="robots" content="noindex,nofollow">
 <title>ELISE Jobs</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23141312'/><rect x='17' y='15' width='30' height='9' rx='2.5' fill='%23F2EDE4'/><rect x='17' y='27.5' width='23' height='9' rx='2.5' fill='%232FD44A'/><rect x='17' y='40' width='30' height='9' rx='2.5' fill='%23F2EDE4'/></svg>">
@@ -14,7 +21,11 @@ html,body{margin:0;background:var(--bg);color:var(--ink);
 body{padding:0 0 40px;text-transform:uppercase;letter-spacing:.015em}
 /* Buttons do not inherit text-transform from the UA sheet, and every job row is a button, so the list would stay sentence case without this. */
 button,select{text-transform:inherit;letter-spacing:inherit}
-.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+.wrap{max-width:720px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)}
 header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--rule);
   padding:12px 0 10px}
 .brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
