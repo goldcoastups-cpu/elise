@@ -630,6 +630,10 @@ input,textarea,select,option{text-transform:none}
 .addrow.top{border-top:0;border-bottom:1px solid var(--line)}
 .addrow input{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line-hard);border-radius:3px;padding:6px 8px;font-size:13px}
 .addrow select{background:var(--surface);border:1px solid var(--line-hard);border-radius:3px;padding:6px 8px;font-size:13px}
+.addrow textarea{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line-hard);
+  border-radius:3px;padding:6px 8px;font:inherit;font-size:13px;line-height:1.45;color:inherit;resize:vertical}
+.addrow textarea:focus,.addrow input:focus{outline:none;border-color:var(--acc)}
+.addrow textarea:disabled,.addrow input:disabled{opacity:.65}
 .addbtn{background:var(--inverse-bg);color:var(--inverse-fg);border:none;border-radius:3px;padding:7px 14px;cursor:pointer;font-family:var(--f-cond);letter-spacing:.09em;text-transform:uppercase;font-size:12px;white-space:nowrap}
 
 .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;padding:12px 14px;background:var(--surface-2);border-top:1px solid var(--line)}
@@ -1492,18 +1496,39 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       <h2>Site prestart</h2><span class="meta" id="preMeta"></span>
       <span class="right"><button class="mini" data-copy="prestart">Copy</button><button class="mini" data-pdf="all">PDF</button></span>
     </div>
-    <div id="preChecks"></div>
-    <div class="subhead" data-acc="prestart"><span>On the board today</span><span id="preCtxMeta"></span></div>
-    <div id="preCtx"></div>
-    <div class="addrow top">
-      <input id="preNote" placeholder="Anything else raised at the prestart" autocomplete="off">
-    </div>
+
+    <div class="subhead" data-acc="prestart"><span>Date</span></div>
+    <div id="preDate"></div>
+
+    <div class="subhead" data-acc="prestart"><span>Weather</span></div>
+    <div class="addrow top"><input id="preWeather" placeholder="Fine, 26, light NE &mdash; or wet, windy, hot" autocomplete="off"></div>
+
+    <div class="subhead" data-acc="prestart"><span>Site works</span></div>
+    <div class="addrow top"><textarea id="preWorks" rows="3" placeholder="What is happening today, by level and area"></textarea></div>
+
+    <div class="subhead" data-acc="prestart"><span>Safety</span><span id="preSafeMeta"></span></div>
+    <div id="preSafeList"></div>
+    <div class="addrow top"><textarea id="preSafety" rows="2" placeholder="Anything raised this morning"></textarea></div>
+
+    <div class="subhead" data-acc="prestart"><span>Deliveries for the day</span><span id="preDelMeta"></span></div>
+    <div id="preDels"></div>
+
+    <div class="subhead" data-acc="prestart"><span>Crane lifts for the day</span><span id="preLiftMeta"></span></div>
+    <div id="preLifts"></div>
+
+    <div class="subhead" data-acc="prestart"><span>High risk works</span></div>
+    <div class="addrow top"><textarea id="preRisk" rows="2" placeholder="Crane over the street, open penetrations, hot works, confined space &mdash; or none"></textarea></div>
+
+    <div class="subhead" data-acc="prestart"><span>Short range programme</span><span id="preSrpMeta"></span></div>
+    <div id="preSrp"></div>
+    <div class="addrow top"><textarea id="preSrpNote" rows="2" placeholder="Next few days &mdash; what has to land and when"></textarea></div>
+
     <div class="addrow">
       <input id="preBy" class="who" list="crewNames" placeholder="Who ran it" autocomplete="off" spellcheck="false">
       <button class="addbtn" id="preDone" type="button">Complete prestart</button>
       <button class="mini" id="preReopen" type="button" hidden>Reopen</button>
     </div>
-    <p class="note">The checks come from <em>config/prestart</em>, so the list is yours to change without touching the board. A completed prestart is saved against the day and lands in Complete works.</p>
+    <p class="note">Deliveries, crane lifts and the look-ahead come straight off the board, so the prestart and the day board can never disagree. Safety carries the standing items from <em>config/prestart</em> plus whatever is open on the register. Completing it saves the day's prestart and lands it in Complete works.</p>
   </div>
 </section>
 
@@ -3215,7 +3240,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     unsubI=db.collection("lifts").where("date",">=",win[0]).where("date","<=",win[1]).onSnapshot(function(snap){
       items=snap.docs.map(function(d){var v=d.data()||{};return{
         id:d.id,date:v.date,type:v.type==="hand"?"del":(v.type||"lift"),kind:v.type==="hand"?"HAND":(v.kind||""),crane:v.crane||"tower",start:+v.start||0,dur:+v.dur||60,
-        qty:+v.qty||0,kg:+v.kg||0,co:v.co==="LST"?"RZE":(v.co||"OTH"),from:v.from||"",to:v.to||"",pair:v.pair||"",desc:v.desc||"",status:v.status||"con",notes:v.notes||"",by:v.by||""
+        qty:+v.qty||0,kg:+v.kg||0,co:v.co==="LST"?"RZE":(v.co||"OTH"),co2:v.co2||"",from:v.from||"",to:v.to||"",pair:v.pair||"",desc:v.desc||"",status:v.status||"con",notes:v.notes||"",by:v.by||""
       }});
       render();
     },function(e){if(e&&e.code==="revoked")db=null;toast("Live updates stopped — reload the board")});
@@ -3554,9 +3579,10 @@ function tabCount(v){
   if(v==="crane"){var n=dayRows().length;return n?{n:n}:null;}
   if(v==="safety"){var s=openSafety();return s.length?{n:s.length,alert:s.some(function(i){return i.kind==="INC";})}:null;}
   if(v==="prestart"){
-    var pd=preDoc(); if(pd.at) return null;
-    var left=preAll().filter(function(i){return !(pd.ticks||{})[i.n];}).length;
-    return left?{n:left}:null;
+    var pd=preDoc();
+    /* signed off is the only "done" there is now, so an unsigned prestart
+       shows a single flag rather than a count of boxes */
+    return pd.at?null:{n:1};
   }
   if(v==="labour"){
     var o=dayJobs().filter(function(x){return !x.done;});
@@ -3584,6 +3610,9 @@ function normLift(id,v){
     kind:v.type==="hand"?"HAND":(v.kind||""),
     crane:v.crane||"tower",start:+v.start||0,dur:+v.dur||60,
     qty:+v.qty||0,kg:+v.kg||0,co:v.co==="LST"?"RZE":(v.co||"OTH"),
+    /* the second trade of a one-up-one-down swap - dropping it here is what
+       made the split colour vanish the moment the board reloaded */
+    co2:v.co2||"",
     from:v.from||"",to:v.to||"",pair:v.pair||"",desc:v.desc||"",
     status:v.status||"con",notes:v.notes||"",by:v.by||""};
 }
@@ -3860,33 +3889,56 @@ function preSafety(){
   });
 }
 function preAll(){ return preSafety().concat(preStanding()); }
+/* The prestart is where the crew gets told what has been raised AND what has
+   been dealt with, so the closed ones stay on it rather than disappearing the
+   moment they are signed off. Today's items plus anything still open from
+   earlier days, so nothing silently drops off. */
+function preSafetyAll(){
+  var out=daySafety().map(function(i){
+    var o={};for(var k in i)o[k]=i[k];o.from=state.date;return o;
+  });
+  Object.keys(state.safeDocs).sort().forEach(function(d){
+    if(d>=state.date)return;
+    (state.safeDocs[d].items||[]).forEach(function(i){
+      /* an older item only rides along while it is still open - a job closed
+         out last Tuesday belongs to last Tuesday's prestart, not today's */
+      if(i.done)return;
+      var o={};for(var k in i)o[k]=i[k];o.from=d;out.push(o);
+    });
+  });
+  return out.sort(function(a,b){
+    if(!!a.done!==!!b.done)return a.done?1:-1;    /* open first */
+    return String(a.from||"").localeCompare(String(b.from||""));
+  });
+}
 
 function savePre(patch){
   var d=preDoc(), body={
     date:state.date,
+    weather:d.weather||"", works:d.works||"", safety:d.safety||"",
+    risk:d.risk||"", srp:d.srp||"",
     ticks:d.ticks||{}, note:d.note||"", by:d.by||"", at:d.at||0, ts:Date.now()
   };
   for(var k in patch) body[k]=patch[k];
   state.preDocs[state.date]=body; write("prestart",state.date,body);
   renderPrestart(); renderTabs(); renderFront();
 }
-function togglePre(key,on){
-  var t={}, cur=preDoc().ticks||{}, k;
-  for(k in cur) t[k]=cur[k];
-  if(on) t[key]=Date.now(); else delete t[key];
-  savePre({ticks:t});
-}
+/* The fields the person actually writes. Site works and high risk works are
+   the record, so neither goes unanswered - "none" is a fine answer to the
+   second, a blank is not. */
+var PREFIELDS=[["preWeather","weather"],["preWorks","works"],["preSafety","safety"],
+               ["preRisk","risk"],["preSrpNote","srp"]];
 function completePre(){
-  var items=preAll(), ticks=preDoc().ticks||{};
-  var missing=items.filter(function(i){return !ticks[i.n];});
-  if(missing.length){
-    toast(missing.length+" still to tick off");
-    return;
-  }
+  var d=preDoc();
+  var works=(el("preWorks").value||"").trim(), risk=(el("preRisk").value||"").trim();
+  if(!works){ toast("Say what the site works are first"); el("preWorks").focus(); return; }
+  if(!risk){ toast("High risk works - put 'none' if there are none"); el("preRisk").focus(); return; }
   var who=(el("preBy").value||whoAmI()||"").trim().toUpperCase();
   if(!who){ toast("Put your name on it first"); el("preBy").focus(); return; }
   setWhoAmI(who);
-  savePre({by:who, at:Date.now(), note:(el("preNote").value||"").trim()});
+  var patch={by:who, at:Date.now()};
+  PREFIELDS.forEach(function(f){ patch[f[1]]=(el(f[0]).value||"").trim(); });
+  savePre(patch);
   logPrestart(who);
   toast("Prestart signed off");
 }
@@ -3902,67 +3954,107 @@ function logPrestart(who){
   state.logDocs[m]=body; write("donelog",m,body,true); renderLog();
 }
 
+function preRows(html,box,empty){
+  var b=el(box); if(!b) return;
+  b.innerHTML = html || '<p class="empty">'+empty+'</p>';
+}
 function renderPrestart(){
-  var box=el("preChecks"); if(!box) return;
-  var d=preDoc(), ticks=d.ticks||{}, items=preAll();
-  var done=items.filter(function(i){return ticks[i.n];}).length;
-  var signed=!!d.at;
+  var d=preDoc(), signed=!!d.at;
 
   var meta=el("preMeta");
   if(meta) meta.textContent = signed
-    ? "Signed off by "+(d.by||"—")+" at "+fmtClock(new Date(d.at).getHours()*60+new Date(d.at).getMinutes())
-    : (items.length ? done+" of "+items.length+" checked" : "No checks set up yet");
+    ? "Signed off by "+(d.by||"\u2014")+" at "+fmtClock(new Date(d.at).getHours()*60+new Date(d.at).getMinutes())
+    : "Not signed off yet";
 
-  if(!items.length){
-    box.innerHTML='<p class="empty">No prestart checks set. They live in config/prestart.</p>';
-  } else {
-    box.innerHTML = items.map(function(i){
-      var on=!!ticks[i.n], safety=i.n.indexOf("safety:")===0;
-      return '<div class="item wrap'+(on?' done':'')+'">'+
-        '<input type="checkbox" data-pre="'+esc(i.n)+'"'+(on?' checked':'')+
-          (signed?' disabled':'')+' aria-label="Check">'+
-        (safety?skChip(i.kind):'')+
-        '<span class="txt">'+esc(i.text)+'</span></div>';
-    }).join("");
+  /* ---- date ---- */
+  preRows('<div class="srow"><span class="tx"><b>'+esc(longDate(state.date))+'</b></span></div>',
+          "preDate","");
+
+  /* ---- safety: the standing items, then whatever is open on the register ---- */
+  var stand=preStanding(), reg=preSafetyAll();
+  var fixed=reg.filter(function(i){return i.done;}).length;
+  var open=reg.length-fixed;
+  preRows(
+    stand.map(function(i){
+      return '<div class="srow"><span class="tx">'+esc(i.text)+'</span></div>';
+    }).concat(reg.map(function(i){
+      var when=(i.from&&i.from!==state.date)?(" \u00b7 raised "+shortDate(i.from)):"";
+      var by=i.done?("Fixed"+(i.doneBy?" by "+i.doneBy:"")+when):("Open"+when);
+      return '<div class="srow'+(i.done?' done':'')+'">'+
+        (i.done?'<span class="tick">&#10003;</span>':'')+skChip(i.kind)+
+        '<span class="tx">'+esc(i.text)+'<small>'+esc(by)+'</small></span></div>';
+    })).join(""),
+    "preSafeList","Nothing standing and nothing on the register.");
+  var sm=el("preSafeMeta");
+  if(sm) sm.textContent = reg.length
+    ? open+" open, "+fixed+" fixed" : "";
+
+  /* ---- what the board already has booked for today ---- */
+  var rows=dayRows();
+  var dels=rows.filter(function(b){return b.type==="del";});
+  var lifts=rows.filter(function(b){return b.type==="lift";});
+  function preKind(b){
+    var L=(state.cfg&&(b.type==="del"?state.cfg.delKinds:state.cfg.liftKinds))||[];
+    for(var i=0;i<L.length;i++) if(L[i][0]===b.kind) return L[i][1]||L[i][0];
+    return b.kind||"";
+  }
+  function bookLine(b){
+    var who=b.co2?(b.co+" / "+b.co2):b.co;
+    var qty=(+b.qty||0)>1?(" \u00b7 "+(+b.qty)+" lifts"):"";
+    var leg=(b.from||b.to)?(" \u00b7 "+(b.from||"?")+" \u2192 "+(b.to||"?")):"";
+    var tbc=b.status==="req"?" \u00b7 TBC":"";
+    return '<div class="srow"><span class="tm">'+esc(fmtClock(toMin(b.start)))+'</span>'+
+      '<span class="tx"><b>'+esc(who)+'</b> &mdash; '+esc(b.desc||"")+
+      '<small>'+esc(preKind(b)+qty+leg+tbc+(b.notes?(" \u00b7 "+b.notes):""))+'</small></span></div>';
+  }
+  preRows(dels.map(bookLine).join(""),"preDels","No deliveries booked for today.");
+  preRows(lifts.map(bookLine).join(""),"preLifts","No crane lifts booked for today.");
+  var dm=el("preDelMeta");
+  if(dm) dm.textContent=dels.length?dels.length+(dels.length===1?" truck":" trucks"):"";
+  var lm=el("preLiftMeta");
+  if(lm){
+    var picks=lifts.reduce(function(a,b){return a+Math.max(1,+b.qty||1);},0);
+    lm.textContent=lifts.length?lifts.length+(lifts.length===1?" booking":" bookings")+", "+picks+(picks===1?" pick":" picks"):"";
   }
 
-  /* what the board already knows about today - read only, so the person
-     running the prestart is looking at the same day everyone else is */
-  var cbox=el("preCtx");
-  if(cbox){
-    var lab=state.labour.filter(function(r){return r.date===state.date;});
-    var heads=lab.reduce(function(a,r){return a+(+r.qty||1);},0);
-    var rows=dayRows();
-    var lifts=rows.filter(function(b){return b.type==="lift";}).length;
-    var dels=rows.filter(function(b){return b.type==="del";}).length;
-    var pri=dayJobs().filter(function(j){return !j.done&&j.pri;});
-    var brk=breaksFor(rows);
-    var bits=[
-      ["On site", heads?heads+(heads===1?" head":" heads"):"nobody logged yet"],
-      ["Crane", lifts+(lifts===1?" lift":" lifts")+", "+brk.length+(brk.length===1?" break":" breaks")],
-      ["Deliveries", dels+(dels===1?" truck":" trucks")],
-      ["Priority jobs", pri.length?pri.map(function(j){return j.text;}).join(" · "):"none"]
-    ];
-    cbox.innerHTML=bits.map(function(b){
-      return '<div class="srow"><span class="tx"><b>'+esc(b[0])+'</b> &mdash; '+esc(b[1])+'</span></div>';
-    }).join("");
-    var cm=el("preCtxMeta"); if(cm) cm.textContent=longDate(state.date);
+  /* ---- short range programme: the next working days off the same board ---- */
+  var ahead=[], i, dd=parseISO(state.date);
+  for(i=1;i<=8 && ahead.length<5;i++){
+    dd.setDate(dd.getDate()+1);
+    if(dd.getDay()===0) continue;           /* never a Sunday on this site */
+    ahead.push(iso(dd));
   }
+  var srpHtml=ahead.map(function(k){
+    var r=(state.lifts||[]).filter(function(b){return b.date===k;});
+    if(!r.length) return '<div class="srow"><span class="tm">'+esc(shortDate(k))+'</span>'+
+      '<span class="tx" style="color:var(--ink-3)">Nothing booked</span></div>';
+    var byCo={},ord=[];
+    r.forEach(function(b){
+      var c=b.co2?(b.co+"/"+b.co2):b.co;
+      if(!byCo[c]){byCo[c]=0;ord.push(c);}
+      byCo[c]+=Math.max(1,+b.qty||1);
+    });
+    return '<div class="srow"><span class="tm">'+esc(shortDate(k))+'</span>'+
+      '<span class="tx">'+esc(ord.map(function(c){return c+" ("+byCo[c]+")";}).join(" \u00b7 "))+
+      '<small>'+esc(r.length+(r.length===1?" booking":" bookings"))+'</small></span></div>';
+  }).join("");
+  preRows(srpHtml,"preSrp","Nothing booked in the days ahead.");
+  var srm=el("preSrpMeta"); if(srm) srm.textContent="Next "+ahead.length+" working days";
 
-  var noteEl=el("preNote"), byEl=el("preBy"), btn=el("preDone"), ro=el("preReopen");
-  if(noteEl && document.activeElement!==noteEl) noteEl.value=d.note||"";
-  if(byEl && document.activeElement!==byEl) byEl.value=d.by||whoAmI()||"";
-  if(noteEl) noteEl.disabled=signed;
-  if(byEl) byEl.disabled=signed;
+  /* ---- the written fields ---- */
+  PREFIELDS.forEach(function(f){
+    var e=el(f[0]); if(!e) return;
+    if(document.activeElement!==e) e.value=d[f[1]]||"";
+    e.disabled=signed;
+    e.onchange=function(){ var patch={}; patch[f[1]]=(e.value||"").trim(); savePre(patch); };
+  });
+  var byEl=el("preBy"), btn=el("preDone"), ro=el("preReopen");
+  if(byEl){
+    if(document.activeElement!==byEl) byEl.value=d.by||whoAmI()||"";
+    byEl.disabled=signed;
+  }
   if(btn){ btn.hidden=signed; btn.textContent="Complete prestart"; btn.onclick=completePre; }
   if(ro){ ro.hidden=!signed; ro.onclick=reopenPre; }
-  if(noteEl) noteEl.onchange=function(){ savePre({note:(noteEl.value||"").trim()}); };
-
-  Array.prototype.forEach.call(box.querySelectorAll("[data-pre]"),function(cb){
-    cb.addEventListener("change",function(){
-      togglePre(cb.getAttribute("data-pre"), cb.checked);
-    });
-  });
 }
 function renderLog(){
   var box=el("logList");if(!box)return;
@@ -5046,10 +5138,18 @@ document.addEventListener("keydown",function(e){
 function prestartText(){
   var d=parseISO(state.date),lab=state.labour.filter(function(r){return r.date===state.date;}),rows=dayRows();
   var heads=lab.reduce(function(a,r){return a+(+r.qty||1);},0);
-  var out=["ELISE PRESTART — "+dayName(d)+" "+d.getDate()+" "+monName(d),"On site: "+heads,"","WORKS TODAY"];
+  var pd=preDoc();
+  var out=["ELISE PRESTART — "+dayName(d)+" "+d.getDate()+" "+monName(d),"On site: "+heads];
+  if(pd.weather)out.push("Weather: "+pd.weather);
+  out.push("","WORKS TODAY");
+  if(pd.works)pd.works.split(/\n+/).forEach(function(l){out.push("- "+l);});
   lab.forEach(function(r){out.push("- "+r.name+(r.supplier?" ("+r.supplier+")":"")+": "+[r.area,r.task||r.notes].filter(Boolean).join(" · "));});
   var safe=openSafety();
-  if(safe.length){out.push("","SAFETY");safe.forEach(function(i){out.push("- ["+((SKIND[i.kind]||SKIND.HAZ)[0]).toUpperCase()+"] "+i.text);});}
+  if(safe.length||pd.safety){
+    out.push("","SAFETY");
+    safe.forEach(function(i){out.push("- ["+((SKIND[i.kind]||SKIND.HAZ)[0]).toUpperCase()+"] "+i.text);});
+    if(pd.safety)pd.safety.split(/\n+/).forEach(function(l){out.push("- "+l);});
+  }
   var jobs=dayJobs().filter(function(j){return !j.done;});
   var jp=jobs.filter(function(j){return j.pri;}),jn=jobs.filter(function(j){return !j.pri;});
   function jline(j){return "- "+j.text+(j.who?"  ["+j.who+"]":"");}
@@ -5057,12 +5157,15 @@ function prestartText(){
   if(jn.length){out.push("",jp.length?"JOBS - OTHER":"JOBS");jn.forEach(function(j){out.push(jline(j));});}
   out.push("","LIFTS");
   expand(rows).filter(function(i){return i.row.type==="lift";}).forEach(function(it){
-    out.push("- "+fmtClock(it.t)+" "+it.row.co+" "+(it.row.desc||"")+(it.of>1?" ("+it.n+"/"+it.of+")":"")+(it.row.status==="req"?" [TBC]":""));
+    out.push("- "+fmtClock(it.t)+" "+(it.row.co2?(it.row.co+"/"+it.row.co2):it.row.co)+" "+(it.row.desc||"")+(it.of>1?" ("+it.n+"/"+it.of+")":"")+(it.row.status==="req"?" [TBC]":""));
   });
   out.push("","DELIVERIES");
   rows.filter(function(b){return b.type==="del";}).forEach(function(b){
-    out.push("- "+fmtClock(toMin(b.start))+" "+b.co+" "+(b.desc||"")+(b.status==="req"?" [TBC]":""));
+    out.push("- "+fmtClock(toMin(b.start))+" "+(b.co2?(b.co+"/"+b.co2):b.co)+" "+(b.desc||"")+(b.status==="req"?" [TBC]":""));
   });
+  if(pd.risk){out.push("","HIGH RISK WORKS");pd.risk.split(/\n+/).forEach(function(l){out.push("- "+l);});}
+  if(pd.srp){out.push("","SHORT RANGE PROGRAMME");pd.srp.split(/\n+/).forEach(function(l){out.push("- "+l);});}
+  if(pd.at)out.push("","Prestart signed off by "+(pd.by||"-")+" "+stamp(pd.at));
   return out.join("\n");
 }
 /* ---------- a section as plain text, for pasting into a message ---------- */
@@ -5073,9 +5176,31 @@ function headLine(){
 function sectionText(which){
   if(which==="all")return prestartText();
   if(which==="prestart"){
-    var pd=preDoc(), tk=pd.ticks||{}, o=[headLine(),"","SITE PRESTART"];
-    preAll().forEach(function(i){ o.push((tk[i.n]?"[x] ":"[ ] ")+i.text); });
-    if(pd.note)o.push("","NOTES","- "+pd.note);
+    var pd=preDoc(), o=[headLine(),"","SITE PRESTART"];
+    var rws=dayRows();
+    function blk(h,body){
+      o.push("",h.toUpperCase());
+      if(!body||!body.length){ o.push("-"); return; }
+      [].concat(body).forEach(function(l){ o.push(l); });
+    }
+    blk("Weather", pd.weather?[pd.weather]:null);
+    blk("Site works", pd.works?pd.works.split(/\n+/):null);
+    var sfy=preStanding().map(function(i){return "- "+i.text;})
+             .concat(preSafetyAll().map(function(i){
+               return "- ["+(i.done?"FIXED":"OPEN")+"] "+i.text+
+                      ((i.from&&i.from!==state.date)?(" (raised "+shortDate(i.from)+")"):"");
+             }));
+    if(pd.safety) sfy=sfy.concat(pd.safety.split(/\n+/).map(function(l){return "- "+l;}));
+    blk("Safety", sfy);
+    function bl(b){
+      return "- "+fmtClock(toMin(b.start))+" "+(b.co2?(b.co+"/"+b.co2):b.co)+" "+(b.desc||"")+
+             ((+b.qty||0)>1?(" x"+(+b.qty)):"")+(b.status==="req"?" [TBC]":"");
+    }
+    blk("Deliveries for the day", rws.filter(function(b){return b.type==="del";}).map(bl));
+    blk("Crane lifts for the day", rws.filter(function(b){return b.type==="lift";}).map(bl));
+    blk("High risk works", pd.risk?pd.risk.split(/\n+/):null);
+    blk("Short range programme", pd.srp?pd.srp.split(/\n+/):null);
+    if(pd.note)blk("Notes",["- "+pd.note]);
     o.push("", pd.at ? "Signed off by "+(pd.by||"-")+" "+stamp(pd.at) : "NOT SIGNED OFF");
     return o.join("\n");
   }
