@@ -440,6 +440,15 @@ window.eliseAuth = {
 .nowstrip .nscd{font-family:var(--f-num);font-weight:700;font-size:12px;color:var(--clock);
   font-variant-numeric:tabular-nums;letter-spacing:.02em;display:block;margin-top:-2px}
 .nowstrip .nsdot{width:15px;height:15px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.14) inset}
+.nowstrip .nswx{flex:none;display:flex;align-items:baseline;gap:7px;padding-left:11px;
+  border-left:1px solid var(--line);font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.nowstrip .nswx .wt{font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.nowstrip .nswx .wv{font-size:13px;font-weight:700;color:var(--clock);white-space:nowrap}
+.nowstrip .nswx .wv s{text-decoration:none;font-size:.72em;opacity:.6;margin-left:1px}
+.nowstrip .nswx .wgu{font-size:10.5px;color:var(--ink-3);white-space:nowrap}
+@media (max-width:560px){.nowstrip .nswx{padding-left:8px;gap:5px}
+  .nowstrip .nswx .wt{font-size:16px}
+  .nowstrip .nswx .wgu{display:none}}
 .nowstrip .nsmain{min-width:0;flex:1}
 .nowstrip .nslab{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
 .nowstrip .nstxt{font-size:13.5px;font-weight:600;line-height:1.2;color:var(--ink);
@@ -547,7 +556,8 @@ button,input,select{font:inherit;color:inherit}
 .phead h2::before{content:"";display:inline-block;width:4px;height:13px;border-radius:2px;
   background:var(--acc);margin-right:8px;vertical-align:-1px}
 #v-today{--acc:var(--acc-today)}
-#v-prestart{--acc:var(--acc-prestart)}
+/* the prestart reads in the clock's blue, same as the time on the strip */
+#v-prestart{--acc:var(--clock)}
 #v-labour{--acc:var(--acc-labour)}
 #v-crane{--acc:var(--acc-crane)}
 #cbapp .sechead{color:var(--acc-crane);border-bottom:2px solid var(--acc-crane)}
@@ -630,6 +640,30 @@ input,textarea,select,option{text-transform:none}
 .addrow.top{border-top:0;border-bottom:1px solid var(--line)}
 .addrow input{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line-hard);border-radius:3px;padding:6px 8px;font-size:13px}
 .addrow select{background:var(--surface);border:1px solid var(--line-hard);border-radius:3px;padding:6px 8px;font-size:13px}
+/* The wind chart. Drawn rather than described, because the number that
+   matters is the one at the hour you are asking about. */
+#windChart{padding:10px 14px 4px}
+svg.wind{width:100%;height:132px;display:block;touch-action:pan-y;cursor:crosshair}
+svg.wind .wg{stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
+svg.wind .wgl,svg.wind .wt{fill:var(--ink-3);font-family:var(--f-num);font-size:9px}
+svg.wind .wgl{text-anchor:end}
+svg.wind .wt{text-anchor:middle}
+svg.wind .wband{fill:var(--clock);opacity:.14;stroke:none}
+svg.wind .wline{fill:none;stroke:var(--clock);stroke-width:2.2;vector-effect:non-scaling-stroke;
+  stroke-linejoin:round;stroke-linecap:round}
+svg.wind .wgust{fill:none;stroke:var(--clock);stroke-width:1.2;opacity:.5;stroke-dasharray:3 3;
+  vector-effect:non-scaling-stroke}
+svg.wind .wmark{stroke:var(--gold);stroke-width:1.4;vector-effect:non-scaling-stroke}
+svg.wind .wh{fill:transparent;stroke:none}
+.wread{font-family:var(--f-num);font-size:13px;color:var(--ink);padding:4px 0 0;min-height:19px}
+.wread b{font-weight:700;color:var(--clock);margin-right:5px}
+.wread .g{color:var(--ink-2)}
+.wread .d{color:var(--ink-3);margin-left:5px}
+.wkey{display:flex;gap:13px;flex-wrap:wrap;font-family:var(--f-cond);font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);padding:3px 0 7px}
+.wkey .k1:before,.wkey .k2:before{content:"";display:inline-block;width:13px;height:2px;
+  background:var(--clock);margin-right:5px;vertical-align:middle}
+.wkey .k2:before{opacity:.5}
 .addrow textarea{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line-hard);
   border-radius:3px;padding:6px 8px;font:inherit;font-size:13px;line-height:1.45;color:inherit;resize:vertical}
 .addrow textarea:focus,.addrow input:focus{outline:none;border-color:var(--acc)}
@@ -950,7 +984,20 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 #cbapp .cols .sp{width:4px;flex:0 0 auto}
 #cbapp .cols .h{padding:0 8px;display:flex;gap:7px;flex:1 1 auto;min-width:0}
 #cbapp .bk{flex:1 1 auto;min-width:0;border-radius:4px;padding:2px 8px;text-align:left;display:flex;align-items:center;gap:7px;
-    background:var(--tc);background-image:var(--splitbg,none);color:var(--tci);border:1px solid var(--tc);box-shadow:var(--shadow)}
+    background:var(--panel-2);color:var(--ink);border:1px solid var(--rule);box-shadow:var(--shadow)}
+/* Only the trade reads in colour. The block stays neutral so a full day of
+   bookings is a page you can read, not a wall of paint. */
+#cbapp .bk .c-tr{color:var(--tct)}
+#cbapp .bk .c-tr .c2{color:var(--tc2t,var(--tct))}
+#cbapp .bk .c-tr .sl{color:var(--ink-3);font-weight:600;margin:0 1px}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) #cbapp .bk .c-tr{color:var(--tctl)}
+  :root:not([data-theme="dark"]) #cbapp .bk .c-tr .c2{color:var(--tc2tl,var(--tctl))}
+}
+:root[data-theme="light"] #cbapp .bk .c-tr{color:var(--tctl)}
+:root[data-theme="light"] #cbapp .bk .c-tr .c2{color:var(--tc2tl,var(--tctl))}
+#cbapp .bk.picked,#cbapp .bk:hover{border-color:var(--tc)}
+#cbapp .bk .tag.tbc{background:transparent;color:var(--warn);border:1px solid var(--warn)}
 #cbapp .bk.done{opacity:.45}
 #cbapp .bk.done .c-ds{text-decoration:line-through}
 #cbapp .bk.isclash{outline:2px solid var(--crit);outline-offset:1px}
@@ -1169,6 +1216,11 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       <div class="cardbody" id="fSafe"></div>
       <div class="cardtools"><button class="mini" data-copy="safety">Copy</button><button class="mini" data-pdf="safety">PDF</button></div>
     </div>
+  </div>
+
+  <div class="panel">
+    <div class="phead" data-acc="crane"><h2>Wind</h2><span class="meta" id="windMeta"></span></div>
+    <div id="windChart"></div>
   </div>
 
   <div class="panel">
@@ -1858,15 +1910,37 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     }
     return start;
   }
+  /* A trade colour chosen to sit ON a block is not the same colour you can
+     read AS text, and the board runs in both themes - so each trade carries
+     two tones, light enough to read on the dark board and dark enough to read
+     on the light one, and the CSS picks. */
+  function toHsl(c){
+    var x=c.replace("#","");if(x.length===3)x=x[0]+x[0]+x[1]+x[1]+x[2]+x[2];
+    var r=parseInt(x.slice(0,2),16)/255,g=parseInt(x.slice(2,4),16)/255,b=parseInt(x.slice(4,6),16)/255;
+    var mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,h=0,l=(mx+mn)/2;
+    var sat=d===0?0:d/(1-Math.abs(2*l-1));
+    if(d!==0){
+      if(mx===r)h=((g-b)/d)%6; else if(mx===g)h=(b-r)/d+2; else h=(r-g)/d+4;
+      h*=60; if(h<0)h+=360;
+    }
+    return [h,sat,l];
+  }
+  function tone(c,forDark){
+    var p=toHsl(hex(c)),sat=Math.max(.42,Math.min(.95,p[1]||.5));
+    /* a grey trade has no hue to lean on, so it just goes pale or dark */
+    if((p[1]||0)<.08) return forDark?"#CFC7BA":"#4A443C";
+    return "hsl("+Math.round(p[0])+" "+Math.round(sat*100)+"% "+(forDark?66:34)+"%)";
+  }
   function vars(L){
     var t=trade(L.co),c=hex(t[2]),k=kind(L.type,L.kind),kc=hex(k[2]);
-    var s="--tc:"+c+";--tci:"+onColour(c)+";--kc:"+kc+";--kci:"+onColour(kc);
-    /* a run that alternates between two trades belongs to both, so the block
-       is split down the middle rather than showing one and hiding the other */
+    var s="--tc:"+c+";--tci:"+onColour(c)+";--kc:"+kc+";--kci:"+onColour(kc)+
+          ";--tct:"+tone(c,true)+";--tctl:"+tone(c,false);
+    /* a swap run belongs to both trades, so each code is written in its own
+       colour rather than one of them being hidden */
     if(L.co2){
       var c2=hex(trade(L.co2)[2]);
-      s+=";--tc2:"+c2+";--splitbg:linear-gradient(100deg,"+c+" 0 50%,"+c2+" 50% 100%)";
-    }else{ s+=";--splitbg:none"; }
+      s+=";--tc2:"+c2+";--tc2t:"+tone(c2,true)+";--tc2tl:"+tone(c2,false);
+    }
     return {c:c,k:k,s:s};
   }
 
@@ -2282,11 +2356,15 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
 
     var step=Math.max(5,cfg.per||10);
     var nowSlot=cur===iso(new Date())?Math.floor((new Date().getHours()*60+new Date().getMinutes())/step)*step:-1;
+    function coChip(L){
+      return '<span class="c-tr">'+esc(L.co)+
+        (L.co2?'<span class="sl">/</span><span class="c2">'+esc(L.co2)+'</span>':'')+'</span>';
+    }
     function bkRow(L,extra){
       var v=vars(L);
       return '<button draggable="true" class="bk'+(extra||"")+(sel[L.id]?" picked":"")+(L.status==="req"?" req":"")+(L.status==="done"?" done":"")+(cl[L.id]?" isclash":"")+
         '" data-id="'+esc(L.id)+'" style="'+v.s+'">'+
-        '<span class="c-tr">'+esc(L.co2?L.co+"/"+L.co2:L.co)+'</span>'+
+        coChip(L)+
         '<span class="c-lf">'+esc(L.from||"—")+'</span>'+
         '<span class="c-lt">'+esc(L.to||"—")+'</span>'+
         '<span class="c-ds">'+esc(L.desc)+'</span>'+
@@ -2330,7 +2408,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
          three rows deep still says what it is and where it is going */
       return '<button draggable="true" class="bk cont'+(sel[L.id]?" picked":"")+(last?" last":"")+(L.status==="req"?" req":"")+(L.status==="done"?" done":"")+
         (cl[L.id]?" isclash":"")+'" data-id="'+esc(L.id)+'" style="'+v.s+'">'+
-        '<span class="c-tr">'+esc(L.co2?L.co+"/"+L.co2:L.co)+'</span>'+
+        coChip(L)+
         '<span class="c-lf">'+esc(L.from||"—")+'</span>'+
         '<span class="c-lt">'+esc(L.to||"—")+'</span>'+
         '<span class="c-ds">'+esc(L.desc)+'</span>'+
@@ -3545,6 +3623,8 @@ function kindMap(type){
 }
 function colourOf(co){var t=trades()[co];return (t&&t[1])||"#B9B2A6";}
 function chip(co){var t=trades()[co];return '<span class="chip" style="--c:'+colourOf(co)+'" title="'+esc(t?t[0]:co)+'"><i></i>'+esc(co)+'</span>';}
+/* a one-up-one-down run is two trades on one booking, so the card shows both */
+function coChips(b){ return chip(b.co)+(b.co2?chip(b.co2):""); }
 function supChip(s){return '<span class="chip" style="--c:'+((SUPPLIERS[s])||colourOf(s))+'"><i></i>'+esc(s||"—")+'</span>';}
 function skChip(k){var s=SKIND[k]||SKIND.CRIT;return '<span class="chip" style="--c:'+s[1]+'"><i></i>'+esc(s[0])+'</span>';}
 function dcChip(k){var s=DCAUSE[k]||DCAUSE.OTH;return '<span class="chip" style="--c:'+s[1]+'"><i></i>'+esc(s[0])+'</span>';}
@@ -3725,6 +3805,7 @@ function renderFeeds(){
 }
 
 function renderFront(){
+  try{ renderWind(); }catch(e){}
   var lab=state.labour.filter(function(r){return r.date===state.date;});
   var heads=lab.reduce(function(a,r){return a+(+r.qty||1);},0);
   var jobs=dayJobs(),openJobs=jobs.filter(function(j){return !j.done;});
@@ -3764,7 +3845,7 @@ function renderFront(){
   el("cCrane").textContent=lifts.length?lifts.length+" lifts · "+(cu.avail?Math.round(cu.used/cu.avail*100):0)+"% hook":"none booked";
   el("fCrane").innerHTML=lifts.length
     ? lifts.slice(0,7).map(function(it){
-        return '<div class="srow"><span class="tm">'+fmtClock(it.t)+'</span>'+chip(it.row.co)+
+        return '<div class="srow"><span class="tm">'+fmtClock(it.t)+'</span>'+coChips(it.row)+
           '<span class="tx">'+esc(it.row.desc||"")+(it.of>1?' <small>'+it.n+' of '+it.of+'</small>':'')+'</span>'+
           (it.clash?'<span class="pill crit">BREAK</span>':'')+
           (it.row.status==="req"?'<span class="pill tbc">TBC</span>':'')+'</div>';
@@ -3775,7 +3856,7 @@ function renderFront(){
   el("cDel").textContent=dels.length?dels.length+" in":"none booked";
   el("fDel").innerHTML=dels.length
     ? dels.slice(0,7).map(function(b){
-        return '<div class="srow"><span class="tm">'+fmtClock(toMin(b.start))+'</span>'+chip(b.co)+
+        return '<div class="srow"><span class="tm">'+fmtClock(toMin(b.start))+'</span>'+coChips(b)+
           '<span class="tx">'+esc(b.desc||"")+'<small>'+esc(dk[b.kind]||b.kind||"")+'</small></span>'+
           (b.status==="req"?'<span class="pill tbc">TBC</span>':'')+'</div>';
       }).join("")+(dels.length>7?'<div class="more">+ '+(dels.length-7)+' more</div>':'')
@@ -3879,7 +3960,7 @@ function logItems(){
    in the shed, the service down - so a miss is silent and the field stays
    typeable. Whatever is in the field at sign-off is what gets recorded, so
    the pulled line is a starting point, not the answer. */
-var WX={lat:-28.1174,lon:153.4617,by:{},state:"idle"};
+var WX={lat:-28.1174,lon:153.4617,by:{},hourly:{},now:null,state:"idle",at:0};
 var WXCODE={0:"Clear",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",
   45:"Fog",48:"Freezing fog",51:"Light drizzle",53:"Drizzle",55:"Heavy drizzle",
   56:"Freezing drizzle",57:"Freezing drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",
@@ -3892,14 +3973,36 @@ function wxCompass(deg){
   return P[Math.round((((+deg)%360)+360)%360/22.5)%16];
 }
 function wxLine(d){ return WX.by[d]||""; }
-function wxFetch(){
-  if(WX.state!=="idle")return;
+function wxFetch(force){
+  if(WX.state==="loading")return;
+  /* every five minutes, so the shed TV is never showing this morning's wind
+     in the afternoon. A reload in between reuses what is already held. */
+  if(!force && WX.at && Date.now()-WX.at < 290000)return;
   WX.state="loading";
   var u="https://api.open-meteo.com/v1/forecast?latitude="+WX.lat+"&longitude="+WX.lon+
+    "&current=temperature_2m,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m"+
+    "&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m"+
     "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,"+
     "wind_speed_10m_max,wind_direction_10m_dominant&timezone=Australia%2FBrisbane&forecast_days=7";
-  fetch(u).then(function(r){ if(!r.ok)throw new Error(r.status); return r.json(); })
+  fetch(u,{cache:"no-store"}).then(function(r){ if(!r.ok)throw new Error(r.status); return r.json(); })
   .then(function(j){
+    /* ---- right now, for the strip beside the clock ---- */
+    var C=j&&j.current;
+    WX.now = C ? {temp:C.temperature_2m, code:C.weather_code,
+                  wind:C.wind_speed_10m, gust:C.wind_gusts_10m, dir:C.wind_direction_10m} : null;
+    /* ---- hour by hour, for the wind chart ---- */
+    var Hr=j&&j.hourly;
+    if(Hr&&Hr.time){
+      var byDay={};
+      Hr.time.forEach(function(t,i){
+        var day=String(t).slice(0,10), hh=+String(t).slice(11,13);
+        if(!byDay[day])byDay[day]=[];
+        byDay[day].push({h:hh,
+          w:(Hr.wind_speed_10m||[])[i], g:(Hr.wind_gusts_10m||[])[i],
+          d:(Hr.wind_direction_10m||[])[i]});
+      });
+      WX.hourly=byDay;
+    }
     var D=j&&j.daily; if(!D||!D.time||!D.time.length)throw new Error("no daily");
     D.time.forEach(function(day,i){
       function v(k){ return (D[k]&&D[k][i]!=null)?D[k][i]:null; }
@@ -3911,10 +4014,110 @@ function wxFetch(){
       if(ws!=null)bits.push((wxCompass(wd)?wxCompass(wd)+" ":"")+Math.round(ws)+" km/h");
       WX.by[day]=bits.join(", ");
     });
-    WX.state="ok";
+    WX.state="ok"; WX.at=Date.now();
   })
-  .catch(function(){ WX.state="fail"; })
-  .then(function(){ try{ renderPrestart(); }catch(e){} });
+  .catch(function(){ WX.state="fail"; WX.at=Date.now(); })
+  .then(function(){
+    try{ renderPrestart(); }catch(e){}
+    try{ renderNowStrip(); }catch(e){}
+    try{ renderWind(); }catch(e){}
+  });
+}
+setInterval(function(){ wxFetch(true); },300000);
+
+/* ---------- the wind, hour by hour ----------
+   Wind is the thing that stops the crane, so the day board draws it rather
+   than making anyone read a number out of an app. Speed as the line, gusts
+   as the band above it, and the hour under the pointer reads out in full. */
+function wxDayHours(d){
+  var H=WX.hourly[d]||[];
+  return H.filter(function(x){ return x.h>=5 && x.h<=19 && x.w!=null; });
+}
+function windSvg(d){
+  var H=wxDayHours(d);
+  if(H.length<2)return "";
+  var W=680,HH=132,L=34,R=10,T=12,B=20;
+  var iw=W-L-R, ih=HH-T-B;
+  var top=Math.max(40,Math.ceil(Math.max.apply(null,H.map(function(x){
+    return Math.max(+x.w||0,+x.g||0);}))/10)*10+10);
+  var x=function(i){ return L+iw*(i/(H.length-1)); };
+  var y=function(v){ return T+ih-(ih*Math.min(v,top)/top); };
+  var line=function(k){
+    return H.map(function(p,i){ return (i?"L":"M")+x(i).toFixed(1)+" "+y(+p[k]||0).toFixed(1); }).join(" ");
+  };
+  var band="M"+H.map(function(p,i){return x(i).toFixed(1)+" "+y(+p.g||0).toFixed(1);}).join(" L")+
+           " L"+H.slice().reverse().map(function(p,i){
+             var j=H.length-1-i; return x(j).toFixed(1)+" "+y(+p.w||0).toFixed(1);}).join(" L")+" Z";
+  var grid="",gl,i;
+  for(gl=0;gl<=top;gl+=(top>80?20:10)){
+    grid+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(gl).toFixed(1)+'" y2="'+y(gl).toFixed(1)+
+      '" class="wg"/><text x="'+(L-6)+'" y="'+(y(gl)+3.5).toFixed(1)+'" class="wgl">'+gl+'</text>';
+  }
+  var ticks="";
+  for(i=0;i<H.length;i++) if(H[i].h%3===0)
+    ticks+='<text x="'+x(i).toFixed(1)+'" y="'+(HH-6)+'" class="wt">'+fmtClock(H[i].h*60)+'</text>';
+  var dots=H.map(function(p,i){
+    return '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(+p.w||0).toFixed(1)+'" r="9" class="wh" '+
+      'data-i="'+i+'"/>';
+  }).join("");
+  return '<svg viewBox="0 0 '+W+' '+HH+'" class="wind" preserveAspectRatio="none" '+
+    'role="img" aria-label="Wind through the day">'+
+    grid+'<path d="'+band+'" class="wband"/>'+
+    '<path d="'+line("g")+'" class="wgust"/><path d="'+line("w")+'" class="wline"/>'+
+    ticks+'<line class="wmark" x1="0" x2="0" y1="'+T+'" y2="'+(T+ih)+'" style="display:none"/>'+
+    dots+'</svg>';
+}
+function renderWind(){
+  var box=el("windChart"); if(!box) return;
+  if(WX.state==="idle")wxFetch();
+  var H=wxDayHours(state.date), svg=H.length>1?windSvg(state.date):"";
+  var meta=el("windMeta");
+  if(meta){
+    if(H.length>1){
+      var pk=H.reduce(function(a,b){return (+b.g||+b.w||0)>(+a.g||+a.w||0)?b:a;});
+      meta.textContent="Peak gust "+Math.round(+pk.g||+pk.w||0)+" km/h around "+fmtClock(pk.h*60);
+    } else meta.textContent="";
+  }
+  if(!svg){
+    box.innerHTML='<p class="empty">'+(WX.state==="loading"?"Reading the forecast\u2026"
+      :WX.state==="fail"?"Couldn't reach the forecast."
+      :"No wind forecast for this day.")+'</p>';
+    return;
+  }
+  box.innerHTML=svg+'<div class="wread" id="windRead"></div>'+
+    '<div class="wkey"><span class="k1">Wind</span><span class="k2">Gusts</span>'+
+    '<span class="k3">Palm Beach, updated every 5 min</span></div>';
+  var sv=box.querySelector("svg"), read=el("windRead"), mark=sv.querySelector(".wmark");
+  function show(i){
+    var p=H[i]; if(!p)return;
+    read.innerHTML='<b>'+esc(fmtClock(p.h*60))+'</b> '+Math.round(+p.w||0)+' km/h'+
+      ((p.g!=null)?' <span class="g">gusting '+Math.round(p.g)+'</span>':'')+
+      ((p.d!=null)?' <span class="d">'+esc(wxCompass(p.d))+'</span>':'');
+    var W=680,L=34,R=10,iw=W-L-R, xx=L+iw*(i/(H.length-1));
+    mark.setAttribute("x1",xx);mark.setAttribute("x2",xx);mark.style.display="";
+  }
+  function at(ev){
+    var r=sv.getBoundingClientRect();
+    var cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
+    var W=680,L=34,R=10,iw=W-L-R;
+    var vx=cx/r.width*W;
+    var i=Math.round((vx-L)/iw*(H.length-1));
+    show(Math.max(0,Math.min(H.length-1,i)));
+  }
+  sv.addEventListener("mousemove",at);
+  sv.addEventListener("touchstart",function(e){at(e);},{passive:true});
+  sv.addEventListener("touchmove",function(e){at(e);},{passive:true});
+  sv.addEventListener("mouseleave",function(){
+    mark.style.display="none"; show(nowIdx());
+  });
+  function nowIdx(){
+    var now=new Date(), hh=now.getHours();
+    if(state.date!==iso(now))return 0;
+    for(var i=0;i<H.length;i++) if(H[i].h>=hh) return i;
+    return H.length-1;
+  }
+  show(nowIdx());
+  mark.style.display="none";
 }
 
 function preDoc(){ return state.preDocs[state.date]||{}; }
@@ -6306,6 +6509,21 @@ function rollText(){
     r.classList.add("rolling");
   });
 }
+/* What it is doing outside, beside the clock. Wind first - it is the number
+   that decides whether the crane works - then the temperature. */
+function wxChip(){
+  var w=WX.now;
+  if(!w)return "";
+  var bits="";
+  if(w.wind!=null)bits+='<span class="wv">'+(wxCompass(w.dir)?esc(wxCompass(w.dir))+" ":"")+
+    Math.round(w.wind)+'<s>km/h</s></span>';
+  if(w.gust!=null&&w.wind!=null&&Math.round(w.gust)>Math.round(w.wind))
+    bits+='<span class="wgu">gust '+Math.round(w.gust)+'</span>';
+  if(!bits)return "";
+  return '<span class="nswx" title="'+esc((WXCODE[w.code]||"")+
+    (w.temp!=null?", "+Math.round(w.temp)+"\u00b0":""))+'">'+
+    (w.temp!=null?'<span class="wt">'+Math.round(w.temp)+'\u00b0</span>':'')+bits+'</span>';
+}
 function renderNowStrip(){
   var el0=el("nowStrip");if(!el0)return;
   var p=stripPick();state.strip=p;
@@ -6314,7 +6532,7 @@ function renderNowStrip(){
   state.strip=p;
   var clock='<span class="nsmain" style="flex:none;min-width:0">'+
     '<span class="nsclock" id="nsClock">'+clockText()+'</span>'+
-    '<span class="nscd" id="nsCount">'+countText()+'</span></span>';
+    '<span class="nscd" id="nsCount">'+countText()+'</span></span>'+wxChip();
   if(!p.live){
     el0.innerHTML=clock+'<span class="nsmain"><span class="nslab">'+esc(p.none?"Crane":"Hook clear")+'</span>'+
       '<div class="nstxt">'+esc(p.none||"Nothing left on the hook today")+'</div></span>';
