@@ -1500,7 +1500,8 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <div class="subhead" data-acc="prestart"><span>Date</span></div>
     <div id="preDate"></div>
 
-    <div class="subhead" data-acc="prestart"><span>Weather</span></div>
+    <div class="subhead" data-acc="prestart"><span>Weather</span><span id="preWxMeta"></span></div>
+    <div id="preWx"></div>
     <div class="addrow top"><input id="preWeather" placeholder="Fine, 26, light NE &mdash; or wet, windy, hot" autocomplete="off"></div>
 
     <div class="subhead" data-acc="prestart"><span>Site works</span></div>
@@ -1519,16 +1520,13 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <div class="subhead" data-acc="prestart"><span>High risk works</span></div>
     <div class="addrow top"><textarea id="preRisk" rows="2" placeholder="Crane over the street, open penetrations, hot works, confined space &mdash; or none"></textarea></div>
 
-    <div class="subhead" data-acc="prestart"><span>Short range programme</span><span id="preSrpMeta"></span></div>
-    <div id="preSrp"></div>
-    <div class="addrow top"><textarea id="preSrpNote" rows="2" placeholder="Next few days &mdash; what has to land and when"></textarea></div>
 
     <div class="addrow">
       <input id="preBy" class="who" list="crewNames" placeholder="Who ran it" autocomplete="off" spellcheck="false">
       <button class="addbtn" id="preDone" type="button">Complete prestart</button>
       <button class="mini" id="preReopen" type="button" hidden>Reopen</button>
     </div>
-    <p class="note">Deliveries, crane lifts and the look-ahead come straight off the board, so the prestart and the day board can never disagree. Safety carries the standing items from <em>config/prestart</em> plus whatever is open on the register. Completing it saves the day's prestart and lands it in Complete works.</p>
+    <p class="note">The weather is pulled for Palm Beach each morning and can be typed over. Deliveries and crane lifts come straight off the board, so the prestart and the day board can never disagree. Safety carries the standing items from <em>config/prestart</em> plus whatever is open on the register. Completing it saves the day's prestart and lands it in Complete works.</p>
   </div>
 </section>
 
@@ -3875,6 +3873,50 @@ function logItems(){
    on top of them, because a prestart that ignores the live hazards is a
    form, not a prestart. One document per day; completing it writes to
    Complete works the same way a ticked job does. */
+/* ---------- the weather, pulled for the site ----------
+   Open-Meteo, no key and no sign-up, read once per board load for the week
+   and held in memory. The prestart has to work when this fails - no signal
+   in the shed, the service down - so a miss is silent and the field stays
+   typeable. Whatever is in the field at sign-off is what gets recorded, so
+   the pulled line is a starting point, not the answer. */
+var WX={lat:-28.1174,lon:153.4617,by:{},state:"idle"};
+var WXCODE={0:"Clear",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",
+  45:"Fog",48:"Freezing fog",51:"Light drizzle",53:"Drizzle",55:"Heavy drizzle",
+  56:"Freezing drizzle",57:"Freezing drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",
+  66:"Freezing rain",67:"Freezing rain",71:"Light snow",73:"Snow",75:"Heavy snow",
+  77:"Snow grains",80:"Light showers",81:"Showers",82:"Heavy showers",
+  85:"Snow showers",86:"Snow showers",95:"Thunderstorms",96:"Storms with hail",99:"Storms with hail"};
+function wxCompass(deg){
+  var P=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+  if(deg==null||!isFinite(deg))return "";
+  return P[Math.round((((+deg)%360)+360)%360/22.5)%16];
+}
+function wxLine(d){ return WX.by[d]||""; }
+function wxFetch(){
+  if(WX.state!=="idle")return;
+  WX.state="loading";
+  var u="https://api.open-meteo.com/v1/forecast?latitude="+WX.lat+"&longitude="+WX.lon+
+    "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,"+
+    "wind_speed_10m_max,wind_direction_10m_dominant&timezone=Australia%2FBrisbane&forecast_days=7";
+  fetch(u).then(function(r){ if(!r.ok)throw new Error(r.status); return r.json(); })
+  .then(function(j){
+    var D=j&&j.daily; if(!D||!D.time||!D.time.length)throw new Error("no daily");
+    D.time.forEach(function(day,i){
+      function v(k){ return (D[k]&&D[k][i]!=null)?D[k][i]:null; }
+      var hi=v("temperature_2m_max"), lo=v("temperature_2m_min");
+      var mm=v("precipitation_sum"), ws=v("wind_speed_10m_max"), wd=v("wind_direction_10m_dominant");
+      var bits=[WXCODE[v("weather_code")]||"\u2014"];
+      if(hi!=null)bits.push(Math.round(hi)+(lo!=null?" / "+Math.round(lo):"")+"\u00b0");
+      if(mm!=null&&mm>0.05)bits.push((Math.round(mm*10)/10)+"mm");
+      if(ws!=null)bits.push((wxCompass(wd)?wxCompass(wd)+" ":"")+Math.round(ws)+" km/h");
+      WX.by[day]=bits.join(", ");
+    });
+    WX.state="ok";
+  })
+  .catch(function(){ WX.state="fail"; })
+  .then(function(){ try{ renderPrestart(); }catch(e){} });
+}
+
 function preDoc(){ return state.preDocs[state.date]||{}; }
 function preStanding(){
   var c=state.preCfg&&state.preCfg.items;
@@ -3916,7 +3958,7 @@ function savePre(patch){
   var d=preDoc(), body={
     date:state.date,
     weather:d.weather||"", works:d.works||"", safety:d.safety||"",
-    risk:d.risk||"", srp:d.srp||"",
+    risk:d.risk||"",
     ticks:d.ticks||{}, note:d.note||"", by:d.by||"", at:d.at||0, ts:Date.now()
   };
   for(var k in patch) body[k]=patch[k];
@@ -3927,7 +3969,7 @@ function savePre(patch){
    the record, so neither goes unanswered - "none" is a fine answer to the
    second, a blank is not. */
 var PREFIELDS=[["preWeather","weather"],["preWorks","works"],["preSafety","safety"],
-               ["preRisk","risk"],["preSrpNote","srp"]];
+               ["preRisk","risk"]];
 function completePre(){
   var d=preDoc();
   var works=(el("preWorks").value||"").trim(), risk=(el("preRisk").value||"").trim();
@@ -3969,6 +4011,15 @@ function renderPrestart(){
   /* ---- date ---- */
   preRows('<div class="srow"><span class="tx"><b>'+esc(longDate(state.date))+'</b></span></div>',
           "preDate","");
+
+  /* ---- weather ---- */
+  var wx=wxLine(state.date);
+  if(WX.state==="idle")wxFetch();
+  preRows(wx?'<div class="srow"><span class="tx">'+esc(wx)+'<small>Palm Beach, pulled this morning</small></span></div>':"",
+          "preWx", WX.state==="loading"?"Reading the forecast\u2026"
+                 : WX.state==="fail"?"Couldn't reach the forecast \u2014 type it in."
+                 : "No forecast for this day.");
+  var wm=el("preWxMeta"); if(wm) wm.textContent = wx?"Live":"";
 
   /* ---- safety: the standing items, then whatever is open on the register ---- */
   var stand=preStanding(), reg=preSafetyAll();
@@ -4017,34 +4068,13 @@ function renderPrestart(){
     lm.textContent=lifts.length?lifts.length+(lifts.length===1?" booking":" bookings")+", "+picks+(picks===1?" pick":" picks"):"";
   }
 
-  /* ---- short range programme: the next working days off the same board ---- */
-  var ahead=[], i, dd=parseISO(state.date);
-  for(i=1;i<=8 && ahead.length<5;i++){
-    dd.setDate(dd.getDate()+1);
-    if(dd.getDay()===0) continue;           /* never a Sunday on this site */
-    ahead.push(iso(dd));
-  }
-  var srpHtml=ahead.map(function(k){
-    var r=(state.lifts||[]).filter(function(b){return b.date===k;});
-    if(!r.length) return '<div class="srow"><span class="tm">'+esc(shortDate(k))+'</span>'+
-      '<span class="tx" style="color:var(--ink-3)">Nothing booked</span></div>';
-    var byCo={},ord=[];
-    r.forEach(function(b){
-      var c=b.co2?(b.co+"/"+b.co2):b.co;
-      if(!byCo[c]){byCo[c]=0;ord.push(c);}
-      byCo[c]+=Math.max(1,+b.qty||1);
-    });
-    return '<div class="srow"><span class="tm">'+esc(shortDate(k))+'</span>'+
-      '<span class="tx">'+esc(ord.map(function(c){return c+" ("+byCo[c]+")";}).join(" \u00b7 "))+
-      '<small>'+esc(r.length+(r.length===1?" booking":" bookings"))+'</small></span></div>';
-  }).join("");
-  preRows(srpHtml,"preSrp","Nothing booked in the days ahead.");
-  var srm=el("preSrpMeta"); if(srm) srm.textContent="Next "+ahead.length+" working days";
-
   /* ---- the written fields ---- */
   PREFIELDS.forEach(function(f){
     var e=el(f[0]); if(!e) return;
-    if(document.activeElement!==e) e.value=d[f[1]]||"";
+    /* the pulled forecast fills the box only while it is still untouched, so
+       it never writes over what the person actually saw out the window */
+    var seed=(f[1]==="weather"&&!d.weather&&!signed)?wx:"";
+    if(document.activeElement!==e) e.value=d[f[1]]||seed;
     e.disabled=signed;
     e.onchange=function(){ var patch={}; patch[f[1]]=(e.value||"").trim(); savePre(patch); };
   });
@@ -5140,7 +5170,7 @@ function prestartText(){
   var heads=lab.reduce(function(a,r){return a+(+r.qty||1);},0);
   var pd=preDoc();
   var out=["ELISE PRESTART — "+dayName(d)+" "+d.getDate()+" "+monName(d),"On site: "+heads];
-  if(pd.weather)out.push("Weather: "+pd.weather);
+  if(pd.weather||wxLine(state.date))out.push("Weather: "+(pd.weather||wxLine(state.date)));
   out.push("","WORKS TODAY");
   if(pd.works)pd.works.split(/\n+/).forEach(function(l){out.push("- "+l);});
   lab.forEach(function(r){out.push("- "+r.name+(r.supplier?" ("+r.supplier+")":"")+": "+[r.area,r.task||r.notes].filter(Boolean).join(" · "));});
@@ -5164,7 +5194,6 @@ function prestartText(){
     out.push("- "+fmtClock(toMin(b.start))+" "+(b.co2?(b.co+"/"+b.co2):b.co)+" "+(b.desc||"")+(b.status==="req"?" [TBC]":""));
   });
   if(pd.risk){out.push("","HIGH RISK WORKS");pd.risk.split(/\n+/).forEach(function(l){out.push("- "+l);});}
-  if(pd.srp){out.push("","SHORT RANGE PROGRAMME");pd.srp.split(/\n+/).forEach(function(l){out.push("- "+l);});}
   if(pd.at)out.push("","Prestart signed off by "+(pd.by||"-")+" "+stamp(pd.at));
   return out.join("\n");
 }
@@ -5183,7 +5212,7 @@ function sectionText(which){
       if(!body||!body.length){ o.push("-"); return; }
       [].concat(body).forEach(function(l){ o.push(l); });
     }
-    blk("Weather", pd.weather?[pd.weather]:null);
+    blk("Weather", (pd.weather||wxLine(state.date))?[pd.weather||wxLine(state.date)]:null);
     blk("Site works", pd.works?pd.works.split(/\n+/):null);
     var sfy=preStanding().map(function(i){return "- "+i.text;})
              .concat(preSafetyAll().map(function(i){
@@ -5199,7 +5228,6 @@ function sectionText(which){
     blk("Deliveries for the day", rws.filter(function(b){return b.type==="del";}).map(bl));
     blk("Crane lifts for the day", rws.filter(function(b){return b.type==="lift";}).map(bl));
     blk("High risk works", pd.risk?pd.risk.split(/\n+/):null);
-    blk("Short range programme", pd.srp?pd.srp.split(/\n+/):null);
     if(pd.note)blk("Notes",["- "+pd.note]);
     o.push("", pd.at ? "Signed off by "+(pd.by||"-")+" "+stamp(pd.at) : "NOT SIGNED OFF");
     return o.join("\n");
