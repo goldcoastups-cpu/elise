@@ -151,6 +151,10 @@ footer{margin-top:24px;padding-top:12px;border-top:1px solid var(--rule);font-si
   border-radius:7px;border:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer}
 .btn.go{background:var(--go);border-color:var(--go);color:#10210F}
 .btn:disabled{opacity:.5}
+label.btn{display:inline-flex;align-items:center;justify-content:center}
+.offscreen{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.offscreen:focus-visible + label.btn{outline:2px solid var(--accent);outline-offset:2px}
 .msg{font-size:12.5px;color:var(--stop);margin-top:8px;min-height:16px}
 @media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#F7F4EE;--card:#FFF;
   --rule:#DED7C9;--ink:#1F1D1A;--ink2:#5F594F;--ink3:#8C8578;--stop:#B3261E}}
@@ -191,8 +195,9 @@ footer{margin-top:24px;padding-top:12px;border-top:1px solid var(--rule);font-si
     <textarea id="jobNote" placeholder="Anything worth recording"></textarea>
     <label>Photo (optional)</label>
     <div class="shot">
-      <input type="file" id="shotIn" accept="image/*" capture="environment" hidden>
-      <button class="btn" id="shotBtn" style="flex:0 0 auto;padding:10px 16px">Take a photo</button>
+      <input type="file" id="shotIn" accept="image/*" capture="environment" class="offscreen">
+      <label class="btn" id="shotBtn" for="shotIn" role="button" tabindex="0"
+             style="flex:0 0 auto;padding:10px 16px;text-align:center">Take a photo</label>
       <img id="shotImg" hidden alt="">
     </div>
     <button class="prib" id="priBtn" type="button">
@@ -507,7 +512,9 @@ el("priSave").addEventListener("click", async function(){
 });
 el("priBtn").addEventListener("click",function(){ priWant=!priWant; paintPri(); });
 el("jobCancel").addEventListener("click",function(){ el("jobScrim").hidden=true; });
-el("shotBtn").addEventListener("click",function(){ el("shotIn").click(); });
+el("shotBtn").addEventListener("keydown",function(e){
+  if(e.key==="Enter"||e.key===" "){ e.preventDefault(); el("shotIn").click(); }
+});
 el("shotIn").addEventListener("change",function(){
   var f=el("shotIn").files && el("shotIn").files[0]; if(!f) return;
   shotFile=f;
