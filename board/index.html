@@ -4136,7 +4136,7 @@ function rollJobs(announce){
     if(k&&at>=0){if(j.id)dupes.push([j.id,at]);return;}
     keys.push(k);
     var o={text:j.text,done:false,pri:!!j.pri,from:j.from||src};
-    if(j.id){ o.id=j.id; idsHere[j.id]=true; }
+    o.id = j.id || jobId(); idsHere[o.id]=true;
     if(j.who)o.who=j.who;
     out.push(o);added++;
     if(j.id)moved[j.id]=j.id;
@@ -4492,6 +4492,7 @@ function rollPourDisabled(announce){
     if(k&&keys.indexOf(k)>=0)return;
     keys.push(k);
     var o={text:i.text,done:false,pri:!!i.pri,from:i.from||src};
+    o.id = i.id || jobId();
     if(i.who)o.who=i.who;
     out.push(o);added++;
   });
@@ -5981,10 +5982,15 @@ el("labourForm").addEventListener("submit",function(e){
     qty:+el("lfQty").value||1,area:el("lfArea").value,task:el("lfTask").value});
   el("lfName").value="";el("lfTask").value="";
 });
+/* Every job needs an id. The crew's page looks a job up by its id when they
+   tap it, so a job created without one silently does nothing for them - which
+   is exactly what happened to everything Harry typed onto the board. */
+function jobId(){ return "j"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
 function addTypedJob(){
   var t=el("jfText").value.trim();
   if(!t)return false;
-  saveJobs(dayJobs().concat([{text:t,done:false,pri:!!el("jfPri").value,
+  saveJobs(dayJobs().concat([{id:jobId(),text:t,done:false,pri:!!el("jfPri").value,
     who:el("jfWho").value.trim().toUpperCase()}]));
   el("jfText").value="";
   return true;
