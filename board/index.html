@@ -1375,6 +1375,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       </div>
       <div class="row">
         <div class="f"><label for="cb-fCo">Trade</label><select id="cb-fCo"></select></div>
+        <div class="f"><label for="cb-fCo2">Swapping with</label><select id="cb-fCo2"></select></div>
         <div class="f"><label for="cb-fFrom">Lift from</label><select id="cb-fFrom"></select></div>
         <div class="f"><label for="cb-fTo">Lift to</label><select id="cb-fTo"></select></div>
       </div>
@@ -1502,13 +1503,13 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       <button class="addbtn" id="preDone" type="button">Complete prestart</button>
       <button class="mini" id="preReopen" type="button" hidden>Reopen</button>
     </div>
-    <p class="note">The checks come from <em>config/prestart</em>, so the list is yours to change without touching the board. A completed prestart is saved against the day and lands in the Done log.</p>
+    <p class="note">The checks come from <em>config/prestart</em>, so the list is yours to change without touching the board. A completed prestart is saved against the day and lands in Complete works.</p>
   </div>
 </section>
 
 <section id="v-log" class="view" hidden>
   <div class="panel">
-    <div class="phead" data-acc="log"><h2>Done log</h2><span class="meta" id="logMeta"></span>
+    <div class="phead" data-acc="log"><h2>Complete works</h2><span class="meta" id="logMeta"></span>
       <span class="right"><button class="mini" data-copy="log">Copy</button><button class="mini" data-pdf="log">PDF</button></span>
     </div>
     <div id="logList"></div>
@@ -1754,6 +1755,10 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     if(!$("scrim").hidden){cfgPending=true;return}
     cfgPending=false;
     fill($("fCo"),cfg.trades.map(function(t){return[t[0],t[0]+" — "+t[1]]}),true);
+    /* A one-up-one-down swap is one booking on the hook, not two, so the second
+       trade rides on the same row and the bar is drawn half in each colour. */
+    fill($("fCo2"),[["","One trade only"]].concat(
+      cfg.trades.map(function(t){return[t[0],"1 up 1 down with "+t[0]]})),true);
     var seenP={},locOpts=[["","-"]];
     places().forEach(function(l){if(!seenP[l]){seenP[l]=1;locOpts.push([l,l])}});
     fill($("fFrom"),locOpts,true);
@@ -2520,6 +2525,10 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
 
   function clean(it){
     var co=oneOf(String(it.co||"").toUpperCase(),cfg.trades,"OTH");
+    /* A swap run carries the trade coming the other way, so the bar on the
+       board is drawn half in each colour. "" unless there really are two. */
+    var co2=it.co2?oneOf(String(it.co2).toUpperCase(),cfg.trades,""):"";
+    if(co2===co)co2="";
     var per=perCo(co);
     var start=Math.round(+it.start);
     if(!isFinite(start)||start<0||start>1439)start=cfg.open+60;
@@ -2547,7 +2556,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       kind:kind(type,String(it.kind||"").toUpperCase())[0],
       crane:cr,
       start:start,dur:d,qty:qty,kg:kg,
-      co:co,
+      co:co,co2:co2,
       from:pFrom,to:pTo,
       desc:String(it.desc||"").slice(0,90).trim()||(type==="del"?"Delivery":"Lift"),
       status:oneOf(it.status,STATUSES,"con"),
@@ -2656,6 +2665,30 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     var guessed=false;
     if(!co){ co="OTH"; guessed=true; }
 
+    /* ---- a one-up-one-down swap ----
+       One run, two trades: one lot of gear goes up and the other comes down.
+       It is a single booking, so the second trade rides along in co2 and the
+       bar is drawn half in each colour rather than booked twice. */
+    var co2="";
+    if(/\b(?:1|one)\s*(?:up)?\s*(?:up\s*)?(?:,|and|&)?\s*(?:1|one)\s*down\b|\bswap(?:ping|s)?\b|\bone\s*for\s*one\b/.test(low)){
+      var mate2=null;
+      (cfg.trades||[]).forEach(function(t){
+        if(t[0]===co) return;
+        String(t[1]||"").toLowerCase().split(/[^a-z0-9]+/).forEach(function(w){
+          if(w.length<5) return;
+          var hit=low.search(new RegExp("\\b"+esc(w)+"s?\\b","i"));
+          if(hit>=0 && (!mate2||hit<mate2.at)) mate2={at:hit, code:t[0], word:w};
+        });
+      });
+      if(mate2){ co2=mate2.code; drop(mate2.word+"s"); drop(mate2.word); }
+      if(!co2) (cfg.trades||[]).forEach(function(t){
+        if(co2||t[0]===co) return;
+        var c2=String(t[0]||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+        if(c2 && new RegExp("\\b"+esc(c2)+"\\b","i").test(low)){ co2=t[0]; drop(c2); }
+      });
+      if(co2) eat(/\b(?:1|one)\s*up\s*(?:,|and|&)?\s*(?:1|one)\s*down\b/);
+    }
+
     /* ---- how many ---- */
     var qty=null;
     if((m=low.match(/\b(\d{1,3})\s*(lifts?|loads?|picks?)\b/))){ qty=+m[1]; drop(m[0]); }
@@ -2690,7 +2723,8 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     for(var i=0;i<KINDWORDS.length;i++){
       if(KINDWORDS[i][1].test(low)){ kind=KINDWORDS[i][0]; break; }
     }
-    /* a kibble or line pump pour does not stand the crane down; a boom does */
+    /* Boom or kibble, the crane is tied up either way - the difference is only
+       which kind it books as. quickAdd puts the concrete delivery beside it. */
     if(kind==="BOOM" && /\bline\s?pump\b|\bkibble\b/.test(low)) kind="KIB";
 
     /* ---- where from, where to ----
@@ -2733,7 +2767,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       statedDur=Math.max(5,Math.min(600,statedDur));
     }
 
-    var out={co:co, start:start, desc:desc, to:to, from:from,
+    var out={co:co, co2:co2, start:start, desc:desc, to:to, from:from,
              type:type, kind:kind, date:date||cur,
              status:(guessed?"req":status)};
     if(qty!==null)   out.qty=qty;
@@ -2803,14 +2837,16 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       "Places for \"from\" and \"to\" (where the load is picked up and where it lands): "+places().join(", ")+". Use \"\" for either if the note does not say.\n"+
       "Lift types (use with type lift): "+kindList("lift").map(function(k){return k[0]+"="+k[1]}).join(", ")+".\n"+
       "Delivery types (use with type del): "+kindList("del").map(function(k){return k[0]+"="+k[1]}).join(", ")+".\n"+
-      'Shape: {"items":[{"date":"YYYY-MM-DD","type":"lift"|"del","kind":"<type code>","crane":"tower"|"mobile"|"hoist"|"none","start":<minutes after midnight, 24h>,"kg":<total weight in kg if one is given, else 0>,"qty":<number of crane lifts - a weight splits into one lift per tonne, rounded up>,"dur":<minutes on the hook>,"co":"<code>","from":"<where it is lifted from, or empty>","to":"<where it is lifted to, or empty>","desc":"<what, short>","status":"con"|"req","notes":"<crew, truck, gear, or empty>"}]}\n'+
+      'Shape: {"items":[{"date":"YYYY-MM-DD","type":"lift"|"del","kind":"<type code>","crane":"tower"|"mobile"|"hoist"|"none","start":<minutes after midnight, 24h>,"kg":<total weight in kg if one is given, else 0>,"qty":<number of crane lifts - a weight splits into one lift per tonne, rounded up>,"dur":<minutes on the hook>,"co":"<code>","co2":"<second trade code on a one-up-one-down swap, else empty>","from":"<where it is lifted from, or empty>","to":"<where it is lifted to, or empty>","desc":"<what, short>","status":"con"|"req","notes":"<crew, truck, gear, or empty>"}]}\n'+
       'One item per booking mentioned. type "del" for a material delivery to site, "lift" for a crane lift, '+
       'A delivery unloaded by hand with no crane or forklift (hand unload, hand ball, carried in) is type "del" with kind "HAND". '+
       'A lift takes '+per+' minutes, so dur = qty x '+per+' unless the note gives its own duration. If no count is given, qty 1. '+
       'For a delivery with no crane mentioned use crane "none" and qty 0.\n'+
-      'A CONCRETE POUR WITH A BOOM PUMP stands the tower crane down, because the boom is in its airspace. Book it as TWO items with the same date, start and duration: '+
-      'one type "del" kind "BOOM" crane "none" qty 0 for the pump itself, and one type "lift" kind "BOOM" crane "tower" qty 0 with desc "Crane stood down - boom pump in airspace" to block the hook. '+
-      'A pour by kibble or by line pump does not stand the crane down, so book that as one item only.\n'+
+      'A CONCRETE POUR TIES UP THE CRANE EITHER WAY - a boom pump sits in its airspace, a kibble hangs off the hook - so every pour is TWO items with the same date, start and duration: '+
+      'one type "del" crane "none" qty 0 for the concrete itself, and one type "lift" crane "tower" qty 0 to hold the hook. '+
+      'Use kind "BOOM" for both on a boom pump, kind "KIB" for both on a kibble. A kibble pour of wet joints runs about 60 minutes unless the note says otherwise.\n'+
+      'A ONE-UP-ONE-DOWN SWAP is one booking, not two: the same run takes one trade\'s gear up and brings the other\'s down. '+
+      'Put the trade going up in "co" and the trade coming down in "co2", and count the lifts once in qty.\n'+
       "Site hours are "+clock(cfg.open)+" to "+clock(cfg.close)+", so read a bare time as one inside that window. Round start to the nearest 10 minutes. "+
       'status "req" if it sounds unconfirmed (tbc, maybe, provisional, trying to), otherwise "con". Keep desc to materials and location, no times or trade name.\n'+
       "Site note: "+text;
@@ -2848,7 +2884,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       "Places for \"from\" and \"to\": "+places().join(", ")+". Use \"\" for any that is not named.\n"+
       "Lift types: "+kindList("lift").map(function(k){return k[0]+"="+k[1]}).join(", ")+".\n"+
       "Delivery types: "+kindList("del").map(function(k){return k[0]+"="+k[1]}).join(", ")+".\n"+
-      'Shape: {"items":[{"date":"YYYY-MM-DD","type":"lift"|"del","kind":"<code>","crane":"tower"|"mobile"|"hoist"|"none","start":<minutes after midnight>,"kg":<total weight in kg if the sheet gives one, else 0>,"qty":<lifts - a weight splits into one lift per tonne, rounded up>,"dur":<minutes>,"co":"<code>","from":"","to":"","desc":"<short>","status":"con","notes":"<mass, load ref, anything useful>"}]}\n'+
+      'Shape: {"items":[{"date":"YYYY-MM-DD","type":"lift"|"del","kind":"<code>","crane":"tower"|"mobile"|"hoist"|"none","start":<minutes after midnight>,"kg":<total weight in kg if the sheet gives one, else 0>,"qty":<lifts - a weight splits into one lift per tonne, rounded up>,"dur":<minutes>,"co":"<code>","co2":"<second trade code if one run swaps one trade up and another down, else empty>","from":"","to":"","desc":"<short>","status":"con","notes":"<mass, load ref, anything useful>"}]}\n'+
       "ON A PRECAST LOADLIST: each load block has a Site Due time and a list of panels. Make ONE item per panel, qty 1, dur "+per+", type lift, crane tower. "+
       "Space the panels of a load "+per+" minutes apart starting at that load's Site Due time. Put the panel number in desc. Put the mass and the load number in notes. "+
       "If the Spinup column says YES use kind SPIN, if it says NO use kind SNGL.\n"+
@@ -2934,7 +2970,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       if(!v)throw {code:"empty"};
       var r=clean(v);
       $("fType").value=r.type;fillKinds(false);$("fKind").value=r.kind;relabelDur();
-      $("fCo").value=r.co;semiToggle();
+      $("fCo").value=r.co;$("fCo2").value=r.co2||"";co2Paint();semiToggle();
       $("fDesc").value=r.desc;
       $("fQty").value=r.qty;
       $("fKg").value=r.kg||"";
@@ -2981,6 +3017,17 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     var opts=$("fDur").options;
     for(var i=0;i<opts.length;i++)if(opts[i].value===want){$("fDur").value=want;return}
   }
+  /* Swapping a trade with itself is not a swap, so that selection is ignored
+     rather than saved as a second colour nobody can tell from the first. */
+  function co2Val(){
+    var a=$("fCo").value,b=$("fCo2").value;
+    return (b&&b!==a)?b:"";
+  }
+  function co2Paint(){
+    var a=$("fCo").value,o=$("fCo2").options,i;
+    for(i=0;i<o.length;i++)o[i].disabled=(o[i].value!==""&&o[i].value===a);
+    if($("fCo2").value===a)$("fCo2").value="";
+  }
   function openSheet(L){
     editing=L||null;
     $("sheetTitle").textContent=L?"Edit booking":"Add a booking";
@@ -2998,6 +3045,8 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     $("fDur").value=L?String(L.dur):String(Math.max(5,cfg.per||10));
     if(!L)syncDur();
     $("fCo").value=L?L.co:(cfg.trades[1]?cfg.trades[1][0]:"OTH");
+    $("fCo2").value=(L&&L.co2)?L.co2:"";
+    co2Paint();
     $("fFrom").value=L?(L.from||""):"";
     $("fTo").value=L?(L.to||""):"";
     $("fDesc").value=L?L.desc:"";
@@ -3020,7 +3069,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     return {
       date:$("fDate").value||cur,type:$("fType").value,kind:$("fKind").value,crane:$("fCrane").value,
       start:mins($("fStart").value||clock(cfg.open+60)),dur:+$("fDur").value,qty:+$("fQty").value||0,kg:+$("fKg").value||0,
-      co:$("fCo").value,from:$("fFrom").value,to:$("fTo").value,desc:$("fDesc").value.trim(),
+      co:$("fCo").value,co2:co2Val(),from:$("fFrom").value,to:$("fTo").value,desc:$("fDesc").value.trim(),
       status:$("fStatus").value,notes:$("fNotes").value.trim(),by:uid||"",ts:Date.now()
     };
   }
@@ -3342,7 +3391,9 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     $("fSemiWrap").hidden=!on;
     if(!on)$("fSemi").value="0";
   }
+  $("fCo2").addEventListener("change",co2Paint);
   $("fCo").addEventListener("change",function(){
+    co2Paint();
     semiToggle();syncDur();
     var r=runFor($("fCo").value);
     if(r&&!$("fFrom").value&&!$("fTo").value){
@@ -3427,7 +3478,7 @@ var SUPPLIERS={ELISE:"#3A3835",WORKCON:"#0073EA",HARWELL:"#00C875"};
 var SKIND={CRIT:["Critical","#9E3F2B"],NCR:["NCR","#9C7220"]};
 var DCAUSE={WX:["Weather","#0073EA"],ACC:["Access","#9C7220"],SUB:["Subcontractor","#784BD1"],
   MAT:["Materials","#1E4FA3"],PLANT:["Plant","#5A6670"],DSN:["Design / RFI","#D92B20"],OTH:["Other","#8C8C8C"]};
-var VIEWS=[["today","Today"],["prestart","Prestart"],["labour","Labour & jobs"],["crane","Crane & deliveries"],["safety","Safety"],["prepour","Pre-pour"],["log","Done log"]];
+var VIEWS=[["today","Today"],["prestart","Prestart"],["labour","Labour & jobs"],["crane","Crane & deliveries"],["safety","Safety"],["prepour","Pre-pour"],["log","Complete works"]];
 var CUT=1260;      /* one cut a day, 9pm */
 var ROLLOVER=990;  /* 4:30pm - after knock-off you are planning tomorrow */
 /* the day the board opens on: today until 4:30pm, tomorrow after it */
@@ -3754,7 +3805,7 @@ function saveJobs(items){
   logDone(was,items);
   renderJobs();renderFront();renderTabs();
 }
-/* ---------- done log ----------
+/* ---------- complete works ----------
    Every job that gets ticked off lands here, by month, so the record of what
    the crew actually got through survives the daily carry-over. Untick it and
    it comes back out again - the log follows the board, it does not argue with it. */
@@ -3793,8 +3844,8 @@ function logItems(){
    The standing checks live in config/prestart so Harry can change the list
    without anyone editing the board. Today's open safety items are pulled in
    on top of them, because a prestart that ignores the live hazards is a
-   form, not a prestart. One document per day; completing it writes to the
-   Done log the same way a ticked job does. */
+   form, not a prestart. One document per day; completing it writes to
+   Complete works the same way a ticked job does. */
 function preDoc(){ return state.preDocs[state.date]||{}; }
 function preStanding(){
   var c=state.preCfg&&state.preCfg.items;
@@ -3841,7 +3892,7 @@ function completePre(){
 }
 function reopenPre(){ savePre({by:"", at:0}); }
 
-/* the signed prestart joins the done log, and comes back out if reopened */
+/* the signed prestart joins Complete works, and comes back out if reopened */
 function logPrestart(who){
   var m=state.date.slice(0,7), key=state.date+"|site prestart";
   var cur=(state.logDocs[m]&&state.logDocs[m].items)||[];
@@ -5066,7 +5117,7 @@ function sectionText(which){
     }
   } else if(which==="log"){
     var lg=logItems();
-    out=["ELISE - DONE LOG",""];
+    out=["ELISE - COMPLETE WORKS",""];
     out.push(lg.length?lg.length+" jobs ticked off":"Nothing ticked off yet.");
     var last="";
     lg.forEach(function(e){
@@ -5142,7 +5193,7 @@ function imgData(id, bkt){
 }
 var SECTIONS={all:"Day sheet",labour:"Labour",jobs:"Jobs",safety:"Safety",
   crane:"Crane & deliveries",delays:"Delays",
-  photos:"Photos",safetyphotos:"Safety photos",log:"Done log",prepour:"Pre-pour",pourphotos:"Pre-pour photos",
+  photos:"Photos",safetyphotos:"Safety photos",log:"Complete works",prepour:"Pre-pour",pourphotos:"Pre-pour photos",
   team:"Team prestart",logistics:"Logistics prestart"};
 async function buildPDF(which){
   if(!window.jspdf||!window.jspdf.jsPDF){toast("PDF builder didn't load — reload the page");return null;}
