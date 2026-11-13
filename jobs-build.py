@@ -290,12 +290,23 @@ var URL_="__SB_URL__", KEY="__SB_KEY__";
 var H={apikey:KEY,Authorization:"Bearer "+KEY};
 var JH={apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json"};
 var BUCKET="job-photos";
-var day=0, rows=[], me="", pending=null, shotFile=null, daily=null, dlog={}, crew=[], priWant=false;
+var day=dayFromHash(), rows=[], me="", pending=null, shotFile=null, daily=null, dlog={}, crew=[], priWant=false;
 var trades=null;
 
 function p2(n){return ("0"+n).slice(-2)}
 function iso(d){return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())}
 function dateFor(o){var d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+o);return d}
+/* The board links here with the day it is showing on the end - #2026-11-14 -
+   so tapping Labour from Saturday's board opens Saturday's list, not this
+   phone's idea of today. Anything else in the hash is ignored. */
+function dayFromHash(){
+  var m=/^#(\d{4})-(\d{2})-(\d{2})$/.exec(location.hash||"");
+  if(!m) return 0;
+  var want=new Date(+m[1],+m[2]-1,+m[3]); want.setHours(12,0,0,0);
+  var now=new Date(); now.setHours(12,0,0,0);
+  var off=Math.round((want-now)/86400000);
+  return (off>=-30&&off<=30)?off:0;
+}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 var DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
@@ -738,6 +749,10 @@ me=loadMe();
 load();
 if(!me) setTimeout(askWho, 600);
 setInterval(load, 60000);
+window.addEventListener("hashchange",function(){
+  var d=dayFromHash();
+  if(d!==day){ day=d; load(); }
+});
 document.addEventListener("visibilitychange",function(){
   if(document.visibilityState==="visible") load();
 });

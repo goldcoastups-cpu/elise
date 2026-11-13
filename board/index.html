@@ -739,6 +739,7 @@ svg.wind .wdot{fill:var(--alarm);stroke:var(--surface);stroke-width:1.6;vector-e
 .wtip s{text-decoration:none;font-size:.78em;opacity:.6;margin-left:1px}
 .wtip i{font-style:normal;opacity:.66;margin-left:6px;font-weight:600}
 .wtip u{text-decoration:none;opacity:.55;margin-left:5px;font-weight:600}
+.wmiss{display:flex;align-items:center;gap:10px;padding:10px 2px;font-size:12.5px;color:var(--ink-3)}
 .exp-lab{flex:1 1 auto;align-self:center;font-family:var(--f-cond);font-size:11px;font-weight:700;
   letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
 .exp-lab b{font-weight:700;color:var(--ink-2);margin-left:8px;letter-spacing:.02em;
@@ -1280,7 +1281,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <button class="linkbtn" id="todayBtnDB">Today</button>
     <span class="daylabel" id="dayLabelDB">—</span>
     <span class="strip-right">
-      <a class="linkbtn pagelink" href="../jobs/" target="_blank" rel="noopener">Labour</a><a class="linkbtn pagelink" href="../lifts/" target="_blank" rel="noopener">Lifts &amp; deliveries</a><span class="stripdiv" aria-hidden="true"></span><button class="linkbtn primary" id="pdfBtn" data-pdf="all">Site prestart</button><button class="linkbtn primary" data-pdf="team">Team prestart</button><button class="linkbtn primary" data-pdf="prepour">Pre-pour</button><button class="linkbtn primary" data-pdf="logistics">Logistics</button>
+      <a class="linkbtn pagelink" id="lnkJobs" href="../jobs/" target="_blank" rel="noopener">Labour</a><a class="linkbtn pagelink" id="lnkLifts" href="../lifts/" target="_blank" rel="noopener">Lifts &amp; deliveries</a><span class="stripdiv" aria-hidden="true"></span><button class="linkbtn primary" id="pdfBtn" data-pdf="all">Site prestart</button><button class="linkbtn primary" data-pdf="team">Team prestart</button><button class="linkbtn primary" data-pdf="prepour">Pre-pour</button><button class="linkbtn primary" data-pdf="logistics">Logistics</button>
     </span>
   </div>
 </div>
@@ -1689,7 +1690,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <p class="note">Every labour job ticked off, newest first, kept by month. Jobs land here the moment the box is ticked and come back out if you untick one, so the log always matches the board.</p>
     <div class="addrow">
       <span class="exp-lab">Take it with you<b id="expMeta"></b></span>
-      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 13 Nov 15:19</span>
+      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 13 Nov 19:26</span>
       <button class="mini" id="expJson">Everything (JSON)</button>
       <button class="mini" id="expCsv">Spreadsheets (CSV)</button>
     </div>
@@ -3918,6 +3919,12 @@ function renderFeeds(){
 }
 
 function renderFront(){
+  /* The two pages open on whatever day the board is showing, not on their
+     own idea of today - tapping Labour from Saturday's board and landing on
+     Friday's list is how two people end up working off different days. */
+  var lj=el("lnkJobs"), ll=el("lnkLifts");
+  if(lj) lj.href="../jobs/#"+state.date;
+  if(ll) ll.href="../lifts/#"+state.date;
   try{ renderWind(); }catch(e){}
   try{ renderWeather(); }catch(e){}
   var lab=state.labour.filter(function(r){return r.date===state.date;});
@@ -4128,9 +4135,13 @@ function wxFetch(force){
       if(ws!=null)bits.push((wxCompass(wd)?wxCompass(wd)+" ":"")+Math.round(ws)+" km/h");
       WX.by[day]=bits.join(", ");
     });
-    WX.state="ok"; WX.at=Date.now();
+    WX.state="ok"; WX.at=Date.now(); WX.retried=false;
   })
-  .catch(function(){ WX.state="fail"; WX.at=Date.now(); })
+  .catch(function(){
+    WX.state="fail"; WX.at=Date.now();
+    /* signal in a basement comes and goes - try once more shortly */
+    if(!WX.retried){ WX.retried=true; setTimeout(function(){ wxFetch(true); },20000); }
+  })
   .then(function(){
     try{ renderPrestart(); }catch(e){}
     try{ renderNowStrip(); }catch(e){}
@@ -4210,10 +4221,20 @@ function renderWind(){
   if(!box||!band) return;
   if(WX.state==="idle")wxFetch();
   var H=wxDayHours(state.date), svg=H.length>1?windSvg(state.date):"";
-  if(!svg){ band.hidden=(WX.state!=="loading"); box.innerHTML=""; 
-            if(el("windMeta"))el("windMeta").textContent=
-              WX.state==="loading"?"reading\u2026":WX.state==="fail"?"no forecast":"";
-            return; }
+  if(!svg){
+    /* Hiding the whole band on a failed read made the wind look like a
+       feature that was not there. It stays, says what happened, and offers
+       another go - the shed has patchy signal and one miss is normal. */
+    band.hidden=false;
+    box.innerHTML='<div class="wmiss">'+
+      (WX.state==="loading"?"Reading the forecast\u2026"
+        :WX.state==="fail"?'Couldn\u2019t reach the forecast <button class="mini" id="wxRetry">Try again</button>'
+        :'No forecast for this day <button class="mini" id="wxRetry">Try again</button>')+'</div>';
+    var rb=el("wxRetry");
+    if(rb) rb.onclick=function(){ WX.state="idle"; WX.at=0; renderWind(); wxFetch(true); };
+    if(el("windMeta"))el("windMeta").textContent=WX.state==="loading"?"reading\u2026":"";
+    return;
+  }
   band.hidden=false;
   box.innerHTML=svg+'<div class="wtip" id="windTip" hidden></div>';
   var sv=box.querySelector("svg"), tip=el("windTip"),
