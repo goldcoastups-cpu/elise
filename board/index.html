@@ -6582,9 +6582,31 @@ el("dfCause").innerHTML=Object.keys(DCAUSE).map(function(k){return '<option valu
 el("itemPhotoIn").addEventListener("change",function(){
   var f=Array.prototype.slice.call(el("itemPhotoIn").files||[]);
   el("itemPhotoIn").value="";
-  if(f.length&&state.pending)attachPhotos(state.pending,f);
+  var want=state.pending;
   state.pending=null;
+  /* picker cancelled - nothing was made, and what they typed is still sitting
+     in the box where they left it */
+  if(!f.length){ heldJob=null; heldPour=null; return; }
+  /* A job shot from the top bar is not created until the photo is actually
+     in hand. It used to be added the moment the camera was tapped, so the
+     job appeared on the board before the picture existed, and backing out of
+     the camera left a bare job behind. */
+  if(want==="heldjob"&&heldJob){
+    var h=heldJob; heldJob=null;
+    el("jfText").value="";
+    saveJobs(dayJobs().concat([h]));
+    want="job|"+(dayJobs().length-1);
+  }
+  if(want==="heldpour"&&heldPour){
+    var hp=heldPour; heldPour=null;
+    el("pfText").value="";
+    savePour(dayPour().concat([hp]));
+    want="pouritem|"+(dayPour().length-1);
+  }
+  if(want)attachPhotos(want,f);
 });
+/* held while the camera is open, written only if a photo comes back */
+var heldJob=null, heldPour=null;
 el("delayForm").addEventListener("submit",function(e){
   e.preventDefault();
   var t=el("dfText").value.trim();if(!t)return;
@@ -6615,16 +6637,19 @@ el("jobForm").addEventListener("submit",function(e){
   e.preventDefault();
   if(addTypedJob())el("jfText").focus();
 });
-/* type the job, hit the camera, shoot it - the photo lands on that job */
+/* type the job, hit the camera, shoot it - the job and the photo land
+   together, and backing out of the camera leaves your typing where it was */
 el("jfCam").innerHTML=CAMICON;
 el("jfCam").addEventListener("click",function(){
   if(!assets){toast("Photos can\u2019t be added from this screen");return;}
-  if(!el("jfText").value.trim()){
+  var t=el("jfText").value.trim();
+  if(!t){
     toast("Type the job first, then hit the camera");
     el("jfText").focus();return;
   }
-  if(!addTypedJob())return;
-  state.pending="job|"+(dayJobs().length-1);
+  heldJob={id:jobId(),text:t,done:false,pri:!!el("jfPri").value,
+           who:el("jfWho").value.trim().toUpperCase()};
+  state.pending="heldjob";
   el("itemPhotoIn").click();
 });
 function addTypedPour(){
@@ -6642,12 +6667,14 @@ el("pourForm").addEventListener("submit",function(e){
 el("pfCam").innerHTML=CAMICON;
 el("pfCam").addEventListener("click",function(){
   if(!assets){toast("Photos can\u2019t be added from this screen");return;}
-  if(!el("pfText").value.trim()){
+  var t=el("pfText").value.trim();
+  if(!t){
     toast("Type the item first, then hit the camera");
     el("pfText").focus();return;
   }
-  if(!addTypedPour())return;
-  state.pending="pouritem|"+(dayPour().length-1);
+  heldPour={text:t,done:false,pri:!!el("pfPri").value,
+            who:el("pfWho").value.trim().toUpperCase()};
+  state.pending="heldpour";
   el("itemPhotoIn").click();
 });
 el("safeForm").addEventListener("submit",function(e){
