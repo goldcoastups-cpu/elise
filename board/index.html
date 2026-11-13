@@ -1413,8 +1413,8 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <div class="hrow week" id="cb-week"></div>
     <div class="hrow qbar" id="cb-qbar">
       <input type="text" id="cb-qInput" placeholder="7am GLF 6 lifts reo bundles to L7" autocomplete="off" enterkeyhint="done">
-      <button class="btn" id="cb-camBtn" title="Photo of a load list or docket">Photo</button>
-      <button class="btn" id="cb-albBtn" title="Pick a photo you already took">Album</button>
+      <button class="btn" id="cb-camBtn" title="Photo of a load list or docket" hidden>Photo</button>
+      <button class="btn" id="cb-albBtn" title="Pick a photo you already took" hidden>Album</button>
       <button class="btn primary" id="cb-qAdd">Add</button>
     </div>
     <input type="file" id="cb-camIn" accept="image/*" capture="environment" multiple hidden>
@@ -1554,8 +1554,8 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       </div>
       <div class="acts">
         <button class="btn primary grow" id="cb-saveBtn">Save</button>
-        <button class="btn" id="cb-sheetCam">Photo</button>
-        <button class="btn" id="cb-sheetAlb">Album</button>
+        <button class="btn" id="cb-sheetCam" hidden>Photo</button>
+        <button class="btn" id="cb-sheetAlb" hidden>Album</button>
         <button class="btn" id="cb-dupBtn" hidden>Duplicate</button>
         <button class="btn" id="cb-repBtn" hidden>Repeat tomorrow</button>
         <button class="btn" id="cb-cancelBtn">Cancel</button>
@@ -1689,7 +1689,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <p class="note">Every labour job ticked off, newest first, kept by month. Jobs land here the moment the box is ticked and come back out if you untick one, so the log always matches the board.</p>
     <div class="addrow">
       <span class="exp-lab">Take it with you<b id="expMeta"></b></span>
-      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 13 Nov 14:31</span>
+      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 13 Nov 15:19</span>
       <button class="mini" id="expJson">Everything (JSON)</button>
       <button class="mini" id="expCsv">Spreadsheets (CSV)</button>
     </div>
@@ -2787,7 +2787,21 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     else if((m=eat(/\b(\d{1,2})\s*(am|pm)\b/)))            start=(+m[1]%12)*60 + (m[2]==="pm"?720:0);
     else if((m=eat(/\b(\d{1,2})[:.](\d{2})\b/))){ if(+m[1]>23) return null; start=(+m[1])*60 + (+m[2]); }
     else if((m=eat(/\b([01]\d|2[0-3])([0-5]\d)\s*(?:hrs?)?\b/))) start=(+m[1])*60 + (+m[2]);
-    if(start===null || start<0 || start>1439) return null;
+    /* No time in the line is the commonest way to type a booking - "2 x
+       blockwork pallets from ground" is a complete thought on site. Refusing
+       it and throwing the sheet open was the wrong answer: put it at the next
+       sensible slot, mark it TBC so it stands out, and say so. */
+    var noTime=false;
+    if(start===null){
+      noTime=true;
+      var per0=Math.max(5,cfg.per||10), open0=cfg.open||360, close0=cfg.close||1080;
+      if(date===iso(new Date())){
+        var nm=new Date().getHours()*60+new Date().getMinutes();
+        start=Math.max(open0, Math.ceil(nm/per0)*per0);
+      } else start=open0;
+      if(start>close0-per0) start=close0-per0;
+    }
+    else if(start<0 || start>1439) return null;
 
     /* ---- which trade ----
        A full company name can sit anywhere, it is unambiguous. A short code
@@ -2926,7 +2940,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     }
 
     /* ---- unconfirmed? ---- */
-    var status=/\b(tbc|maybe|provisional|trying to|might|possibly)\b/.test(low) ? "req" : "con";
+    var status=(noTime || /\b(tbc|maybe|provisional|trying to|might|possibly)\b/.test(low)) ? "req" : "con";
 
     /* ---- whatever is left describes the load ---- */
     var desc=raw;
@@ -2960,6 +2974,9 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     else if(statedDur!==null) out.dur=statedDur;
     else if(kind==="KIB")     out.dur=60;   /* a wet joint kibble runs about an hour */
     if(guessed) out.notes="Trade not recognised - set to OTH, check it";
+    if(noTime) out.notes=(out.notes?out.notes+" | ":"")+
+      "No time was given - parked here and marked TBC, set the real time";
+    out.noTime=noTime;
     return out;
   }
 
@@ -3003,6 +3020,9 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
             date:quick.date, status:quick.status,
             desc:"Concrete for "+quick.desc, notes:"Added with the kibble - a pour is a delivery and crane time"});
         }
+        if(quick.noTime) setTimeout(function(){
+          toast("No time given - parked at "+clock(quick.start)+" as TBC, drag it where it goes");
+        },900);
         return commitParsed(items);
       }
       openSheet(null);$("fDesc").value=text.slice(0,90);
@@ -3210,6 +3230,15 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     var a=$("fCo").value,o=$("fCo2").options,i;
     for(i=0;i<o.length;i++)o[i].disabled=(o[i].value!==""&&o[i].value===a);
     if($("fCo2").value===a)$("fCo2").value="";
+  }
+  /* Reading a photo of a docket needs the Claude runtime, which exists when
+     the board runs as an artifact and does not when it runs as a web page.
+     Rather than leave four buttons that always answer "can't read photos
+     here", they are only shown where they can actually do something. */
+  function showReaders(){
+    ["camBtn","albBtn","sheetCam","sheetAlb"].forEach(function(id){
+      var b=$(id); if(b) b.hidden=!sampler;
+    });
   }
   function openSheet(L){
     editing=L||null;
@@ -3634,7 +3663,9 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       db=d;
       if(db){watchCfg();subscribe()}
       else $("craneEmpty").querySelector("p").textContent="Can't reach the shared store from here. Open it signed in to see and book lifts.";
-    }).catch(function(){}).then(function(){return C.use("sample")}).then(function(s){sampler=s}).catch(function(){});
+    }).catch(function(){}).then(function(){return C.use("sample")})
+      .then(function(s){sampler=s}).catch(function(){})
+      .then(function(){ try{ showReaders(); }catch(e){} });
   })();
 })();
 
