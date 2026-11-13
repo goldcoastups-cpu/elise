@@ -489,8 +489,16 @@ window.eliseAuth = {
 .nowstrip .nsnext .nstxt{font-size:12px;font-weight:500;color:var(--ink-2)}
 .nowstrip.idle .nstxt{color:var(--ink-2);font-weight:500}
 @media (max-width:560px){
-  .nowstrip{gap:9px}
+  /* On a phone the hook was being sliced mid-word to fit beside the clock
+     and the weather. It gets its own line instead: time and weather above,
+     what is actually on the hook below, whole. */
+  .nowstrip{gap:9px;flex-wrap:wrap;row-gap:4px;padding-block:8px 9px;overflow:visible}
   .nowstrip .nsclock{font-size:21px}
+  .nowstrip .nsmain{flex:0 0 auto}
+  .nowstrip .nshook{flex:1 1 100%;order:9;min-width:0;padding-top:5px;
+    border-top:1px solid var(--line)}
+  .nowstrip .nshook .nstxt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nowstrip .nsdot{order:8}
   .nowstrip .nsnext{display:none}
 }
 .themebtn{background:transparent;border:1px solid var(--line-hard);border-radius:4px;color:var(--ink-2);
@@ -1262,9 +1270,11 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
 <button class="lockbtn" id="sbLock" type="button" title="Sign in to change the board">&#128274;</button>
   </div>
   <nav class="tabs gut" id="tabs"></nav>
+  <!-- The time and what is on the hook belong to the banner, not to the page.
+       Outside the sticky header they scrolled away under it, so the one thing
+       you glance at on a phone was the first thing to disappear. -->
+  <div class="nowstrip gut" id="nowStrip" hidden></div>
 </header>
-
-<div class="nowstrip gut" id="nowStrip" hidden></div>
 
 <div class="windband" id="windBand" hidden>
   <div class="gut wb-in">
@@ -1690,7 +1700,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <p class="note">Every labour job ticked off, newest first, kept by month. Jobs land here the moment the box is ticked and come back out if you untick one, so the log always matches the board.</p>
     <div class="addrow">
       <span class="exp-lab">Take it with you<b id="expMeta"></b></span>
-      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 13 Nov 19:26</span>
+      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 13 Nov 19:43</span>
       <button class="mini" id="expJson">Everything (JSON)</button>
       <button class="mini" id="expCsv">Spreadsheets (CSV)</button>
     </div>
@@ -6854,14 +6864,14 @@ function renderNowStrip(){
     '<span class="nsclock" id="nsClock">'+clockText()+'</span>'+
     '<span class="nscd" id="nsCount">'+countText()+'</span></span>'+wxChip();
   if(!p.live){
-    el0.innerHTML=clock+'<span class="nsmain"><span class="nslab">'+esc(p.none?"Crane":"Hook clear")+'</span>'+
+    el0.innerHTML=clock+'<span class="nsmain nshook"><span class="nslab">'+esc(p.none?"Crane":"Hook clear")+'</span>'+
       '<div class="nstxt">'+esc(p.none||"Nothing left on the hook today")+'</div></span>';
     return;
   }
   var T=trades(),c=(T[p.live.co]||T.OTH||["Other","#938C80"])[1];
   el0.innerHTML=clock+
     '<span class="nsdot" style="background:'+c+'"></span>'+
-    '<span class="nsmain"><span class="nslab">'+esc(p.lab)+'</span>'+
+    '<span class="nsmain nshook"><span class="nslab">'+esc(p.lab)+'</span>'+
     '<div class="nstxt"><span class="t">'+fmtClock(toMin(p.live.start))+'</span>'+
     '<span class="co">'+esc(p.live.co)+'</span>'+
     '<span class="nswrap"><span class="nsroll">'+esc(p.live.desc||"")+'</span></span></div></span>'+
