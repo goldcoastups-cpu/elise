@@ -551,13 +551,30 @@ button,input,select{font:inherit;color:inherit}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:4px;min-width:0;overflow:hidden}
 .cardhead{width:100%;display:flex;align-items:baseline;gap:9px;padding:11px 14px;background:none;border:none;
   border-bottom:2px solid var(--cacc,var(--line));cursor:pointer;text-align:left}
-/* each card wears the colour of the tab it opens, so the eye learns the
-   board once and the colour means the same thing wherever it turns up */
-.card{--cacc:var(--line)}
-.card.k-safety{--cacc:var(--crit)}
-.cardhead{border-bottom-width:1px}
+/* every card heading reads the same - one colour, one underline - so the
+   four sections sit as a set rather than four different signs */
+.card{--cacc:var(--gold)}
+.cardhead{border-bottom-width:2px}
 .cardhead .t{color:var(--ink)}
-.card.k-safety .cardhead .t{color:var(--crit)}
+
+/* the pages and the prints, out of the date bar and into a bar of their
+   own: one style for all six, Open on one row and Print on the next */
+.pagebar{display:flex;flex-direction:column;gap:7px;padding-top:16px}
+.pb-grp{display:grid;grid-template-columns:54px 1fr;gap:10px;align-items:center}
+.pb-lab{font-family:var(--f-cond);font-size:10.5px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-3)}
+.pb-btns{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.pbtn{display:flex;align-items:center;justify-content:center;text-align:center;min-height:38px;
+  padding:7px 10px;background:var(--surface);border:1px solid var(--line-hard);border-radius:4px;
+  color:var(--ink);text-decoration:none;cursor:pointer;font-family:var(--f-cond);font-size:12px;
+  font-weight:700;letter-spacing:.11em;text-transform:uppercase;line-height:1.15}
+.pbtn:hover{background:var(--surface-2)}
+.pbtn:focus-visible{outline:2px solid var(--clock);outline-offset:2px}
+@media (max-width:560px){
+  .pb-grp{grid-template-columns:44px 1fr;gap:8px}
+  .pb-btns{grid-template-columns:1fr 1fr}
+  .pbtn{font-size:11px;min-height:36px}
+}
 .cardhead:hover{background:var(--surface-2)}
 .cardhead .t{font-family:var(--f-cond);font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .cardhead .c{font-family:var(--f-num);font-size:12px;color:var(--ink-2)}
@@ -1296,12 +1313,12 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
   border-radius:2px;padding:0 4px;display:inline-block;background:var(--tc);color:var(--tci)}
 #cbapp .rv .cd .co i{font-style:normal;background:var(--tc2);color:var(--tc2i);
   border-radius:2px;padding:0 3px;margin-left:3px}
-#cbapp .rv .cd .ds{font-size:10.5px;line-height:1.2}
+#cbapp .rv .cd .ds{font-size:11.5px;line-height:1.25}
 #cbapp .rv .cd .q{font-family:var(--f-num);font-size:8.5px;color:var(--ink-3);float:right;
   padding-left:4px}
-#cbapp .rv .cd.one{white-space:nowrap;text-overflow:ellipsis;line-height:11px;padding:0 5px}
-#cbapp .rv .cd.one .co{line-height:10px}
-#cbapp .rv .cd.one .ds{display:inline;font-size:10px}
+#cbapp .rv .cd.one{white-space:nowrap;text-overflow:ellipsis;line-height:15px;padding:1px 6px}
+#cbapp .rv .cd.one .co{line-height:12px}
+#cbapp .rv .cd.one .ds{display:inline;font-size:11px}
 #cbapp .rv .cd.two .ds{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
   overflow:hidden;padding-top:1px}
 #cbapp .rv .cd.narrow .ds{display:none}
@@ -1374,15 +1391,24 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <button class="navbtn" id="nextDay" aria-label="Next day">&rsaquo;</button>
     <button class="linkbtn" id="todayBtnDB">Today</button>
     <span class="daylabel" id="dayLabelDB">—</span>
-    <span class="strip-right">
-      <a class="linkbtn pagelink" id="lnkJobs" href="../jobs/" target="_blank" rel="noopener">Labour</a><a class="linkbtn pagelink" id="lnkLifts" href="../lifts/" target="_blank" rel="noopener">Lifts &amp; deliveries</a><span class="stripdiv" aria-hidden="true"></span><button class="linkbtn primary" id="pdfBtn" data-pdf="all">Site prestart</button><button class="linkbtn primary" data-pdf="team">Team prestart</button><button class="linkbtn primary" data-pdf="prepour">Pre-pour</button><button class="linkbtn primary" data-pdf="logistics">Logistics</button>
-    </span>
   </div>
 </div>
 
 <main class="gut">
 
 <section id="v-today" class="view">
+  <div class="pagebar">
+    <div class="pb-grp"><span class="pb-lab">Open</span><div class="pb-btns">
+      <a class="pbtn" id="lnkJobs" href="../jobs/" target="_blank" rel="noopener">Labour</a>
+      <a class="pbtn" id="lnkLifts" href="../lifts/" target="_blank" rel="noopener">Lifts &amp; deliveries</a>
+    </div></div>
+    <div class="pb-grp"><span class="pb-lab">Print</span><div class="pb-btns">
+      <button class="pbtn" id="pdfBtn" data-pdf="all">Site prestart</button>
+      <button class="pbtn" data-pdf="team">Team prestart</button>
+      <button class="pbtn" data-pdf="prepour">Pre-pour</button>
+      <button class="pbtn" data-pdf="logistics">Logistics</button>
+    </div></div>
+  </div>
   <div class="front">
     <div class="card k-labour">
       <button class="cardhead" data-go="labour"><span class="t">Labour &amp; jobs</span><span class="c" id="cLabour"></span><span class="go">&rsaquo;</span></button>
@@ -1406,20 +1432,6 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     </div>
   </div>
 
-  <div class="panel">
-    <div class="phead" data-acc="delays">
-      <h2>Delays</h2><span class="meta" id="delayMeta"></span>
-      <span class="right"><button class="mini" data-copy="delays">Copy</button><button class="mini" data-pdf="delays">PDF</button></span>
-    </div>
-    <div id="delayList"></div>
-    <form class="addrow" id="delayForm">
-      <select id="dfCause"></select>
-      <input id="dfText" placeholder="What held you up and where" autocomplete="off">
-      <input id="dfHours" class="hrs" type="number" min="0" max="24" step="0.5" value="0" title="Hours lost">
-      <button class="addbtn" type="submit">Add</button>
-    </form>
-    <p class="note">Logged against the day, with hours lost and a photo. The 7pm run carries them into <em>Elise - day to day.xlsx</em> in your Tracking folder.</p>
-  </div>
 </section>
 
 <section id="v-labour" class="view" hidden>
@@ -1789,11 +1801,25 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <p class="note">Every labour job ticked off, newest first, kept by month. Jobs land here the moment the box is ticked and come back out if you untick one, so the log always matches the board.</p>
     <div class="addrow">
       <span class="exp-lab">Take it with you<b id="expMeta"></b></span>
-      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 15 Nov 07:46</span>
+      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 15 Nov 07:58</span>
       <button class="mini" id="expJson">Everything (JSON)</button>
       <button class="mini" id="expCsv">Spreadsheets (CSV)</button>
     </div>
     <p class="note">Saves every booking, job, pre-pour item and log entry off the board to this device as plain files, so the record lives somewhere the company owns. Open the CSVs in Excel, keep the JSON as the full copy. Worth running before anything moves.</p>
+  </div>
+  <div class="panel">
+    <div class="phead" data-acc="delays">
+      <h2>Delays</h2><span class="meta" id="delayMeta"></span>
+      <span class="right"><button class="mini" data-copy="delays">Copy</button><button class="mini" data-pdf="delays">PDF</button></span>
+    </div>
+    <div id="delayList"></div>
+    <form class="addrow" id="delayForm">
+      <select id="dfCause"></select>
+      <input id="dfText" placeholder="What held you up and where" autocomplete="off">
+      <input id="dfHours" class="hrs" type="number" min="0" max="24" step="0.5" value="0" title="Hours lost">
+      <button class="addbtn" type="submit">Add</button>
+    </form>
+    <p class="note">Logged against the day, with hours lost and a photo. The 7pm run carries them into <em>Elise - day to day.xlsx</em> in your Tracking folder.</p>
   </div>
 </section>
 
@@ -2681,7 +2707,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
      --------------------------------------------------------------------- */
   var layout="list";
   try{layout=localStorage.getItem("elise.layout")==="rows"?"rows":"list"}catch(_){}
-  var RV_PX=15;                                     /* one ten-minute row */
+  var RV_PX=21;                                     /* one ten-minute row */
   var rvNeeds=[];
 
   function paintLayoutSwitch(){
@@ -2790,7 +2816,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
           '<span class="co">'+esc(L.co)+(L.co2?'<i>'+esc(L.co2)+'</i>':'')+'</span> '+
           /* as many whole lines as the card has room for, never a sliced one */
           '<span class="ds"'+(hh>=30?' style="-webkit-line-clamp:'+
-            Math.max(1,Math.floor((hh-16)/13))+'"':'')+'>'+esc(L.desc||"")+'</span></button>';
+            Math.max(1,Math.floor((hh-18)/14.5))+'"':'')+'>'+esc(L.desc||"")+'</span></button>';
       });
       h+='</div>';
     });
