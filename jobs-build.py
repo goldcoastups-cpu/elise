@@ -18,8 +18,8 @@ HTML = r"""<!doctype html>
 <title>ELISE Jobs</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23141312'/><rect x='17' y='15' width='30' height='9' rx='2.5' fill='%23F2EDE4'/><rect x='17' y='27.5' width='23' height='9' rx='2.5' fill='%232FD44A'/><rect x='17' y='40' width='30' height='9' rx='2.5' fill='%23F2EDE4'/></svg>">
 <style>
-:root{--bg:#1B1A18;--card:#232120;--rule:#35322E;--ink:#F2EDE4;--ink2:#A49C8F;
-  --ink3:#6E675D;--accent:#46BCCE;--go:#2FD44A;--pri:#E0A33C;--stop:#FF6B6B}
+:root{--bg:#1B1A18;--card:#232120;--rule:#35322E;--ink:#F2EDE4;--ink2:#BBB3A6;
+  --ink3:#978F82;--accent:#46BCCE;--go:#2FD44A;--pri:#E0A33C;--stop:#FF6B6B}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
@@ -62,22 +62,12 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px so
    list flows into columns and the rows tighten up: the whole day on screen
    without a scroll. A section header never ends up stranded at the foot of a
    column away from its own jobs. */
-@media (min-width:820px){
-  .wrap{max-width:1180px}
-  #list{columns:2;column-gap:38px}
-  #list .sec{break-after:avoid;page-break-after:avoid;margin-top:20px}
-  #list > .sec:first-child{margin-top:14px}
-}
-@media (min-width:1340px){
-  .wrap{max-width:1560px}
-  #list{columns:3}
-}
+@media (min-width:820px){ .wrap{max-width:1180px} }
 /* a short screen - a phone on its side - wants the rows closer together
    more than it wants the breathing room */
 @media (max-height:560px) and (orientation:landscape){
   .wrap{max-width:none}
-  #list{columns:2;column-gap:28px}
-  #list .sec{break-after:avoid;margin-top:14px;padding-bottom:5px}
+  #list .sec{margin-top:12px;padding-bottom:5px}
   .job{padding:8px 0}
   .jt{font-size:14px;line-height:1.3}
   header{padding:8px 0 7px}
@@ -172,6 +162,36 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px so
 .dwrap .job{padding-top:10px;padding-bottom:10px}
 .dwrap .jt{font-size:14.5px}
 
+/* ---- compact: priority | non-priority side by side ---- */
+.jcols{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;align-items:start}
+.jcol{min-width:0}
+.cnone{margin:8px 0 0;font-size:12px;color:var(--ink3)}
+.sec{margin-top:16px;padding-bottom:5px}
+#list > .jcols:first-child .sec{margin-top:10px}
+.job{padding:8px 0;gap:9px;grid-template-columns:22px 1fr}
+.box{width:22px;height:22px;font-size:13px;border-width:1.5px}
+.jt{font-size:14px;line-height:1.3}
+.meta{margin-top:3px}
+.star{padding:6px 0 6px 4px;min-width:26px;font-size:17px}
+.dwrap .job{padding-top:6px;padding-bottom:6px}
+.dwrap .jt{font-size:13.5px}
+.addbtn{margin-top:12px;padding:9px;font-size:13px}
+.crew{margin-top:16px;padding-top:10px}
+.chip{padding:5px 9px}
+.tabs{margin-top:7px}
+.tab{padding:6px;font-size:12px;border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab b{display:inline;font-size:12px;margin:0 0 0 6px;color:var(--ink3)}
+.tab[aria-selected="true"] b{color:var(--accent)}
+header{padding:8px 0 7px}
+@media (max-width:420px){
+  .jcols{gap:0 10px}
+  .jt{font-size:13px}
+  .job{gap:7px;grid-template-columns:20px 1fr}
+  .box{width:20px;height:20px}
+  .star{min-width:22px;font-size:16px;padding-left:2px}
+  .job.pri{padding-left:9px}
+}
+@media (max-width:330px){ .jcols{grid-template-columns:1fr} }
 .empty{padding:30px 0;text-align:center;color:var(--ink3);font-size:14px;line-height:1.5}
 .empty b{display:block;color:var(--ink2);font-size:15px;margin-bottom:4px}
 .addbtn{width:100%;margin-top:18px;appearance:none;border:1px dashed var(--rule);
@@ -215,7 +235,10 @@ label.btn{display:inline-flex;align-items:center;justify-content:center}
 .offscreen:focus-visible + label.btn{outline:2px solid var(--accent);outline-offset:2px}
 .msg{font-size:12.5px;color:var(--stop);margin-top:8px;min-height:16px}
 @media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#F7F4EE;--card:#FFF;
-  --rule:#DED7C9;--ink:#1F1D1A;--ink2:#5F594F;--ink3:#8C8578;--stop:#B3261E}}
+  --rule:#DED7C9;--ink:#1F1D1A;--ink2:#55504A;--ink3:#77706A;--stop:#B3261E}}
+
+/* crisper type: grayscale smoothing on dark, real kerning, a touch more contrast in the greys */
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-kerning:normal}
 </style></head>
 <body>
 <div class="wrap">
@@ -507,8 +530,16 @@ function render(){
 
   var html="";
 
-  /* Priority first - the starred work is what the day turns on. */
-  if(pri.length) html += sec("pri","Priority",pri.length) + pri.map(jobRow).join("");
+  /* Priority and non-priority side by side, the same as the board. */
+  if(pri.length || todo.length){
+    html += '<div class="jcols"><div class="jcol">'+
+      sec("pri","Priority",pri.length)+
+      (pri.length?pri.map(jobRow).join(""):'<p class="cnone">Nothing starred</p>')+
+      '</div><div class="jcol">'+
+      sec("","Non-priority",todo.length)+
+      (todo.length?todo.map(jobRow).join(""):'<p class="cnone">Nothing else open</p>')+
+      '</div></div>';
+  }
 
   /* Then the daily run-through, which is the same every morning. */
   if(dl.length){
@@ -516,7 +547,6 @@ function render(){
             '<div class="dwrap">'+dl.map(jobRow).join("")+'</div>';
   }
 
-  if(todo.length) html += sec("","To do",todo.length) + todo.map(jobRow).join("");
   if(done.length) html += sec("","Completed",done.length) + done.map(jobRow).join("");
 
   if(!mine.length && !dl.length){

@@ -19,8 +19,8 @@ HTML = r"""<!doctype html>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23141312'/><rect x='17' y='15' width='30' height='9' rx='2.5' fill='%23F2EDE4'/><rect x='17' y='27.5' width='23' height='9' rx='2.5' fill='%2346BCCE'/><rect x='17' y='40' width='30' height='9' rx='2.5' fill='%23F2EDE4'/></svg>">
 <style>
 :root{
-  --bg:#1B1A18; --card:#232120; --rule:#35322E; --ink:#F2EDE4; --ink2:#A49C8F;
-  --ink3:#6E675D; --accent:#46BCCE; --warn:#E0A33C; --brk:#2B2724;
+  --bg:#1B1A18; --card:#232120; --rule:#35322E; --ink:#F2EDE4; --ink2:#BBB3A6;
+  --ink3:#978F82; --accent:#46BCCE; --warn:#E0A33C; --brk:#2B2724;
   --stop:#FF6B6B; --stopbg:#3A2524; --stopline:#6E3230;
 }
 *{box-sizing:border-box}
@@ -158,9 +158,12 @@ footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--rule);
 .live{color:var(--accent)}
 @media(prefers-color-scheme:light){
   :root:not([data-theme="dark"]){--bg:#F7F4EE;--card:#FFF;--rule:#DED7C9;--ink:#1F1D1A;
-    --ink2:#5F594F;--ink3:#8C8578;--brk:#EDE7DA;--stop:#B3261E;--stopbg:#F7E2DF;--stopline:#E0B4AF}
+    --ink2:#55504A;--ink3:#77706A;--brk:#EDE7DA;--stop:#B3261E;--stopbg:#F7E2DF;--stopline:#E0B4AF}
   .co{color:#fff;text-shadow:0 0 1px rgba(0,0,0,.35)}
 }
+
+/* crisper type: grayscale smoothing on dark, real kerning, a touch more contrast in the greys */
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-kerning:normal}
 </style></head>
 <body>
 <div class="wrap">

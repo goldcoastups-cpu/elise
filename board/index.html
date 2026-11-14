@@ -393,7 +393,7 @@ window.eliseAuth = {
 /* Layout: masthead, tab bar, day strip, one view at a time. Front page = four summary cards. */
 :root{
   --paper:#EFEAE1;--surface:#FBF8F3;--surface-2:#E7E0D3;
-  --ink:#2B2926;--ink-2:#6E675D;--ink-3:#938B7E;
+  --ink:#2B2926;--ink-2:#5C564D;--ink-3:#7A7366;
   --line:#D9D1C2;--line-hard:#BFB49F;
   --gold:#8C7B60;
   --gut-l:max(16px,env(safe-area-inset-left,0px));
@@ -413,7 +413,7 @@ window.eliseAuth = {
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --paper:#1A1917;--surface:#232220;--surface-2:#2D2B27;
-    --ink:#EDE8DE;--ink-2:#A79F92;--ink-3:#817A6E;
+    --ink:#EDE8DE;--ink-2:#BBB3A6;--ink-3:#978F82;
     --line:#35322D;--line-hard:#4A463F;--gold:#C3AC82;
     --ok:#8FBF93;--warn:#DDB45F;--crit:#E08A72;--clock:#46BCCE;--alarm:#FF4A3A;
     --acc-today:#46BCCE;--acc-labour:#D7AE63;--acc-crane:#E09A5C;
@@ -427,7 +427,7 @@ window.eliseAuth = {
 }
 :root[data-theme="dark"]{
   --paper:#1A1917;--surface:#232220;--surface-2:#2D2B27;
-  --ink:#EDE8DE;--ink-2:#A79F92;--ink-3:#817A6E;
+  --ink:#EDE8DE;--ink-2:#BBB3A6;--ink-3:#978F82;
   --line:#35322D;--line-hard:#4A463F;--gold:#C3AC82;
   --ok:#8FBF93;--warn:#DDB45F;--crit:#E08A72;--clock:#46BCCE;--alarm:#FF4A3A;
   --acc-today:#46BCCE;--acc-labour:#D7AE63;--acc-crane:#E09A5C;
@@ -520,6 +520,9 @@ window.eliseAuth = {
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.45;margin:0}
+/* crisper type: grayscale smoothing on dark, real kerning, a touch more contrast in the greys */
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-kerning:normal}
+
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
 .gut{padding-left:var(--gut-l);padding-right:var(--gut-r)}
 button,input,select{font:inherit;color:inherit}
@@ -744,6 +747,18 @@ input,textarea,select,option{text-transform:none}
 .star{color:var(--gold);flex:none;font-size:12px;line-height:1.3}
 .addrow{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line);background:var(--surface-2);flex-wrap:wrap}
 .addrow.top{border-top:0;border-bottom:1px solid var(--line)}
+#v-prestart .addrow{padding:6px 12px;gap:6px}
+#v-prestart .addrow textarea{min-height:0;padding:5px 8px;line-height:1.35}
+#v-prestart .addrow input{padding:5px 8px}
+#v-prestart .subhead{padding-top:6px;padding-bottom:6px}
+#v-prestart .srow{padding-top:5px;padding-bottom:5px}
+#v-prestart .empty{margin:0;padding:4px 14px 8px;font-size:12px;text-align:left}
+#v-prestart .empty b{display:inline;margin:0 6px 0 0}
+.prewx{align-items:center;flex-wrap:nowrap}
+.prewx-ico{flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.prewx-ico:empty{display:none}
+.prewx-ico svg{width:22px;height:22px}
+.prenote{margin:0;padding:4px 12px 6px;font-size:11.5px;color:var(--ink-3);border-bottom:1px solid var(--line)}
 .addrow input{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line-hard);border-radius:3px;padding:6px 8px;font-size:13px}
 .addrow select{background:var(--surface);border:1px solid var(--line-hard);border-radius:3px;padding:6px 8px;font-size:13px}
 .fbrk{display:none}
@@ -1005,7 +1020,7 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 #cbapp{display:block;margin:0 calc(-1 * var(--gut-r)) 0 calc(-1 * var(--gut-l))}
 #cbapp{
   --bg:#EDE8DE; --panel:#F8F5EF; --panel-2:#FFFFFF;
-  --ink:#2E2C29; --ink-2:#6B655C; --ink-3:#938C80;
+  --ink:#2E2C29; --ink-2:#5C564D; --ink-3:#7A7366;
   --rule:#D8D1C3; --rule-soft:#E5DFD3;
   --gold:#8C7B60; --gold-soft:#E3D9C7; --gold-ink:#6A5B42;
   --ok:#2E7D4F; --ok-soft:#DCEFE2; --crit:#A32B22; --crit-soft:#F6DEDB;
@@ -1016,7 +1031,7 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #cbapp{
   --bg:#211F1C; --panel:#2A2825; --panel-2:#333029;
-  --ink:#EDE8DE; --ink-2:#A69E90; --ink-3:#7D7668;
+  --ink:#EDE8DE; --ink-2:#BBB3A6; --ink-3:#978F82;
   --rule:#3C3934; --rule-soft:#33302B;
   --gold:#C7AD83; --gold-soft:#443B2C; --gold-ink:#DFC99F;
   --ok:#6FBE8C; --ok-soft:#1F3A2A; --crit:#E07065; --crit-soft:#43241F;
@@ -1026,7 +1041,7 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 }}
 :root[data-theme="dark"] #cbapp{
   --bg:#211F1C; --panel:#2A2825; --panel-2:#333029;
-  --ink:#EDE8DE; --ink-2:#A69E90; --ink-3:#7D7668;
+  --ink:#EDE8DE; --ink-2:#BBB3A6; --ink-3:#978F82;
   --rule:#3C3934; --rule-soft:#33302B;
   --gold:#C7AD83; --gold-soft:#443B2C; --gold-ink:#DFC99F;
   --ok:#6FBE8C; --ok-soft:#1F3A2A; --crit:#E07065; --crit-soft:#43241F;
@@ -1037,6 +1052,9 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 #cbapp, #cbapp *{box-sizing:border-box}
 #cbapp{background:var(--bg);color:var(--ink);font-family:var(--display);font-weight:500;font-size:16px;letter-spacing:.02em;line-height:1.35;-webkit-text-size-adjust:100%;text-transform:uppercase}
 #cbapp input, #cbapp textarea{text-transform:uppercase}
+/* the board masthead already says whose board this is and where */
+#cbapp #cb-projName,#cbapp #cb-projSub{display:none}
+#cbapp .gear{margin-left:0}
 #cbapp input[type=date], #cbapp input[type=time], #cbapp input[type=number]{text-transform:none}
 @media (max-width:560px){#cbapp .f input, #cbapp .f select{font-size:16px;min-height:38px}}
 #cbapp .gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -1071,6 +1089,16 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 #cbapp .wd .dow{font-family:var(--display);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
 #cbapp .wd .num{font-family:var(--display);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
 #cbapp .wd .ct{font-size:9.5px;line-height:1.3;color:var(--ink-3);font-variant-numeric:tabular-nums;min-height:13px}
+/* one line per day - the strip was three lines tall */
+#cbapp .wd{flex:0 0 auto;display:flex;align-items:baseline;gap:4px;padding:4px 7px;line-height:1}
+#cbapp .wd .dow{font-size:10px}
+#cbapp .wd .num{font-size:13px}
+#cbapp .wd .ct{min-height:0;font-size:9px;line-height:1;color:var(--gold-ink)}
+#cbapp .wd .ct:empty{display:none}
+#cbapp .wd.wk::before{top:2px;bottom:2px}
+#cbapp .dayrow .gear{margin-left:0;align-self:stretch}
+#cbapp .dayrow .btn{padding:5px 9px;font-size:12px}
+#cbapp .dlab{font-size:15px}
 #cbapp .wd.on{background:var(--gold-soft);border-color:var(--gold)}
 #cbapp .wd.on .dow, #cbapp .wd.on .ct{color:var(--gold-ink)}
 #cbapp .wd.now .num{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--gold)}
@@ -1188,8 +1216,10 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 #cbapp .cols .w-n{width:62px;text-align:right}
 #cbapp .cols .w-ty{width:132px;text-align:center}
 #cbapp .wrapx{display:none}
-@media (max-width:620px){#cbapp .qbar input{flex:1 1 100%}
-#cbapp .qbar .btn{flex:1 1 0}
+@media (max-width:620px){#cbapp .qbar{flex-wrap:nowrap}
+#cbapp .qbar input{flex:1 1 auto;padding:7px 9px;font-size:14px}
+#cbapp .qbar .btn{flex:0 0 auto}
+#cbapp .stats .btn{padding:4px 8px;font-size:11.5px}
 #cbapp .cols{display:none}
 #cbapp .bk{flex-wrap:wrap;row-gap:2px;padding:4px 8px;align-items:center}
 #cbapp .c-tr{order:1;width:auto;min-width:32px;flex:0 0 auto;font-size:13px}
@@ -1253,14 +1283,17 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
   #cbapp .slot.free .t{font-size:9.5px;opacity:.5}
   #cbapp .slot.free .t.hour{font-size:11px;opacity:1;font-weight:700}
   #cbapp .hrow:not(.week){flex-wrap:wrap;row-gap:6px}
+  #cbapp .hrow.dayrow{flex-wrap:nowrap;gap:5px}
+  #cbapp .dayrow .nav{width:28px;height:28px}
+  #cbapp .dayrow .btn,#cbapp .dayrow .gear{padding:4px 7px;font-size:11px}
+  #cbapp .dlab{font-size:14px}
   #cbapp .hrow:not(.week) .right{flex-wrap:wrap;row-gap:6px;min-width:0}
   #cbapp .hrow.week{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-width:0;max-width:100%}
   #cbapp .hrow.week::-webkit-scrollbar{display:none}
   #cbapp .legend{flex-wrap:wrap;overflow-x:visible;gap:6px 10px}
   #cbapp .slot .t,#cbapp .cols .t{width:32px;font-size:11px}
   #cbapp .sechead h2{font-size:14px}
-  /* the day board masthead already says whose board this is */
-  #cbapp #cb-projName,#cbapp #cb-projSub{display:none}
+
   #cbapp .gear{margin-left:0}
 }
 @media (max-width:400px){
@@ -1434,12 +1467,6 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
   <button class="mm-it" type="button" data-pdf="logistics" role="menuitem"><span>Logistics</span><i>PDF</i></button>
 </div>
 
-<div class="windband" id="windBand" hidden>
-  <div class="gut wb-in">
-    <span class="wb-lab">Wind<b id="windMeta"></b></span>
-    <div class="wb-chart" id="windChart"></div>
-  </div>
-</div>
 
 <div class="daystrip" id="daystrip">
   <div class="daystrip-in gut">
@@ -1550,17 +1577,17 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
 
 <header class="top">
   <div class="gut">
-    <div class="hrow">
+    <div class="hrow" hidden>
       <h1 id="cb-projName">Board</h1>
       <span class="sub" id="cb-projSub"></span>
-      <button class="gear" id="cb-setBtn">Setup</button>
     </div>
-    <div class="hrow">
+    <div class="hrow dayrow">
       <button class="nav" id="cb-prev" aria-label="Previous day">&#8249;</button>
       <span class="dlab" id="cb-dayLabel">&nbsp;</span>
       <button class="nav" id="cb-next" aria-label="Next day">&#8250;</button>
       <button class="btn" id="cb-todayBtn">Today</button>
       <button class="btn" id="cb-weekBtn" title="Plan the week">Week</button>
+      <button class="gear" id="cb-setBtn">Setup</button>
     </div>
     <div class="hrow week" id="cb-week"></div>
     <div class="hrow qbar" id="cb-qbar">
@@ -1790,19 +1817,14 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       <span class="right"><button class="mini" data-copy="prestart">Copy</button><button class="mini" data-pdf="all">PDF</button></span>
     </div>
 
-    <div class="subhead" data-acc="prestart"><span>Date</span></div>
-    <div id="preDate"></div>
+    <div id="preDate" hidden></div>
 
     <div class="subhead" data-acc="prestart"><span>Weather</span><span id="preWxMeta"></span></div>
+    <div class="addrow top prewx"><span class="prewx-ico" id="preWxIco"></span><input id="preWeather" placeholder="Fine, 26, light NE &mdash; or wet, windy, hot" autocomplete="off"></div>
     <div id="preWx"></div>
-    <div class="addrow top"><input id="preWeather" placeholder="Fine, 26, light NE &mdash; or wet, windy, hot" autocomplete="off"></div>
 
     <div class="subhead" data-acc="prestart"><span>Site works</span></div>
-    <div class="addrow top"><textarea id="preWorks" rows="3" placeholder="What is happening today, by level and area"></textarea></div>
-
-    <div class="subhead" data-acc="prestart"><span>Safety</span><span id="preSafeMeta"></span></div>
-    <div id="preSafeList"></div>
-    <div class="addrow top"><textarea id="preSafety" rows="2" placeholder="Anything raised this morning"></textarea></div>
+    <div class="addrow top"><textarea id="preWorks" rows="2" placeholder="What is happening today, by level and area"></textarea></div>
 
     <div class="subhead" data-acc="prestart"><span>Deliveries for the day</span><span id="preDelMeta"></span></div>
     <div id="preDels"></div>
@@ -1811,7 +1833,11 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <div id="preLifts"></div>
 
     <div class="subhead" data-acc="prestart"><span>High risk works</span></div>
-    <div class="addrow top"><textarea id="preRisk" rows="2" placeholder="Crane over the street, open penetrations, hot works, confined space &mdash; or none"></textarea></div>
+    <div class="addrow top"><textarea id="preRisk" rows="1" placeholder="Crane over the street, open penetrations, hot works &mdash; or none"></textarea></div>
+
+    <div class="subhead" data-acc="prestart"><span>Safety</span><span id="preSafeMeta"></span></div>
+    <div id="preSafeList"></div>
+    <div class="addrow top"><textarea id="preSafety" rows="1" placeholder="Anything raised this morning"></textarea></div>
 
 
     <div class="addrow">
@@ -1819,7 +1845,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
       <button class="addbtn" id="preDone" type="button">Complete prestart</button>
       <button class="mini" id="preReopen" type="button" hidden>Reopen</button>
     </div>
-    <p class="note">The weather is pulled for Palm Beach each morning and can be typed over. Deliveries and crane lifts come straight off the board, so the prestart and the day board can never disagree. Safety carries the standing items from <em>config/prestart</em> plus whatever is open on the register. Completing it saves the day's prestart and lands it in Complete works.</p>
+    <p class="note">Deliveries and lifts come straight off the board. The safety register stays on the Safety tab.</p>
   </div>
 </section>
 
@@ -1859,7 +1885,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <p class="note">Every labour job ticked off, newest first, kept by month. Jobs land here the moment the box is ticked and come back out if you untick one, so the log always matches the board.</p>
     <div class="addrow">
       <span class="exp-lab">Take it with you<b id="expMeta"></b></span>
-      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 15 Nov 08:30</span>
+      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 15 Nov 08:40</span>
       <button class="mini" id="expJson">Everything (JSON)</button>
       <button class="mini" id="expCsv">Spreadsheets (CSV)</button>
     </div>
@@ -2511,9 +2537,13 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
   try{weekMode=localStorage.getItem("elise.weekmode")==="1"}catch(_){}
 
   /* Keep the day you are on in view on the strip without yanking the page. */
+  window.__cbRail=function(){railTo(cur);};
   function railTo(d8){
-    var rail=$("week");if(!rail)return;
-    var b=rail.querySelector('.wd[data-d="'+d8+'"]');if(!b)return;
+    var rail=$("week");if(!rail||!rail.clientWidth)return;
+    var b=rail.querySelector('.wd[data-d="'+d8+'"]');
+    /* a day off the rail (a Sunday) - bring the next working day into view */
+    if(!b)b=[].filter.call(rail.querySelectorAll(".wd"),function(x){return x.dataset.d>d8;})[0];
+    if(!b)return;
     var want=b.offsetLeft-(rail.clientWidth-b.offsetWidth)/2;
     want=Math.max(0,Math.min(want,rail.scrollWidth-rail.clientWidth));
     if(Math.abs(rail.scrollLeft-want)>4)rail.scrollLeft=want;
@@ -4190,6 +4220,7 @@ function go(v){
   VIEWS.forEach(function(x){var s=el("v-"+x[0]);if(s)s.hidden=x[0]!==v;});
   el("daystrip").hidden=(v==="crane"||v==="log"||v==="camera");
   if(v==="camera")camOpen();
+  if(v==="crane"&&window.__cbRail)setTimeout(window.__cbRail,30);
   renderTabs();
   window.scrollTo(0,0);
 }
@@ -4589,6 +4620,7 @@ function wxFetch(force){
       if(mm!=null&&mm>0.05)bits.push((Math.round(mm*10)/10)+"mm");
       if(ws!=null)bits.push((wxCompass(wd)?wxCompass(wd)+" ":"")+Math.round(ws)+" km/h");
       WX.by[day]=bits.join(", ");
+      WX.codeBy=WX.codeBy||{}; WX.codeBy[day]=v("weather_code");
     });
     WX.state="ok"; WX.at=Date.now(); WX.retried=false;
   })
@@ -4731,7 +4763,7 @@ function renderWind(){
   var m=el("windMeta");
   if(m){
     var pk=H.reduce(function(a,b){return (+b.g||+b.w||0)>(+a.g||+a.w||0)?b:a;});
-    m.textContent="peak "+Math.round(+pk.g||+pk.w||0)+" km/h "+fmtClock(pk.h*60).toLowerCase();
+    m.textContent="Peak "+Math.round(+pk.g||+pk.w||0)+" km/h "+fmtClock(pk.h*60).toLowerCase();
   }
 }
 function preDoc(){ return state.preDocs[state.date]||{}; }
@@ -4821,9 +4853,9 @@ function renderPrestart(){
   var d=preDoc(), signed=!!d.at;
 
   var meta=el("preMeta");
-  if(meta) meta.textContent = signed
+  if(meta) meta.textContent = longDate(state.date)+" \u00b7 "+(signed
     ? "Signed off by "+(d.by||"\u2014")+" at "+fmtClock(new Date(d.at).getHours()*60+new Date(d.at).getMinutes())
-    : "Not signed off yet";
+    : "Not signed off yet");
 
   /* ---- date ---- */
   preRows('<div class="srow"><span class="tx"><b>'+esc(longDate(state.date))+'</b></span></div>',
@@ -4837,31 +4869,33 @@ function renderPrestart(){
      once someone has typed over it, to show what the forecast actually said */
   var typed=(d.weather||"").trim();
   var differs=wx&&typed&&typed!==wx;
-  preRows(differs?'<div class="srow"><span class="tx" style="color:var(--ink-3)">Forecast said: '+esc(wx)+'</span></div>':"",
-          "preWx", WX.state==="loading"?"Reading the forecast\u2026"
-                 : WX.state==="fail"?"Couldn't reach the forecast \u2014 type it in."
-                 : (wx?"":"No forecast for this day."));
+  /* only say something under the box when there is something to say - an
+     empty placeholder here was a blank block the height of a card */
+  var wxNote = differs ? "Forecast said: "+wx
+    : WX.state==="loading" ? "Reading the forecast\u2026"
+    : WX.state==="fail" ? "Couldn't reach the forecast \u2014 type it in."
+    : (wx ? "" : "No forecast for this day.");
+  var pwb=el("preWx");
+  if(pwb) pwb.innerHTML = wxNote ? '<p class="prenote">'+esc(wxNote)+'</p>' : "";
+  var pwi=el("preWxIco");
+  if(pwi){
+    var dcode=WX.by&&WX.codeBy&&WX.codeBy[state.date];
+    var code=(state.date===iso(new Date())&&WX.now)?WX.now.code:dcode;
+    pwi.innerHTML = code!=null ? wxIcon(code,12) : "";
+  }
   var wm=el("preWxMeta");
   if(wm) wm.textContent = wx?(differs?"Typed over the forecast":"Pulled for Palm Beach"):"";
 
-  /* ---- safety: the standing items, then whatever is open on the register ---- */
-  var stand=preStanding(), reg=preSafetyAll();
-  var fixed=reg.filter(function(i){return i.done;}).length;
-  var open=reg.length-fixed;
-  preRows(
-    stand.map(function(i){
+  /* ---- safety: the standing items from Setup, then what is typed below.
+     The register (open and fixed items carried day to day) stays on the
+     Safety tab - pulling it in here put last week's items on every prestart */
+  var stand=preStanding();
+  var sl=el("preSafeList");
+  if(sl) sl.innerHTML = stand.map(function(i){
       return '<div class="srow"><span class="tx">'+esc(i.text)+'</span></div>';
-    }).concat(reg.map(function(i){
-      var when=(i.from&&i.from!==state.date)?(" \u00b7 raised "+shortDate(i.from)):"";
-      var by=i.done?("Fixed"+(i.doneBy?" by "+i.doneBy:"")+when):("Open"+when);
-      return '<div class="srow'+(i.done?' done':'')+'">'+
-        (i.done?'<span class="tick">&#10003;</span>':'')+skChip(i.kind)+
-        '<span class="tx">'+esc(i.text)+'<small>'+esc(by)+'</small></span></div>';
-    })).join(""),
-    "preSafeList","Nothing standing and nothing on the register.");
+    }).join("");
   var sm=el("preSafeMeta");
-  if(sm) sm.textContent = reg.length
-    ? open+" open, "+fixed+" fixed" : "";
+  if(sm) sm.textContent = "";
 
   /* ---- what the board already has booked for today ---- */
   var rows=dayRows();
@@ -6153,13 +6187,8 @@ function sectionText(which){
     }
     blk("Weather", (pd.weather||wxLine(state.date))?[pd.weather||wxLine(state.date)]:null);
     blk("Site works", pd.works?pd.works.split(/\n+/):null);
-    var sfy=preStanding().map(function(i){return "- "+i.text;})
-             .concat(preSafetyAll().map(function(i){
-               return "- ["+(i.done?"FIXED":"OPEN")+"] "+i.text+
-                      ((i.from&&i.from!==state.date)?(" (raised "+shortDate(i.from)+")"):"");
-             }));
+    var sfy=preStanding().map(function(i){return "- "+i.text;});
     if(pd.safety) sfy=sfy.concat(pd.safety.split(/\n+/).map(function(l){return "- "+l;}));
-    blk("Safety", sfy);
     function bl(b){
       return "- "+fmtClock(toMin(b.start))+" "+(b.co2?(b.co+"/"+b.co2):b.co)+" "+(b.desc||"")+
              ((+b.qty||0)>1?(" x"+(+b.qty)):"")+(b.status==="req"?" [TBC]":"");
@@ -6167,6 +6196,7 @@ function sectionText(which){
     blk("Deliveries for the day", rws.filter(function(b){return b.type==="del";}).map(bl));
     blk("Crane lifts for the day", rws.filter(function(b){return b.type==="lift";}).map(bl));
     blk("High risk works", pd.risk?pd.risk.split(/\n+/):null);
+    blk("Safety", sfy);
     if(pd.note)blk("Notes",["- "+pd.note]);
     o.push("", pd.at ? "Signed off by "+(pd.by||"-")+" "+stamp(pd.at) : "NOT SIGNED OFF");
     return o.join("\n");
@@ -7372,7 +7402,7 @@ function wxChip(){
     Math.round(w.wind)+'<s>km/h</s></span>';
   if(!big)return "";
   var sub=[];
-  if(w.gust!=null&&w.wind!=null&&Math.round(w.gust)>Math.round(w.wind))sub.push("gust "+Math.round(w.gust));
+  if(w.gust!=null&&w.wind!=null&&Math.round(w.gust)>Math.round(w.wind))sub.push("Gust "+Math.round(w.gust));
   if(WXCODE[w.code])sub.push(WXCODE[w.code]);
   return '<span class="nswx"><span class="wbig">'+big+'</span>'+
     '<span class="wsub">'+esc(sub.join(" \u00b7 "))+'</span></span>'+wxSpark();
@@ -7407,8 +7437,8 @@ function renderNowStrip(){
     '<span class="nsclock" id="nsClock">'+clockText()+'</span>'+
     '<span class="nscd" id="nsCount">'+countText()+'</span></span>'+wxChip();
   if(!p.live){
-    el0.innerHTML=clock+'<span class="nsmain nshook"><span class="nslab">'+esc(p.none?"Crane":"Hook clear")+'</span>'+
-      '<div class="nstxt">'+esc(p.none||"Nothing left on the hook today")+'</div></span>';
+    /* nothing on the hook: the time and the weather say enough */
+    el0.innerHTML=clock;
     return;
   }
   var T=trades(),c=(T[p.live.co]||T.OTH||["Other","#938C80"])[1];
@@ -7454,7 +7484,7 @@ function readAll(col){
 async function gatherAll(){
   var out={};
   for(var i=0;i<EXPORT_COLS.length;i++){
-    el("expMeta").textContent="reading "+EXPORT_COLS[i]+"\u2026";
+    el("expMeta").textContent="Reading "+EXPORT_COLS[i]+"\u2026";
     out[EXPORT_COLS[i]]=await readAll(EXPORT_COLS[i]);
   }
   el("expMeta").textContent="";
