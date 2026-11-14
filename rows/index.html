@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en-AU"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="apple-touch-icon" href="../board/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rows">
+<meta name="theme-color" content="#111110">
+<meta name="robots" content="noindex,nofollow">
+<title>ELISE &middot; Row board</title>
+<link rel="stylesheet" href="../board/fonts.css">
+<link rel="stylesheet" href="../test.css">
+<style>
+main{padding:0 var(--gut-r) 30px var(--gut-l)}
+.hdrow{display:grid;grid-template-columns:50px 1fr 1fr;border-top:1px solid var(--line);
+  position:sticky;top:0;z-index:12;background:var(--paper)}
+.hdrow span{font-family:var(--f-cond);font-size:10px;font-weight:700;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--ink-3);padding:6px 0 6px 8px;
+  border-left:1px solid var(--line)}
+.hdrow span:first-child{border-left:0}
+
+.list{position:relative;padding-top:4px}
+
+/* one row per time slot: the clock on the left, crane and deliveries beside it */
+/* one hairline per time slot, so two cards stacked at the same time read as
+   one row rather than two */
+.trow{display:grid;grid-template-columns:50px 1fr 1fr;gap:0;align-items:stretch;
+  margin-top:0;padding:7px 0;border-top:1px solid var(--line);will-change:transform}
+.trow:first-child{border-top:0}
+.trow.slide{transition:transform .18s ease-out}
+.trow.fade{transition:transform .18s ease-out,opacity .18s ease-out}
+@media (prefers-reduced-motion:reduce){.trow.slide,.trow.fade{transition:none}}
+.trow .clock{font-family:var(--f-num);font-size:12.5px;font-weight:600;padding:1px 7px 0 0;
+  text-align:right;color:var(--ink-2)}
+.trow.liveslot .clock{color:var(--clock)}
+.trow.pastslot{opacity:.46}
+.cell{min-width:0;padding:0 3px;display:flex;flex-direction:column;gap:5px}
+.trow.target .cell{outline:1px dashed var(--clock);outline-offset:1px;border-radius:7px}
+
+.slot{position:relative}
+.beh{position:absolute;inset:0;border-radius:6px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 9px;font-family:var(--f-cond);font-size:9.5px;
+  font-weight:700;letter-spacing:.11em;text-transform:uppercase;overflow:hidden}
+.beh .l{color:var(--ok)} .beh .r{color:var(--crit)}
+
+.card{position:relative;display:block;width:100%;text-align:left;font-family:inherit;
+  color:inherit;background:var(--surface);border:1px solid var(--line);
+  border-left:5px solid var(--line);border-radius:6px;padding:7px 8px 7px 9px;
+  cursor:pointer;min-height:52px;overflow:hidden}
+.card.slide{transition:transform .2s ease-out}
+.card .co{font-family:var(--f-cond);font-size:10px;font-weight:700;letter-spacing:.1em;
+  border-radius:3px;padding:1px 5px;display:inline-block;vertical-align:1px}
+.card .q{font-family:var(--f-num);font-size:9.5px;color:var(--ink-3);float:right;
+  padding-top:2px}
+.card .ds{display:block;font-size:12px;line-height:1.25;padding-top:4px;overflow:hidden;
+  -webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical}
+.card.req{border-top-style:dashed;border-right-style:dashed;border-bottom-style:dashed}
+.card.edited{box-shadow:inset 0 0 0 1px var(--warn)}
+.card.live{box-shadow:0 0 0 1px var(--clock);border-color:var(--clock)}
+.card.lift{box-shadow:0 11px 28px rgba(0,0,0,.5);transform:scale(1.03);z-index:30;
+  border-color:var(--line-hard)}
+.card.clash{border-color:var(--crit)}
+.card .warnx{display:block;font-family:var(--f-cond);font-size:9px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--crit);padding-top:3px}
+
+.brkrow{display:grid;grid-template-columns:50px 1fr;gap:0;padding:7px 0;
+  border-top:1px solid var(--line);align-items:center}
+.brkrow .b{margin-left:3px;padding:5px 10px;border:1px dashed var(--line-hard);border-radius:6px;
+  font-family:var(--f-cond);font-size:9.5px;font-weight:700;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--ink-3);
+  background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,transparent 6px 12px)}
+.brkrow .t{font-family:var(--f-num);font-size:11px;color:var(--ink-3);text-align:right;
+  padding-right:7px}
+.empty{font-family:var(--f-num);font-size:11.5px;color:var(--ink-3);padding:12px 2px}
+.ghost{position:fixed;z-index:60;pointer-events:none;font-family:var(--f-num);font-size:13px;
+  font-weight:700;background:var(--ink);color:var(--paper);border-radius:5px;padding:5px 10px;
+  display:none;white-space:nowrap}
+.ghost.on{display:block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <span class="wm">Elise</span>
+    <span class="clk" id="clk">--:--</span>
+    <span class="badge" id="sbadge">Sandbox</span>
+    <a class="back" href="../board/">Board</a>
+  </div>
+  <div class="datebar">
+    <button type="button" id="prev" aria-label="Previous day">&lsaquo;</button>
+    <span class="dlab" id="dlab">&nbsp;<small>&nbsp;</small></span>
+    <button type="button" class="act undo" id="sreset" hidden>Undo all</button>
+    <button type="button" class="act go" id="sadd">+ Add</button>
+    <button type="button" id="next" aria-label="Next day">&rsaquo;</button>
+  </div>
+</header>
+
+<main>
+  <div class="hdrow"><span></span><span>Crane</span><span>Deliveries</span></div>
+  <div class="list" id="list"><div class="empty">Loading&hellip;</div></div>
+  <div class="foot" id="foot"></div>
+  <div class="hint">Tap a card to change it. <b>Press and hold</b> then drag it up or down
+    &mdash; drop it on a row to put it at that time, or between rows for a slot of its own.
+    <b>Swipe right</b> to confirm, <b>left</b> to delete. Everything stays on this phone.</div>
+</main>
+
+<div class="ghost" id="ghost"></div>
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Booking"></div>
+
+<script src="../board/config.js"></script>
+<script src="../sandbox.js"></script>
+<script src="../testkit.js"></script>
+<script>
+"use strict";
+var S = TK.state, hm = TK.hm, esc = TK.esc, two = TK.two;
+var EASE = 190;
+var GROUPS = [];     /* [{t, crane:[rows], gate:[rows]}] in time order */
+var FLAT = [];       /* every booking, for lookup by index */
+
+function snap(t){ var p = S.per || 10; return Math.round(t / p) * p; }
+function inBreak(t, d){
+  return S.breaks.some(function(b){ return t < b[0] + b[1] && t + d > b[0]; });
+}
+
+function group(){
+  GROUPS = []; FLAT = S.rows.slice();
+  var by = {};
+  FLAT.forEach(function(r, i){
+    r.__i = i;
+    var k = r.start_min;
+    if(!by[k]) { by[k] = {t:k, crane:[], gate:[]}; GROUPS.push(by[k]); }
+    (r.type === "del" ? by[k].gate : by[k].crane).push(r);
+  });
+  GROUPS.sort(function(a,b){ return a.t - b.t; });
+}
+
+function cardHtml(r, clash){
+  var tr = TK.trade(r.co), c = tr[1];
+  var qty = r.qty ? r.qty + (r.qty === 1 ? " lift" : " lifts")
+                  : (r.kg ? (r.kg/1000).toFixed(1) + "t" : (r.type === "del" ? "truck" : ""));
+  var today = S.date === TK.iso(new Date()), nm = TK.nowMin();
+  var live = today && nm >= r.start_min && nm < r.start_min + (r.dur||10);
+  return '<div class="slot">' +
+    '<div class="beh"><span class="l">✓</span><span class="r">✕</span></div>' +
+    '<button class="card' + (r.status !== "con" ? " req" : "") +
+      (r.__added || r.__edited ? " edited" : "") + (live ? " live" : "") +
+      (clash ? " clash" : "") + '" data-i="' + r.__i +
+      '" style="border-left-color:' + c + '">' +
+      (qty ? '<span class="q">' + esc(qty) + '</span>' : '') +
+      '<span class="co" style="background:' + c + ';color:' + TK.onColour(c) + '">' +
+      esc(r.co) + '</span>' +
+      '<span class="ds">' + esc(r.descr || "") + '</span>' +
+      (clash ? '<span class="warnx">runs into the next one</span>' : '') +
+    '</button></div>';
+}
+
+function render(){
+  var m = document.getElementById("list");
+  if(S.err){ m.innerHTML = '<div class="empty">' + esc(S.err) + '</div>'; return; }
+  group();
+  if(!GROUPS.length){
+    m.innerHTML = (S.note ? '<div class="empty">' + esc(S.note) + '</div>' : '') +
+      '<div class="empty">Nothing booked for this day. Use + Add to try one.</div>';
+    document.getElementById("foot").textContent = "";
+    return;
+  }
+
+  var today = S.date === TK.iso(new Date()), nm = TK.nowMin();
+  var h = S.note ? '<div class="empty">' + esc(S.note) + '</div>' : '';
+  var brkDone = S.breaks.map(function(){ return false; });
+
+  GROUPS.forEach(function(G, gi){
+    S.breaks.forEach(function(b, bi){
+      if(!brkDone[bi] && G.t >= b[0]){
+        brkDone[bi] = true;
+        h += '<div class="brkrow"><span class="t">' + hm(b[0]) + '</span>' +
+             '<span class="b">Crane break · ' + hm(b[0]) + "–" + hm(b[0]+b[1]) +
+             '</span></div>';
+      }
+    });
+    /* does anything in this slot run into the next slot */
+    var nextT = GROUPS[gi+1] ? GROUPS[gi+1].t : 1e9;
+    function cells(set){
+      return set.map(function(r){
+        return cardHtml(r, (r.start_min + (r.dur||10)) > nextT);
+      }).join("");
+    }
+    var end = Math.max.apply(null, [0].concat(
+      G.crane.concat(G.gate).map(function(r){ return r.start_min + (r.dur||10); })));
+    var live = today && nm >= G.t && nm < end;
+    var past = today && end <= nm;
+    h += '<div class="trow' + (live ? " liveslot" : "") + (past ? " pastslot" : "") +
+         '" data-g="' + gi + '">' +
+      '<span class="clock">' + hm(G.t) + '</span>' +
+      '<div class="cell">' + cells(G.crane) + '</div>' +
+      '<div class="cell">' + cells(G.gate) + '</div>' +
+      '</div>';
+  });
+  S.breaks.forEach(function(b, bi){
+    if(brkDone[bi]) return;
+    h += '<div class="brkrow"><span class="t">' + hm(b[0]) + '</span>' +
+         '<span class="b">Crane break · ' + hm(b[0]) + "–" + hm(b[0]+b[1]) +
+         '</span></div>';
+  });
+  m.innerHTML = h;
+
+  var lifts = FLAT.filter(function(r){ return r.type !== "del"; });
+  var hook = lifts.reduce(function(a,r){ return a + (r.dur||0); }, 0);
+  var con  = FLAT.filter(function(r){ return r.status === "con"; }).length;
+  document.getElementById("foot").textContent =
+    lifts.length + " on the hook · " + (FLAT.length - lifts.length) + " deliveries · " +
+    Math.floor(hook/60) + "h" + two(hook%60) + " hook time · " +
+    con + " of " + FLAT.length + " confirmed";
+}
+
+/* ---------- FLIP: everything glides to its new place on the same curve ------ */
+function refreshAnimated(){
+  var was = {};
+  document.querySelectorAll("#list .trow").forEach(function(el){
+    var G = GROUPS[+el.getAttribute("data-g")];
+    if(G) was["t" + G.t] = el.getBoundingClientRect().top;
+  });
+  TK.refresh();
+  document.querySelectorAll("#list .trow").forEach(function(el){
+    var G = GROUPS[+el.getAttribute("data-g")];
+    var from = G && was["t" + G.t];
+    if(from === undefined) return;
+    var dy = from - el.getBoundingClientRect().top;
+    if(!dy) return;
+    el.style.transform = "translateY(" + dy + "px)";
+    requestAnimationFrame(function(){
+      el.classList.add("slide");
+      el.style.transform = "";
+      setTimeout(function(){ el.classList.remove("slide"); }, EASE + 50);
+    });
+  });
+}
+
+/* ---------- press and hold to move, swipe for the two actions ---------- */
+var list = document.getElementById("list"), ghost = document.getElementById("ghost");
+var g = null, HOLD = 240;
+
+function beginHold(){
+  if(!g || g.mode) return;
+  g.mode = "drag";
+  g.card.classList.add("lift");
+  g.rows = Array.prototype.slice.call(list.querySelectorAll(".trow"));
+  g.mids = g.rows.map(function(e){
+    var b = e.getBoundingClientRect(); return b.top + b.height / 2;
+  });
+  if(navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
+}
+
+/* where this booking lands if dropped at y */
+function landing(y){
+  var me = FLAT[g.i], d = me.dur || 10;
+  var best = null, mode = "join";
+  for(var k = 0; k < g.rows.length; k++){
+    var b = g.rows[k].getBoundingClientRect();
+    if(y >= b.top && y <= b.bottom){ best = k; mode = "join"; break; }
+    if(y < b.top){ best = k; mode = "before"; break; }
+  }
+  if(best === null){ best = g.rows.length; mode = "after"; }
+  var t;
+  if(mode === "join" && GROUPS[best]){
+    t = GROUPS[best].t;                               /* same slot as that row */
+  } else {
+    var prev = GROUPS[best - 1], next = GROUPS[best];
+    if(prev){
+      var pe = Math.max.apply(null, prev.crane.concat(prev.gate)
+        .map(function(r){ return r.start_min + (r.dur||10); }));
+      t = snap(pe);
+    } else if(next){ t = snap(next.t - d); }
+    else t = S.open;
+  }
+  return {t: Math.max(S.open, Math.min(S.close - d, t)), row: best, mode: mode};
+}
+
+list.addEventListener("pointerdown", function(e){
+  var card = e.target.closest(".card");
+  if(!card) return;
+  g = {card:card, i:+card.getAttribute("data-i"), x0:e.clientX, y0:e.clientY,
+       mode:null, touch:(e.pointerType === "touch"), timer:null};
+  try{ card.setPointerCapture(e.pointerId); }catch(err){}
+  g.timer = setTimeout(beginHold, g.touch ? HOLD : HOLD + 120);
+});
+
+list.addEventListener("touchmove", function(e){
+  if(g && g.mode === "drag") e.preventDefault();
+}, {passive:false});
+
+list.addEventListener("pointermove", function(e){
+  if(!g) return;
+  var dx = e.clientX - g.x0, dy = e.clientY - g.y0;
+
+  if(!g.mode){
+    if(Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.4){
+      clearTimeout(g.timer); g.mode = "swipe";
+    } else if(Math.abs(dy) > 12){
+      clearTimeout(g.timer); g = null; return;   /* a scroll - let the page have it */
+    } else return;
+  }
+
+  if(g.mode === "swipe"){
+    g.dx = Math.max(-130, Math.min(130, dx));
+    g.card.style.transform = "translateX(" + g.dx + "px)";
+    return;
+  }
+
+  g.card.style.transform = "translateY(" + dy + "px) scale(1.03)";
+  var L = landing(e.clientY);
+  g.land = L;
+  g.rows.forEach(function(el, k){
+    el.classList.toggle("target", L.mode === "join" && k === L.row);
+  });
+  var d = FLAT[g.i].dur || 10;
+  ghost.textContent = hm(L.t) + " – " + hm(L.t + d) +
+    (L.mode === "join" ? "  · same slot" : "") +
+    (inBreak(L.t, d) ? "  · in a break" : "");
+  ghost.style.left = Math.min(window.innerWidth - 190, Math.max(10, e.clientX - 80)) + "px";
+  ghost.style.top  = Math.max(10, e.clientY - 50) + "px";
+  ghost.classList.add("on");
+  e.preventDefault();
+});
+
+function endGesture(){
+  if(!g) return;
+  var x = g; g = null;
+  clearTimeout(x.timer);
+  ghost.classList.remove("on");
+  document.querySelectorAll("#list .trow.target")
+    .forEach(function(el){ el.classList.remove("target"); });
+
+  if(x.mode === "swipe"){
+    var r = FLAT[x.i];
+    x.card.classList.add("slide");
+    if(x.dx > 80){
+      x.card.style.transform = "";
+      SB.edit(S.date, r, {status:"con"});
+      setTimeout(refreshAnimated, 70);
+    } else if(x.dx < -80){
+      x.card.style.transform = "translateX(-115%)";
+      setTimeout(function(){ SB.remove(S.date, r); refreshAnimated(); }, EASE);
+    } else {
+      x.card.style.transform = "";
+      setTimeout(function(){ x.card.classList.remove("slide"); }, EASE + 40);
+    }
+    return;
+  }
+
+  if(x.mode === "drag"){
+    x.card.classList.remove("lift");
+    x.card.style.transform = "";
+    var r2 = FLAT[x.i];
+    if(x.land && x.land.t !== r2.start_min) SB.edit(S.date, r2, {start_min: x.land.t});
+    refreshAnimated();
+    return;
+  }
+
+  var row = FLAT[x.i];
+  if(row) TK.openSheet(row, false);
+}
+list.addEventListener("pointerup", endGesture);
+list.addEventListener("pointercancel", function(){
+  if(g && g.card){ g.card.style.transform = ""; g.card.classList.remove("lift"); }
+  document.querySelectorAll("#list .trow.target")
+    .forEach(function(el){ el.classList.remove("target"); });
+  g = null; ghost.classList.remove("on");
+});
+
+TK.boot(render);
+</script>
+</body></html>
