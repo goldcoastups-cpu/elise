@@ -454,6 +454,17 @@ window.eliseAuth = {
   font-family:var(--f-num);font-variant-numeric:tabular-nums}
 .nowstrip .nswx .wbig{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
 .nowstrip .nswx .wt{font-size:25px;font-weight:800;color:var(--ink);letter-spacing:-.03em}
+.nowstrip .nswx .wsym{align-self:center;display:flex}
+.wmsym{display:inline-flex;vertical-align:-6px;margin-right:6px}
+.wmsym .wico{width:22px;height:22px}
+.wico{width:30px;height:30px;display:block;overflow:visible;fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.wico .wi-cl{stroke:var(--ink-2);fill:var(--surface)}
+.wico .wi-sun{stroke:var(--gold)}
+.wi-night .wi-sun{stroke:var(--ink-2);fill:none}
+.wico .wi-rain{stroke:var(--clock);stroke-width:1.9}
+.wico .wi-fog{stroke:var(--ink-3)}
+.wico .wi-bolt{fill:var(--warn);stroke:var(--warn);stroke-width:.8}
 .nowstrip .nswx .wv{font-size:25px;font-weight:800;color:var(--clock);letter-spacing:-.03em}
 .nowstrip .nswx .wv s{text-decoration:none;font-size:.5em;opacity:.62;margin-left:2px;font-weight:700}
 .nowstrip .nswx .wsub{font-size:12px;font-weight:700;color:var(--ink-3);letter-spacing:.02em;
@@ -466,6 +477,7 @@ window.eliseAuth = {
 @media (max-width:620px){.nowstrip .nsspark{display:none}}
 @media (max-width:560px){.nowstrip .nswx{padding-left:8px}
   .nowstrip .nswx .wt,.nowstrip .nswx .wv{font-size:19px}
+  .wico{width:24px;height:24px}
   .nowstrip .nswx .wsub{font-size:10.5px}}
 .nowstrip .nsmain{min-width:0;flex:1}
 .nowstrip .nslab{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
@@ -557,24 +569,31 @@ button,input,select{font:inherit;color:inherit}
 .cardhead{border-bottom-width:2px}
 .cardhead .t{color:var(--ink)}
 
-/* the pages and the prints, out of the date bar and into a bar of their
-   own: one style for all six, Open on one row and Print on the next */
-.pagebar{display:flex;flex-direction:column;gap:7px;padding-top:16px}
-.pb-grp{display:grid;grid-template-columns:54px 1fr;gap:10px;align-items:center}
-.pb-lab{font-family:var(--f-cond);font-size:10.5px;font-weight:700;letter-spacing:.18em;
-  text-transform:uppercase;color:var(--ink-3)}
-.pb-btns{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
-.pbtn{display:flex;align-items:center;justify-content:center;text-align:center;min-height:38px;
-  padding:7px 10px;background:var(--surface);border:1px solid var(--line-hard);border-radius:4px;
-  color:var(--ink);text-decoration:none;cursor:pointer;font-family:var(--f-cond);font-size:12px;
-  font-weight:700;letter-spacing:.11em;text-transform:uppercase;line-height:1.15}
-.pbtn:hover{background:var(--surface-2)}
-.pbtn:focus-visible{outline:2px solid var(--clock);outline-offset:2px}
-@media (max-width:560px){
-  .pb-grp{grid-template-columns:44px 1fr;gap:8px}
-  .pb-btns{grid-template-columns:1fr 1fr}
-  .pbtn{font-size:11px;min-height:36px}
-}
+#v-camera{--acc:var(--clock);--acc-ink:var(--clock)}
+.cambox{position:relative;width:100%;aspect-ratio:900/324;overflow:hidden;background:#0b0b0b;
+  border:1px solid var(--line);border-radius:4px;margin-top:12px}
+.cambox iframe{position:absolute;left:0;top:0;width:900px;height:324px;border:0;
+  transform-origin:0 0;background:#0b0b0b}
+
+/* Pages and prints live behind one button at the top right, dropping down
+   from under the lock the same way the sign-in panel does - on every tab,
+   and out of the way until they are wanted. */
+.menubtn svg{width:17px;height:17px;display:block}
+.menubtn[aria-expanded="true"]{border-color:var(--gold);color:var(--gold)}
+.mastmenu{position:fixed;z-index:9998;width:236px;max-width:calc(100vw - 24px);
+  background:var(--surface);color:var(--ink);border:1px solid var(--line-hard);border-radius:8px;
+  box-shadow:0 14px 36px rgba(0,0,0,.38);padding:6px;display:flex;flex-direction:column;gap:1px}
+.mastmenu[hidden]{display:none}
+.mm-lab{font-family:var(--f-cond);font-size:10px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-3);padding:9px 10px 4px}
+.mm-lab:first-child{padding-top:5px}
+.mm-it{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  min-height:40px;padding:8px 10px;border:0;border-radius:5px;background:transparent;color:var(--ink);
+  text-decoration:none;text-align:left;cursor:pointer;font-family:var(--f-cond);font-size:13px;
+  font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.mm-it:hover,.mm-it:focus-visible{background:var(--surface-2);outline:none}
+.mm-it i{font-style:normal;font-family:var(--f-num);font-size:10px;font-weight:500;letter-spacing:.04em;
+  color:var(--ink-3);border:1px solid var(--line);border-radius:3px;padding:1px 5px}
 .cardhead:hover{background:var(--surface-2)}
 .cardhead .t{font-family:var(--f-cond);font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .cardhead .c{font-family:var(--f-num);font-size:12px;color:var(--ink-2)}
@@ -656,6 +675,19 @@ input,textarea,select,option{text-transform:none}
 .subhead{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap;padding:12px 14px 6px;border-top:1px solid var(--line);font-family:var(--f-cond);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
 .subhead span:first-child{color:var(--acc-ink);font-weight:700}
 .sub2{border-top-color:var(--line)}
+.jobcols{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;align-items:start}
+.jobcol{min-width:0}
+/* half a phone is narrow, so a row keeps its tick, star and words on the first
+   line and drops who, camera and delete to the second */
+@media (max-width:760px){
+  .jobcols{gap:0 8px}
+  .jobcols .item{flex-wrap:wrap;row-gap:4px;column-gap:6px;padding:8px 4px}
+  .jobcols .item .txt{flex:1 1 0;min-width:0;font-size:12.5px;line-height:1.35}
+  .jobcols .item .jmeta{flex:1 1 100%;justify-content:flex-end;align-items:center;gap:5px;padding-left:0}
+  .jobcols .item .jmeta .who{flex:1 1 56px;width:auto;min-width:0;font-size:11px;padding:3px 6px}
+  .jobcols .item .jmeta .who:placeholder-shown{flex:1 1 56px}
+  .jobcols .nojobs{padding-inline:4px;font-size:12px}
+}
 
 .ltable{width:100%;border-collapse:collapse;font-size:13px}
 .ltable th{font-family:var(--f-cond);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-hard);font-weight:600}
@@ -744,12 +776,12 @@ input,textarea,select,option{text-transform:none}
 .wb-lab b{display:block;font-weight:700;color:var(--clock);letter-spacing:.06em;
   font-family:var(--f-num);font-size:11px;text-transform:none}
 .wb-chart{position:relative;flex:1 1 auto;min-width:0}
-svg.wind{width:100%;height:62px;display:block;touch-action:pan-y;cursor:crosshair}
+svg.wind{width:100%;height:104px;display:block;touch-action:pan-y;cursor:crosshair}
 svg.wind .g1{stop-color:var(--clock);stop-opacity:.40}
 svg.wind .g2{stop-color:var(--clock);stop-opacity:.02}
 svg.wind .wfill{fill:url(#wgrad);stroke:none}
 svg.wind .wbase{stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
-svg.wind .wt{fill:var(--ink-3);font-family:var(--f-num);font-size:7.5px;text-anchor:middle;letter-spacing:.03em}
+svg.wind .wt{fill:var(--ink-3);font-family:var(--f-num);font-size:10px;text-anchor:middle;letter-spacing:.02em}
 svg.wind .wline{fill:none;stroke:var(--clock);stroke-width:2;vector-effect:non-scaling-stroke;
   stroke-linejoin:round;stroke-linecap:round}
 svg.wind .wgust{fill:none;stroke:var(--clock);stroke-width:1.1;opacity:.42;stroke-dasharray:2.5 3;
@@ -774,7 +806,7 @@ svg.wind .wdot{fill:var(--alarm);stroke:var(--surface);stroke-width:1.6;vector-e
 @media (max-width:560px){
   .wb-lab{display:none}
   .wb-in{gap:0;padding-block:2px 0}
-  svg.wind{height:54px}
+  svg.wind{height:86px}
 }
 .addrow textarea{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line-hard);
   border-radius:3px;padding:6px 8px;font:inherit;font-size:13px;line-height:1.45;color:inherit;resize:vertical}
@@ -1369,6 +1401,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <button class="themebtn" id="themeBtn" type="button" title="Switch the board between light and dark"></button>
 <button class="lockbtn fsbtn" id="fsBtn" type="button" title="Full screen (F)" aria-label="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
 <button class="lockbtn" id="sbLock" type="button" title="Sign in to change the board">&#128274;</button>
+<button class="lockbtn menubtn" id="menuBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="mastMenu" title="Pages and prints"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
   </div>
   <nav class="tabs gut" id="tabs"></nav>
   <!-- The time and what is on the hook belong to the banner, not to the page.
@@ -1376,6 +1409,18 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
        you glance at on a phone was the first thing to disappear. -->
   <div class="nowstrip gut" id="nowStrip" hidden></div>
 </header>
+
+<div class="mastmenu" id="mastMenu" hidden role="menu" aria-label="Pages and prints">
+  <span class="mm-lab">Open</span>
+  <a class="mm-it" id="lnkJobs" href="../jobs/" target="_blank" rel="noopener" role="menuitem"><span>Labour</span><i>&#8599;</i></a>
+  <a class="mm-it" id="lnkLifts" href="../lifts/" target="_blank" rel="noopener" role="menuitem"><span>Lifts &amp; deliveries</span><i>&#8599;</i></a>
+  <button class="mm-it" type="button" data-go="camera" role="menuitem"><span>Deck camera</span><i>&rsaquo;</i></button>
+  <span class="mm-lab">Print</span>
+  <button class="mm-it" type="button" id="pdfBtn" data-pdf="all" role="menuitem"><span>Site prestart</span><i>PDF</i></button>
+  <button class="mm-it" type="button" data-pdf="team" role="menuitem"><span>Team prestart</span><i>PDF</i></button>
+  <button class="mm-it" type="button" data-pdf="prepour" role="menuitem"><span>Pre-pour</span><i>PDF</i></button>
+  <button class="mm-it" type="button" data-pdf="logistics" role="menuitem"><span>Logistics</span><i>PDF</i></button>
+</div>
 
 <div class="windband" id="windBand" hidden>
   <div class="gut wb-in">
@@ -1397,18 +1442,6 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
 <main class="gut">
 
 <section id="v-today" class="view">
-  <div class="pagebar">
-    <div class="pb-grp"><span class="pb-lab">Open</span><div class="pb-btns">
-      <a class="pbtn" id="lnkJobs" href="../jobs/" target="_blank" rel="noopener">Labour</a>
-      <a class="pbtn" id="lnkLifts" href="../lifts/" target="_blank" rel="noopener">Lifts &amp; deliveries</a>
-    </div></div>
-    <div class="pb-grp"><span class="pb-lab">Print</span><div class="pb-btns">
-      <button class="pbtn" id="pdfBtn" data-pdf="all">Site prestart</button>
-      <button class="pbtn" data-pdf="team">Team prestart</button>
-      <button class="pbtn" data-pdf="prepour">Pre-pour</button>
-      <button class="pbtn" data-pdf="logistics">Logistics</button>
-    </div></div>
-  </div>
   <div class="front">
     <div class="card k-labour">
       <button class="cardhead" data-go="labour"><span class="t">Labour &amp; jobs</span><span class="c" id="cLabour"></span><span class="go">&rsaquo;</span></button>
@@ -1792,6 +1825,18 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
   </div>
 </section>
 
+<section id="v-camera" class="view" hidden>
+  <div class="panel">
+    <div class="phead" data-acc="camera"><h2>Deck camera</h2><span class="meta">myTikee &middot; ELISE</span>
+      <span class="right"><a class="mini" id="camOpenLink" href="https://my.tikee.io/videos/a6c56c8d-1222-452a-b032-881045e8cfd5" target="_blank" rel="noopener">Open in myTikee</a></span>
+    </div>
+    <div class="cambox" id="camBox">
+      <iframe id="camFrame" title="ELISE deck timelapse" scrolling="no" allow="fullscreen; autoplay" allowfullscreen referrerpolicy="no-referrer"></iframe>
+    </div>
+    <p class="note">The whole build as one timelapse. Drag the slide bar under the picture to move back and forth through it; the expand button in the corner goes full screen. On a phone, turn it sideways for a full-size slide bar.</p>
+  </div>
+</section>
+
 <section id="v-log" class="view" hidden>
   <div class="panel">
     <div class="phead" data-acc="log"><h2>Completed works</h2><span class="meta" id="logMeta"></span>
@@ -1801,7 +1846,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <p class="note">Every labour job ticked off, newest first, kept by month. Jobs land here the moment the box is ticked and come back out if you untick one, so the log always matches the board.</p>
     <div class="addrow">
       <span class="exp-lab">Take it with you<b id="expMeta"></b></span>
-      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 15 Nov 07:58</span>
+      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 15 Nov 08:20</span>
       <button class="mini" id="expJson">Everything (JSON)</button>
       <button class="mini" id="expCsv">Spreadsheets (CSV)</button>
     </div>
@@ -4067,7 +4112,7 @@ var SUPPLIERS={ELISE:"#3A3835",WORKCON:"#0073EA",HARWELL:"#00C875"};
 var SKIND={CRIT:["Critical","#9E3F2B"],NCR:["NCR","#9C7220"]};
 var DCAUSE={WX:["Weather","#0073EA"],ACC:["Access","#9C7220"],SUB:["Subcontractor","#784BD1"],
   MAT:["Materials","#1E4FA3"],PLANT:["Plant","#5A6670"],DSN:["Design / RFI","#D92B20"],OTH:["Other","#8C8C8C"]};
-var VIEWS=[["today","Today"],["prestart","Prestart"],["labour","Labour & jobs"],["crane","Crane & deliveries"],["safety","Safety"],["weather","Weather"],["log","Completed works"]];
+var VIEWS=[["today","Today"],["prestart","Prestart"],["labour","Labour & jobs"],["crane","Crane & deliveries"],["safety","Safety"],["weather","Weather"],["camera","Camera"],["log","Completed works"]];
 var CUT=1260;      /* one cut a day, 9pm */
 var ROLLOVER=990;  /* 4:30pm - after knock-off you are planning tomorrow */
 /* the day the board opens on: today until 4:30pm, tomorrow after it */
@@ -4130,7 +4175,8 @@ function go(v){
   state.view=v;
   try{if(location.hash.slice(1)!==v)location.hash=v;}catch(e){}
   VIEWS.forEach(function(x){var s=el("v-"+x[0]);if(s)s.hidden=x[0]!==v;});
-  el("daystrip").hidden=(v==="crane"||v==="log");
+  el("daystrip").hidden=(v==="crane"||v==="log"||v==="camera");
+  if(v==="camera")camOpen();
   renderTabs();
   window.scrollTo(0,0);
 }
@@ -4462,6 +4508,28 @@ var WXCODE={0:"Clear",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",
   66:"Freezing rain",67:"Freezing rain",71:"Light snow",73:"Snow",75:"Heavy snow",
   77:"Snow grains",80:"Light showers",81:"Showers",82:"Heavy showers",
   85:"Snow showers",86:"Snow showers",95:"Thunderstorms",96:"Storms with hail",99:"Storms with hail"};
+/* A symbol for the sky, drawn in line to sit with the board's type. Keyed off
+   the Open-Meteo weather code: clear, part cloud, cloud, fog, rain, storm. */
+function wxIcon(code,hour){
+  var c=+code, night=(hour!=null)&&(hour<6||hour>=19);
+  var CL='<path class="wi-cl" d="M7.4 18.6h9.4a3.9 3.9 0 0 0 .6-7.75 5.6 5.6 0 0 0-10.8-1.25A4.5 4.5 0 0 0 7.4 18.6z"/>';
+  var CLU='<g transform="translate(0 -3.2)">'+CL+'</g>';
+  var SUN=night
+    ? '<path class="wi-sun" d="M15.5 4.2a7.6 7.6 0 1 0 4.3 11.6A6.2 6.2 0 0 1 15.5 4.2z"/>'
+    : '<circle class="wi-sun" cx="12" cy="12" r="3.7"/><path class="wi-sun" d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M5.4 18.6l1.5-1.5M17.1 6.9l1.5-1.5"/>';
+  var kind, body;
+  if(c===0||c===1){ kind=night?"night":"sun"; body=SUN; }
+  else if(c===2){ kind="part";
+    body='<g transform="translate(-3.4 -3.6) scale(.78)">'+SUN+'</g>'+
+         '<g transform="translate(1.6 1.4) scale(.86)">'+CL+'</g>'; }
+  else if(c===45||c===48){ kind="fog"; body=CLU+'<path class="wi-fog" d="M5 19.2h14M7.5 22h9"/>'; }
+  else if(c>=95){ kind="storm"; body=CLU+'<path class="wi-bolt" d="M12.9 13.6 9.6 18.7h2.7l-1.6 4 4.6-6h-2.7l1.3-3.1z"/>'; }
+  else if((c>=51&&c<=67)||(c>=80&&c<=82)){ kind="rain";
+    body=CLU+'<path class="wi-rain" d="M8.6 17.4 7.5 20.6M12.4 17.4 11.3 20.6M16.2 17.4 15.1 20.6"/>'; }
+  else if(c>=71&&c<=86){ kind="rain"; body=CLU+'<path class="wi-rain" d="M8.6 18.6h.01M12.4 18.6h.01M16.2 18.6h.01M10.5 21.3h.01M14.3 21.3h.01"/>'; }
+  else { kind="cloud"; body=CL; }
+  return '<svg class="wico wi-'+kind+'" viewBox="0 0 24 24" aria-hidden="true">'+body+'</svg>';
+}
 function wxCompass(deg){
   var P=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
   if(deg==null||!isFinite(deg))return "";
@@ -4550,7 +4618,9 @@ function smooth(pts){
 /* The band under the clock: the day's wind as one curve under a wash of
    colour, hours along the bottom, the way a weather app draws it. No axes -
    the number you want is the one under your finger, and that reads out. */
-var WGEO={W:1000,H:62,L:0,R:0,T:10,B:14};
+/* W is reset to the chart's real pixel width every draw, and H matches the
+   CSS height, so the curve and its time labels are never stretched */
+var WGEO={W:1000,H:104,L:0,R:0,T:12,B:17};
 function windGeo(H){
   var top=Math.max(30,Math.ceil(Math.max.apply(null,H.map(function(x){
     return Math.max(+x.w||0,+x.g||0);}))/10)*10);
@@ -4594,6 +4664,9 @@ function renderWind(){
   var box=el("windChart"), band=el("windBand");
   if(!box||!band) return;
   if(WX.state==="idle")wxFetch();
+  band.hidden=false;
+  WGEO.W=Math.max(280,Math.round(box.clientWidth||1000));
+  WGEO.H=window.matchMedia("(max-width:560px)").matches?86:104;
   var H=wxDayHours(state.date), svg=H.length>1?windSvg(state.date):"";
   if(!svg){
     /* Hiding the whole band on a failed read made the wind look like a
@@ -4874,10 +4947,11 @@ function renderWeather(){
   }
 
   var m=el("wxMeta");
-  if(m) m.textContent = WX.now
-    ? Math.round(WX.now.temp)+"\u00b0 \u00b7 "+(WXCODE[WX.now.code]||"")+" \u00b7 "+
-      (wxCompass(WX.now.dir)?wxCompass(WX.now.dir)+" ":"")+Math.round(WX.now.wind)+" km/h"
-    : (WX.state==="fail"?"forecast unreachable":"");
+  if(m) m.innerHTML = WX.now
+    ? '<span class="wmsym">'+wxIcon(WX.now.code,new Date().getHours())+'</span>'+
+      esc(Math.round(WX.now.temp)+"\u00b0 \u00b7 "+(WXCODE[WX.now.code]||"")+" \u00b7 "+
+      (wxCompass(WX.now.dir)?wxCompass(WX.now.dir)+" ":"")+Math.round(WX.now.wind)+" km/h")
+    : esc(WX.state==="fail"?"forecast unreachable":"");
 
   /* hour by hour across the site day */
   var H=wxDayHours(state.date), hb=el("wxHours"), now=new Date();
@@ -5206,10 +5280,13 @@ function renderJobs(){
     if(j.done)done.push(jobRow(j,i));
     else (j.pri?pri:rest).push(jobRow(j,i));
   });
-  var html='<div class="subhead sub2"><span>Priority</span><span>'+(pri.length||"")+'</span></div>';
-  html+=pri.length?pri.join(""):'<div class="nojobs">Nothing marked priority. Hit the star on anything that has to happen today.</div>';
-  html+='<div class="subhead sub2"><span>Everything else</span><span>'+(rest.length||"")+'</span></div>';
-  html+=rest.length?rest.join(""):'<div class="nojobs">Nothing else listed.</div>';
+  /* Priority and Non-priority side by side, so both lists are in view at once */
+  var html='<div class="jobcols">'+
+    '<div class="jobcol"><div class="subhead sub2"><span>Priority</span><span>'+(pri.length||"")+'</span></div>'+
+    (pri.length?pri.join(""):'<div class="nojobs">Nothing marked priority. Hit the star on anything that has to happen today.</div>')+
+    '</div><div class="jobcol"><div class="subhead sub2"><span>Non-priority</span><span>'+(rest.length||"")+'</span></div>'+
+    (rest.length?rest.join(""):'<div class="nojobs">Nothing else listed.</div>')+
+    '</div></div>';
   el("jobs").innerHTML=html;
   var dbox=el("jobsDone");
   if(dbox){
@@ -6954,6 +7031,64 @@ el("photoIn").addEventListener("change",function(){
 });
 window.addEventListener("hashchange",function(){go(location.hash.slice(1));});
 
+(function(){
+  var lastW=0,t=null;
+  window.addEventListener("resize",function(){
+    clearTimeout(t);
+    t=setTimeout(function(){
+      var b=el("windChart");if(!b)return;
+      var w=Math.round(b.clientWidth);
+      if(w&&w!==lastW){lastW=w;renderWind();}
+    },150);
+  });
+})();
+
+/* the deck camera: Tikee's public share page, sized to the screen */
+function camFit(){
+  var b=el("camBox"),f=el("camFrame");
+  if(!b||!f)return;
+  var sc=Math.min(1.6,b.clientWidth/900);
+  f.style.transform="scale("+sc+")";
+}
+function camOpen(){
+  var f=el("camFrame");
+  if(!f)return;
+  /* read from the link rather than a variable, so opening the board
+     straight onto this tab works before the rest of the script has run */
+  if(!f.getAttribute("src"))f.setAttribute("src",el("camOpenLink").getAttribute("href"));
+  requestAnimationFrame(camFit);
+}
+window.addEventListener("resize",camFit);
+if(window.ResizeObserver&&el("camBox"))new ResizeObserver(camFit).observe(el("camBox"));
+
+/* the top-right menu: pages and prints, dropping from under the buttons */
+(function(){
+  var btn=el("menuBtn"),m=el("mastMenu");
+  if(!btn||!m)return;
+  function place(){
+    var r=btn.getBoundingClientRect();
+    m.style.top=Math.round(r.bottom+6)+"px";
+    m.style.right=Math.max(8,Math.round(window.innerWidth-r.right))+"px";
+  }
+  function open(on){
+    m.hidden=!on;
+    btn.setAttribute("aria-expanded",on?"true":"false");
+    if(on)place();
+  }
+  btn.addEventListener("click",function(e){e.stopPropagation();open(m.hidden);});
+  /* any choice inside closes it once the choice has done its job; a tap
+     anywhere else just closes it */
+  document.addEventListener("click",function(e){
+    if(m.hidden||!e.target.closest)return;
+    if(e.target.closest("#mastMenu")){setTimeout(function(){open(false);},0);return;}
+    if(!btn.contains(e.target))open(false);
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&!m.hidden){open(false);btn.focus();}
+  });
+  window.addEventListener("resize",function(){if(!m.hidden)place();});
+})();
+
 document.addEventListener("click",function(e){
   if(!e.target.closest)return;
   if(e.target.closest("#cbapp"))return;
@@ -7188,6 +7323,8 @@ function wxChip(){
   var w=WX.now;
   if(!w)return "";
   var big="";
+  if(w.code!=null&&WXCODE[w.code])
+    big+='<span class="wsym" title="'+esc(WXCODE[w.code])+'">'+wxIcon(w.code,new Date().getHours())+'</span>';
   if(w.temp!=null)big+='<span class="wt">'+Math.round(w.temp)+'\u00b0</span>';
   if(w.wind!=null)big+='<span class="wv">'+(wxCompass(w.dir)?esc(wxCompass(w.dir))+" ":"")+
     Math.round(w.wind)+'<s>km/h</s></span>';
