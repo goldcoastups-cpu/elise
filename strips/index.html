@@ -12,129 +12,50 @@
 <meta name="robots" content="noindex,nofollow">
 <title>ELISE &middot; Progress strips</title>
 <link rel="stylesheet" href="../board/fonts.css">
+<link rel="stylesheet" href="../test.css">
 <style>
-:root{
-  --paper:#EFEAE1;--surface:#FBF8F3;--surface-2:#E7E0D3;
-  --ink:#2B2926;--ink-2:#6E675D;--ink-3:#938B7E;
-  --line:#D9D1C2;--line-hard:#BFB49F;--gold:#8C7B60;
-  --ok:#3F6B46;--warn:#9C7220;--crit:#9E3F2B;--clock:#0D6377;--alarm:#C0210F;
-  --gut-l:max(14px,env(safe-area-inset-left,0px));
-  --gut-r:max(14px,env(safe-area-inset-right,0px));
-  --f-ui:'Archivo','Helvetica Neue',Arial,sans-serif;
-  --f-cond:'Archivo Narrow','Arial Narrow',Arial,sans-serif;
-  --f-num:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-  color-scheme:light;
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --paper:#1A1917;--surface:#232220;--surface-2:#2D2B27;
-  --ink:#EDE8DE;--ink-2:#A79F92;--ink-3:#817A6E;
-  --line:#35322D;--line-hard:#4A463F;--gold:#C3AC82;
-  --ok:#8FBF93;--warn:#DDB45F;--crit:#E08A72;--clock:#46BCCE;--alarm:#FF4A3A;
-  color-scheme:dark;}}
-:root[data-theme="dark"]{
-  --paper:#1A1917;--surface:#232220;--surface-2:#2D2B27;
-  --ink:#EDE8DE;--ink-2:#A79F92;--ink-3:#817A6E;
-  --line:#35322D;--line-hard:#4A463F;--gold:#C3AC82;
-  --ok:#8FBF93;--warn:#DDB45F;--crit:#E08A72;--clock:#46BCCE;--alarm:#FF4A3A;
-  color-scheme:dark;}
-
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-ui);
-  font-size:14px;line-height:1.4;overscroll-behavior-y:none}
-body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-
-header{position:sticky;top:0;z-index:30;background:var(--paper);
-  border-bottom:1px solid var(--line-hard);padding:9px var(--gut-r) 9px var(--gut-l)}
-.top{display:flex;align-items:center;gap:9px}
-.wm{font-family:var(--f-cond);font-size:14px;font-weight:700;letter-spacing:.3em;
-  text-transform:uppercase}
-.clk{font-family:var(--f-num);font-size:14px;font-weight:600;color:var(--clock)}
-.ro{font-family:var(--f-cond);font-size:9.5px;font-weight:700;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--ink-3);border:1px solid var(--line);border-radius:3px;
-  padding:2px 6px}
-.back{margin-left:auto;font-family:var(--f-cond);font-size:11px;font-weight:600;
-  letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);text-decoration:none;
-  border:1px solid var(--line);border-radius:4px;padding:5px 9px}
-.back:active{background:var(--surface-2)}
-.datebar{display:flex;align-items:center;gap:8px;padding:8px 0 0}
-.datebar button{font:inherit;font-family:var(--f-cond);font-size:16px;font-weight:600;
-  background:transparent;border:1px solid var(--line);border-radius:4px;color:var(--ink-2);
-  width:34px;height:30px;cursor:pointer;line-height:1}
-.datebar button:active{background:var(--surface-2)}
-.dlab{font-family:var(--f-cond);font-size:14px;font-weight:700;letter-spacing:.14em;
-  text-transform:uppercase;flex:1;text-align:center}
-.dlab small{display:block;font-family:var(--f-num);font-size:10px;font-weight:400;
-  letter-spacing:0;color:var(--ink-3);text-transform:none}
-
 main{padding:12px var(--gut-r) 30px var(--gut-l)}
 .rack{font-family:var(--f-cond);font-size:10.5px;font-weight:700;letter-spacing:.2em;
   text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line-hard);
-  padding:0 0 4px;margin:16px 0 0;display:flex;align-items:baseline;gap:8px}
+  padding:0 0 4px;margin:17px 0 0;display:flex;align-items:baseline;gap:8px}
 .rack:first-child{margin-top:0}
 .rack b{margin-left:auto;font-family:var(--f-num);font-size:10px;font-weight:400}
 
 /* a strip: fixed boxes in a fixed order, so your eye lands in the same place */
-.strip{display:grid;grid-template-columns:48px 40px 1fr 62px;width:100%;margin-top:7px;
+.wrapst{position:relative;display:flex;align-items:stretch;gap:0;margin-top:7px}
+.flag{flex:0 0 17px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-cond);font-size:9px;font-weight:700;letter-spacing:.06em;
+  color:var(--warn);background:transparent;border:0;cursor:pointer;padding:0;
+  writing-mode:vertical-rl;line-height:1}
+.flag.spacer{cursor:default;color:transparent}
+.strip{flex:1;min-width:0;display:grid;grid-template-columns:48px 40px 1fr 62px;
   background:var(--surface);border:1px solid var(--line-hard);border-left-width:6px;
-  font-family:var(--f-num);font-size:11.5px;text-align:left;cursor:pointer;
-  padding:0;color:inherit;align-items:stretch}
+  font-family:var(--f-num);font-size:11.5px;text-align:left;cursor:pointer;padding:0;
+  color:inherit;align-items:stretch}
 .strip > span{padding:7px 6px;border-right:1px solid var(--line);min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center}
 .strip .qt{border-right:0;text-align:right;font-size:11px}
 .strip .co{font-weight:700}
 .strip .tm{font-weight:600}
 .strip .ds{font-family:var(--f-ui);font-size:12px;white-space:normal;line-height:1.25}
-/* cocked, the ATC way: a strip pulled out of line is one that needs attention.
-   Here that is anything still only requested, not confirmed. */
-.strip.cock{margin-left:17px;width:calc(100% - 17px);border-style:dashed;
-  border-left-style:solid}
-.strip.cock::before{content:"";position:absolute}
-.wrapst{position:relative}
-.wrapst .flag{position:absolute;left:0;top:50%;transform:translateY(-50%);
-  font-family:var(--f-cond);font-size:9px;font-weight:700;letter-spacing:.06em;
-  color:var(--warn);writing-mode:vertical-rl;line-height:1}
+/* cocked, the ATC way: a strip pulled out of line needs attention. Here that
+   is anything still only requested. Tap the flag to confirm it. */
+.strip.cock{border-style:dashed;border-left-style:solid}
 .strip.done{opacity:.44}
 .strip.live{border-color:var(--clock);box-shadow:0 0 0 1px var(--clock)}
-.ann{grid-column:1/-1;border-top:1px dotted var(--line);padding:5px 7px;
-  font-family:var(--f-ui);font-size:11px;line-height:1.35;color:var(--ink-2);
-  white-space:normal;text-align:left}
-.ann.warnx{color:var(--crit)}
-.pairline{grid-column:1/-1;border-top:1px dotted var(--line);padding:4px 7px;
-  font-size:10px;color:var(--ink-3);letter-spacing:.04em;white-space:normal;
-  text-align:left}
-.brkstrip{display:flex;align-items:center;gap:8px;margin-top:7px;padding:5px 8px;
+.strip.sb{box-shadow:inset 0 0 0 1px var(--warn)}
+.strip > span.ann{grid-column:1/-1;border-top:1px dotted var(--line);border-right:0;
+  padding:5px 7px;font-family:var(--f-ui);font-size:11px;line-height:1.35;
+  color:var(--ink-2);white-space:normal;text-align:left}
+.strip > span.pairline{grid-column:1/-1;border-top:1px dotted var(--line);border-right:0;
+  padding:4px 7px;font-size:10px;color:var(--ink-3);white-space:normal;text-align:left}
+.brkstrip{display:flex;align-items:center;gap:8px;margin-top:7px;padding:6px 8px;
   border:1px dashed var(--line-hard);border-radius:3px;font-family:var(--f-cond);
   font-size:10px;font-weight:700;letter-spacing:.17em;text-transform:uppercase;
-  color:var(--ink-3);background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,transparent 6px 12px)}
-.empty{font-family:var(--f-num);font-size:11.5px;color:var(--ink-3);padding:10px 2px}
-.state{padding:16px 0 0;font-size:12px;color:var(--ink-3);font-family:var(--f-num);
-  border-top:1px solid var(--line);margin-top:18px}
+  color:var(--ink-3);
+  background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,transparent 6px 12px)}
+.empty{font-family:var(--f-num);font-size:11.5px;color:var(--ink-3);padding:9px 2px}
 .key{display:flex;gap:14px;flex-wrap:wrap;padding-top:8px;font-size:11px;color:var(--ink-3)}
-
-/* detail sheet */
-.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:none}
-.scrim.on{display:block}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--surface);
-  border-top:1px solid var(--line-hard);border-radius:14px 14px 0 0;
-  padding:14px var(--gut-r) calc(18px + env(safe-area-inset-bottom,0px)) var(--gut-l);
-  max-height:76vh;overflow-y:auto;transform:translateY(102%);transition:transform .18s ease-out}
-.sheet.on{transform:translateY(0)}
-@media (prefers-reduced-motion:reduce){.sheet{transition:none}}
-.sheet .sh{display:flex;align-items:center;gap:8px;padding-bottom:9px}
-.sheet .sh .pill{font-family:var(--f-cond);font-size:11px;font-weight:700;letter-spacing:.1em;
-  border-radius:3px;padding:3px 7px}
-.sheet .sh .tm2{font-family:var(--f-num);font-size:15px;font-weight:600;margin-left:auto}
-.sheet h2{margin:0 0 9px;font-size:16px;font-weight:600;line-height:1.3}
-.sheet dl{margin:0;display:grid;grid-template-columns:84px 1fr;gap:5px 10px;font-size:12.5px}
-.sheet dt{font-family:var(--f-cond);font-size:10.5px;font-weight:700;letter-spacing:.11em;
-  text-transform:uppercase;color:var(--ink-3);padding-top:2px}
-.sheet dd{margin:0}
-.sheet .notes{margin-top:12px;padding-top:11px;border-top:1px solid var(--line);
-  font-size:12.5px;line-height:1.5;color:var(--ink-2);white-space:pre-wrap}
-.sheet .close{display:block;width:100%;margin-top:14px;font:inherit;font-family:var(--f-cond);
-  font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  background:transparent;border:1px solid var(--line-hard);border-radius:5px;color:var(--ink-2);
-  padding:10px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -143,12 +64,14 @@ main{padding:12px var(--gut-r) 30px var(--gut-l)}
   <div class="top">
     <span class="wm">Elise</span>
     <span class="clk" id="clk">--:--</span>
-    <span class="ro">Test &middot; read only</span>
+    <span class="badge" id="sbadge">Sandbox</span>
     <a class="back" href="../board/">Board</a>
   </div>
   <div class="datebar">
     <button type="button" id="prev" aria-label="Previous day">&lsaquo;</button>
     <span class="dlab" id="dlab">&nbsp;<small>&nbsp;</small></span>
+    <button type="button" class="act undo" id="sreset" hidden>Undo all</button>
+    <button type="button" class="act go" id="sadd">+ Add</button>
     <button type="button" id="next" aria-label="Next day">&rsaquo;</button>
   </div>
 </header>
@@ -156,108 +79,24 @@ main{padding:12px var(--gut-r) 30px var(--gut-l)}
 <main id="racks"><div class="empty">Loading&hellip;</div></main>
 
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Movement detail"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Booking"></div>
 
 <script src="../board/config.js"></script>
+<script src="../sandbox.js"></script>
+<script src="../testkit.js"></script>
 <script>
 "use strict";
-/* ==========================================================================
-   ELISE - PROGRESS STRIPS (test page)
-   Flight-progress strips over the same lifts table the board reads.
-   Read only: no writes anywhere in this file.
-   ========================================================================== */
-var CFG  = window.ELISE_CONFIG || {};
-var REST = (CFG.url || "").replace(/\/+$/, "") + "/rest/v1/";
-var KEY  = CFG.key || "";
-var PROJ = "ELISE";
-
-function api(path){
-  return fetch(REST + path, {headers:{apikey:KEY, Authorization:"Bearer " + KEY}})
-    .then(function(r){ if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
-}
-function esc(s){
-  return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){
-    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
-  });
-}
-function two(n){ return (n < 10 ? "0" : "") + n; }
-function hm(m){ return two(Math.floor(m/60)) + ":" + two(((m%60)+60)%60); }
-function iso(d){ return d.getFullYear()+"-"+two(d.getMonth()+1)+"-"+two(d.getDate()); }
-function nowMin(){ var n = new Date(); return n.getHours()*60 + n.getMinutes(); }
-var ROLLOVER = 990;
-function boardDate(){
-  var n = new Date();
-  if(n.getHours()*60 + n.getMinutes() >= ROLLOVER) n.setDate(n.getDate() + 1);
-  return iso(n);
-}
-function dayName(s){
-  var p = s.split("-"), d = new Date(+p[0], +p[1]-1, +p[2]);
-  var W = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  var M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return W[d.getDay()] + " " + d.getDate() + " " + M[d.getMonth()];
-}
-function shift(s, n){
-  var p = s.split("-"), d = new Date(+p[0], +p[1]-1, +p[2]);
-  d.setDate(d.getDate() + n); return iso(d);
-}
-
-var DEF_TRADES = [["EC","Elise","#A8A05C"],["GLF","G+L Form","#FF8A00"],
-  ["ECC","East Coast Concrete","#5A6670"],["EEC","Encon PT","#D92B20"],
-  ["AP","Advanced Precast","#00C875"],["NEU","Neumann Steel","#1E4FA3"],
-  ["NS","Newnham Scaffolding","#FFCB00"],["RZE","Rize Reinforcements","#FF2D87"],
-  ["BUT","Butlers","#784BD1"],["S4U","Skips 4 U","#8B1E3F"],["OTH","Other","#B9B2A6"]];
-var LKIND = {LOAD:"Load in",BAYS:"Loading bays",SPIN:"Spin up",SNGL:"Single height",
-  DECK:"Deck lift",BACK:"Backload",BOOM:"Boom pump",KIB:"Kibble / pour",FLY:"Formwork fly",
-  SET:"Set up / dismantle",BIN:"Bins out",PLANT:"Plant / gear",HAND:"Hand unload",
-  FORK:"Forklift off",CRANE:"Crane off",CONC:"Concrete truck",PUMP:"Pump",
-  SEMI:"Semi / float",HIAB:"Hiab / self-loader",MOVE:"Move"};
-
-var state = {
-  date: (location.hash || "").replace(/^#/, "") || boardDate(),
-  breaks: [[600,30],[780,30]], trades:{}, rows:[], err:""
-};
-DEF_TRADES.forEach(function(t){ state.trades[t[0]] = [t[1], t[2]]; });
-function trade(c){ return state.trades[c] || [c || "Other", "#B9B2A6"]; }
-function onColour(hex){
-  var h = String(hex || "").replace("#","");
-  if(h.length !== 6) return "#FFFFFF";
-  function li(v){ v = parseInt(v,16)/255; return v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4); }
-  var L = .2126*li(h.slice(0,2)) + .7152*li(h.slice(2,4)) + .0722*li(h.slice(4,6));
-  return L > .42 ? "#1A1917" : "#FFFFFF";
-}
-
-function loadConfig(){
-  return api("config?select=data&id=eq.board&project=eq." + PROJ).then(function(rows){
-    var d = rows[0] && rows[0].data;
-    if(!d) return;
-    if(Array.isArray(d.breaks)) state.breaks = d.breaks;
-    if(Array.isArray(d.trades)){
-      state.trades = {};
-      d.trades.forEach(function(t){ state.trades[t[0]] = [t[1], t[2]]; });
-    }
-  }).catch(function(){});
-}
-function loadDay(){
-  return api("lifts?select=*&project=eq." + PROJ + "&date=eq." + state.date +
-             "&order=start_min.asc").then(function(rows){
-    state.rows = rows || []; state.err = "";
-  }).catch(function(e){
-    state.err = "Could not reach the board data (" + e.message + ").";
-  });
-}
-
-/* ---------- strips ---------- */
+var S = TK.state, hm = TK.hm, esc = TK.esc;
 var INDEX = [];
 
 function stripHtml(r, i, cls){
-  var tr = trade(r.co), c = tr[1];
+  var tr = TK.trade(r.co), c = tr[1];
   var qty = r.qty ? r.qty + (r.qty === 1 ? " lift" : " lifts")
                   : (r.kg ? (r.kg/1000).toFixed(1) + "t" : (r.type === "del" ? "truck" : "—"));
   var cock = r.status !== "con";
-  /* the first sentence of the note is the hand annotation on a paper strip */
   var ann = "";
   if(r.notes){
-    /* first sentence only - lookbehind is not safe on older iOS */
+    /* the first sentence is the hand annotation on a paper strip */
     var n0 = String(r.notes), dot = n0.indexOf(". ");
     var first = dot > 0 ? n0.slice(0, dot + 1) : n0;
     if(first.length > 150) first = first.slice(0, 147) + "…";
@@ -265,15 +104,18 @@ function stripHtml(r, i, cls){
   }
   var pairTxt = "";
   if(r.pair){
-    var p = state.rows.filter(function(x){ return x.id === r.pair; })[0];
+    var p = S.rows.filter(function(x){ return x.id === r.pair; })[0];
     pairTxt = '<span class="pairline">⚭ pairs with ' +
       (p ? esc(p.co) + " " + hm(p.start_min) + " · " +
-           (p.type === "del" ? "the truck" : "the crane slot")
-         : esc(r.pair)) + '</span>';
+           (p.type === "del" ? "the truck" : "the crane slot") : esc(r.pair)) + '</span>';
   }
-  return '<div class="wrapst">' + (cock ? '<span class="flag">REQ</span>' : '') +
+  return '<div class="wrapst">' +
+    (cock ? '<button class="flag" type="button" data-con="' + i +
+            '" title="Confirm this one">REQ</button>'
+          : '<span class="flag spacer"> </span>') +
     '<button class="strip ' + cls + (cock ? " cock" : "") +
-    '" data-i="' + i + '" style="border-left-color:' + c + '">' +
+      (r.__added || r.__edited ? " sb" : "") +
+      '" data-i="' + i + '" style="border-left-color:' + c + '">' +
     '<span class="tm">' + hm(r.start_min) + '</span>' +
     '<span class="co" style="color:' + c + '">' + esc(r.co) + '</span>' +
     '<span class="ds">' + esc(r.descr || "") + '</span>' +
@@ -283,18 +125,17 @@ function stripHtml(r, i, cls){
 
 function render(){
   var m = document.getElementById("racks");
-  document.getElementById("dlab").innerHTML =
-    esc(dayName(state.date)) + "<small>" + esc(state.date) + "</small>";
+  if(S.err){ m.innerHTML = '<div class="empty">' + esc(S.err) + '</div>'; return; }
 
-  if(state.err){ m.innerHTML = '<div class="empty">' + esc(state.err) + '</div>'; return; }
-  if(!state.rows.length){
-    m.innerHTML = '<div class="empty">Nothing booked for this day.</div>'; return;
+  var hdr = S.note ? '<div class="empty">' + esc(S.note) + '</div>' : '';
+  if(!S.rows.length){
+    m.innerHTML = hdr + '<div class="empty">Nothing booked for this day. ' +
+      'Use + Add to try one.</div>'; return;
   }
 
-  INDEX = state.rows.slice();
-  var today = state.date === iso(new Date());
-  var nm = nowMin();
-  var h = "";
+  INDEX = S.rows.slice();
+  var today = S.date === TK.iso(new Date()), nm = TK.nowMin();
+  var h = hdr;
 
   function rack(title, set, cls, note){
     h += '<div class="rack">' + title + (note ? ' <span>' + note + '</span>' : '') +
@@ -304,98 +145,48 @@ function render(){
   }
 
   if(today){
-    rack("Active", state.rows.filter(function(r){
+    rack("Active", S.rows.filter(function(r){
       return nm >= r.start_min && nm < r.start_min + (r.dur||10); }), "live");
-    rack("Pending", state.rows.filter(function(r){ return r.start_min > nm; }), "");
-    rack("Cleared", state.rows.filter(function(r){
+    rack("Pending", S.rows.filter(function(r){ return r.start_min > nm; }), "");
+    rack("Cleared", S.rows.filter(function(r){
       return r.start_min + (r.dur||10) <= nm; }), "done");
   } else {
-    rack("All movements", state.rows, "", hm(state.rows[0].start_min) + " onwards");
+    rack("All movements", S.rows, "", hm(S.rows[0].start_min) + " onwards");
   }
 
-  /* the crane breaks, so a strip never gets dragged through one */
-  h += '<div class="rack">Crane breaks<b>' + state.breaks.length + '</b></div>';
-  state.breaks.forEach(function(b){
+  h += '<div class="rack">Crane breaks<b>' + S.breaks.length + '</b></div>';
+  S.breaks.forEach(function(b){
     h += '<div class="brkstrip"><span>' + hm(b[0]) + " – " + hm(b[0]+b[1]) +
          '</span><span style="margin-left:auto">no lift runs through</span></div>';
   });
 
-  var lifts = state.rows.filter(function(r){ return r.type !== "del"; }).length;
-  var con   = state.rows.filter(function(r){ return r.status === "con"; }).length;
-  h += '<div class="state">' + lifts + " on the hook · " +
-       (state.rows.length - lifts) + " deliveries · " + con + " of " +
-       state.rows.length + ' confirmed</div>' +
+  var lifts = S.rows.filter(function(r){ return r.type !== "del"; }).length;
+  var con   = S.rows.filter(function(r){ return r.status === "con"; }).length;
+  h += '<div class="foot">' + lifts + " on the hook · " +
+       (S.rows.length - lifts) + " deliveries · " + con + " of " +
+       S.rows.length + ' confirmed</div>' +
        '<div class="key"><span>Flush = confirmed</span>' +
-       '<span>Cocked out = requested only</span>' +
-       '<span>Tap a strip for the detail and the reasoning</span></div>';
+       '<span>Cocked out = requested</span></div>' +
+       '<div class="hint">Tap <b>REQ</b> down the side to confirm a strip. ' +
+       'Tap the strip itself to change it, <b>+ Add</b> for a new one. ' +
+       'Everything stays on this phone &mdash; the real board is never written to.</div>';
   m.innerHTML = h;
 }
 
-/* ---------- detail sheet ---------- */
-function openSheet(r){
-  var tr = trade(r.co), c = tr[1];
-  var rows = [
-    ["Mob", esc(tr[0]) + (r.co2 ? " + " + esc(trade(r.co2)[0]) : "")],
-    ["Window", hm(r.start_min) + " – " + hm(r.start_min + (r.dur||0)) +
-               "  (" + (r.dur||0) + " min)"],
-    ["Kind", esc(LKIND[r.kind] || r.kind || "—")],
-    ["Route", esc((r.from_loc || "?") + " → " + (r.to_loc || "?"))],
-    ["Crane", r.crane && r.crane !== "none" ? esc(r.crane) : "no crane"],
-    ["Quantity", (r.qty ? r.qty + " lifts" : "—") +
-                 (r.kg ? " · " + r.kg.toLocaleString() + " kg" : "")],
-    ["Status", r.status === "con" ? "Confirmed" : "Requested — not confirmed"],
-    ["Booked by", esc(r.booked_by || "—")]
-  ];
-  if(r.pair) rows.push(["Paired with", esc(r.pair)]);
-  var s = document.getElementById("sheet");
-  s.innerHTML =
-    '<div class="sh"><span class="pill" style="background:' + c + ';color:' + onColour(c) +
-      '">' + esc(r.co) + '</span>' +
-      '<span class="ro">' + (r.type === "del" ? "Delivery" : "Crane") + '</span>' +
-      '<span class="tm2">' + hm(r.start_min) + '</span></div>' +
-    '<h2>' + esc(r.descr || "") + '</h2><dl>' +
-    rows.map(function(x){ return '<dt>' + x[0] + '</dt><dd>' + x[1] + '</dd>'; }).join("") +
-    '</dl>' + (r.notes ? '<div class="notes">' + esc(r.notes) + '</div>' : '') +
-    '<button class="close" type="button" id="sclose">Close</button>';
-  document.getElementById("scrim").classList.add("on");
-  s.classList.add("on");
-  document.getElementById("sclose").addEventListener("click", closeSheet);
-}
-function closeSheet(){
-  document.getElementById("sheet").classList.remove("on");
-  document.getElementById("scrim").classList.remove("on");
-}
-document.getElementById("scrim").addEventListener("click", closeSheet);
-document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeSheet(); });
 document.getElementById("racks").addEventListener("click", function(e){
+  var f = e.target.closest(".flag[data-con]");
+  if(f){
+    var rf = INDEX[+f.getAttribute("data-con")];
+    if(rf) SB.edit(S.date, rf, {status: "con"});
+    TK.refresh();
+    return;
+  }
   var b = e.target.closest(".strip");
   if(!b) return;
   var r = INDEX[+b.getAttribute("data-i")];
-  if(r) openSheet(r);
+  if(r) TK.openSheet(r, false);
 });
 
-function tick(){
-  var n = new Date();
-  document.getElementById("clk").textContent = two(n.getHours()) + ":" + two(n.getMinutes());
-}
-function go(d){
-  state.date = d;
-  if(location.hash.replace(/^#/,"") !== d) location.hash = d;
-  loadDay().then(render);
-}
-document.getElementById("prev").addEventListener("click", function(){ go(shift(state.date,-1)); });
-document.getElementById("next").addEventListener("click", function(){ go(shift(state.date, 1)); });
-window.addEventListener("hashchange", function(){
-  var d = (location.hash || "").replace(/^#/,"");
-  if(d && d !== state.date) go(d);
-});
-
-tick();
-setInterval(tick, 20000);
-loadConfig().then(loadDay).then(render);
-setInterval(function(){ loadDay().then(render); }, 60000);
-document.addEventListener("visibilitychange", function(){
-  if(!document.hidden) loadDay().then(render);
-});
+TK.boot(render);
 </script>
 </body></html>
