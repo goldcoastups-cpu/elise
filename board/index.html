@@ -570,8 +570,20 @@ button,input,select{font:inherit;color:inherit}
 .cardhead .t{color:var(--ink)}
 
 #v-camera{--acc:var(--clock);--acc-ink:var(--clock)}
-.cambox{position:relative;width:100%;aspect-ratio:900/324;overflow:hidden;background:#0b0b0b;
+.cambox{position:relative;width:100%;aspect-ratio:900/324;max-height:calc(100vh - 230px);
+  min-height:150px;overflow:hidden;background:#0b0b0b;
   border:1px solid var(--line);border-radius:4px;margin-top:12px}
+/* full screen: the native API where the browser has it, otherwise the box
+   pins itself over the whole window - iPhone Safari will not fullscreen a
+   section of a page, only a bare video */
+.cambox:fullscreen{width:100vw;height:100vh;max-height:none;aspect-ratio:auto;border:0;border-radius:0;background:#000}
+.cambox.camfull{position:fixed;inset:0;z-index:10001;width:auto;height:auto;max-height:none;
+  aspect-ratio:auto;margin:0;border:0;border-radius:0;background:#000}
+.camclose{position:absolute;z-index:3;top:max(10px,env(safe-area-inset-top,0px));
+  right:max(10px,env(safe-area-inset-right,0px));width:40px;height:40px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.55);color:#fff;font-size:24px;
+  line-height:1;cursor:pointer;display:none}
+.cambox.camfull .camclose,.cambox:fullscreen .camclose{display:block}
 .cambox iframe{position:absolute;left:0;top:0;width:900px;height:324px;border:0;
   transform-origin:0 0;background:#0b0b0b}
 
@@ -1828,12 +1840,13 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
 <section id="v-camera" class="view" hidden>
   <div class="panel">
     <div class="phead" data-acc="camera"><h2>Deck camera</h2><span class="meta">myTikee &middot; ELISE</span>
-      <span class="right"><a class="mini" id="camOpenLink" href="https://my.tikee.io/videos/a6c56c8d-1222-452a-b032-881045e8cfd5" target="_blank" rel="noopener">Open in myTikee</a></span>
+      <span class="right"><button class="mini" id="camFullBtn" type="button">Full screen</button><a class="mini" id="camOpenLink" href="https://my.tikee.io/videos/a6c56c8d-1222-452a-b032-881045e8cfd5" target="_blank" rel="noopener">Open in myTikee</a></span>
     </div>
     <div class="cambox" id="camBox">
       <iframe id="camFrame" title="ELISE deck timelapse" scrolling="no" allow="fullscreen; autoplay" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      <button class="camclose" id="camClose" type="button" aria-label="Close full screen">&times;</button>
     </div>
-    <p class="note">The whole build as one timelapse. Drag the slide bar under the picture to move back and forth through it; the expand button in the corner goes full screen. On a phone, turn it sideways for a full-size slide bar.</p>
+    <p class="note">The whole build as one timelapse. Drag the slide bar under the picture to move back and forth through it. <b>Full screen</b> gives the picture the whole display; on a phone, turn it sideways as well.</p>
   </div>
 </section>
 
@@ -1846,7 +1859,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <p class="note">Every labour job ticked off, newest first, kept by month. Jobs land here the moment the box is ticked and come back out if you untick one, so the log always matches the board.</p>
     <div class="addrow">
       <span class="exp-lab">Take it with you<b id="expMeta"></b></span>
-      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 15 Nov 08:20</span>
+      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 15 Nov 08:30</span>
       <button class="mini" id="expJson">Everything (JSON)</button>
       <button class="mini" id="expCsv">Spreadsheets (CSV)</button>
     </div>
@@ -7047,9 +7060,38 @@ window.addEventListener("hashchange",function(){go(location.hash.slice(1));});
 function camFit(){
   var b=el("camBox"),f=el("camFrame");
   if(!b||!f)return;
-  var sc=Math.min(1.6,b.clientWidth/900);
+  var full=b.classList.contains("camfull")||document.fullscreenElement===b;
+  var W=b.clientWidth,H=b.clientHeight||W*324/900;
+  /* fill the width, or the height when that runs out first - in full screen
+     there is no upper limit, so a TV gets the picture at full size */
+  var sc=Math.min(W/900,H/324);
+  if(!full)sc=Math.min(sc,1.6);
   f.style.transform="scale("+sc+")";
+  f.style.left=Math.max(0,Math.round((W-900*sc)/2))+"px";
+  f.style.top=Math.max(0,Math.round((H-324*sc)/2))+"px";
 }
+function camFull(on){
+  var b=el("camBox");if(!b)return;
+  if(on){
+    if(b.requestFullscreen&&document.fullscreenEnabled){
+      b.requestFullscreen().catch(function(){b.classList.add("camfull");camFit();});
+    }else{
+      b.classList.add("camfull");
+      document.documentElement.style.overflow="hidden";
+    }
+  }else{
+    if(document.fullscreenElement)document.exitFullscreen().catch(function(){});
+    b.classList.remove("camfull");
+    document.documentElement.style.overflow="";
+  }
+  requestAnimationFrame(camFit);
+}
+document.addEventListener("fullscreenchange",function(){requestAnimationFrame(camFit);});
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"&&el("camBox")&&el("camBox").classList.contains("camfull"))camFull(false);
+});
+if(el("camFullBtn"))el("camFullBtn").addEventListener("click",function(){camOpen();camFull(true);});
+if(el("camClose"))el("camClose").addEventListener("click",function(){camFull(false);});
 function camOpen(){
   var f=el("camFrame");
   if(!f)return;
