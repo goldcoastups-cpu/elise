@@ -1246,6 +1246,90 @@ footer{padding-block:18px;border-top:1px solid var(--line);margin-top:10px;font-
 .fsbtn svg{width:17px;height:17px;display:block}
 :fullscreen{background:inherit}
 html:fullscreen,body:fullscreen{overflow-y:auto}
+
+/* ---- Rows layout ----------------------------------------------------------
+   The crane page's second way of drawing a day: crane and deliveries side by
+   side on a ten-minute ruler, cards outlined with a trade bar rather than
+   filled. The List layout above is untouched and stays the default. */
+#cbapp .vsw{display:inline-grid;grid-template-columns:1fr 1fr;border:1px solid var(--line-hard);
+  border-radius:5px;overflow:hidden;margin:10px 0 2px}
+#cbapp .vsw button{font:inherit;font-family:var(--f-cond);font-size:11px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;background:transparent;border:0;color:var(--ink-3);
+  padding:7px 18px;cursor:pointer;min-height:34px}
+#cbapp .vsw button+button{border-left:1px solid var(--line)}
+#cbapp .vsw button.on{background:var(--ink);color:var(--paper)}
+#cbapp .vsw button:focus-visible{outline:2px solid var(--clock);outline-offset:-3px}
+
+#cbapp .rv{margin-top:8px}
+#cbapp .rv .rvh{display:grid;grid-template-columns:46px 1fr 1fr;
+  border-top:1px solid var(--line-hard);border-bottom:2px solid var(--line-hard)}
+#cbapp .rv .rvh span{font-family:var(--f-cond);font-size:12px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink);padding:8px 0 7px 10px}
+#cbapp .rv .rvh .c2{border-left:2px solid var(--line-hard)}
+#cbapp .rv .rvh .n{display:block;font-family:var(--f-num);font-size:9.5px;font-weight:400;
+  letter-spacing:0;color:var(--ink-3);text-transform:none;padding:1px 0 0}
+#cbapp .rv .rvg{display:grid;grid-template-columns:46px 1fr 1fr;position:relative;margin-top:11px}
+#cbapp .rv .rul{position:relative}
+#cbapp .rv .rul b{position:absolute;right:7px;font-family:var(--f-num);font-weight:400;
+  transform:translateY(-6px);white-space:nowrap}
+#cbapp .rv .rul b.hr{font-size:11px;color:var(--ink-2);font-weight:600}
+#cbapp .rv .rul b.ten{font-size:8.5px;color:var(--ink-3);opacity:.72}
+#cbapp .rv .ln2{position:relative;border-left:2px solid var(--line-hard)}
+#cbapp .rv .tk{position:absolute;left:0;right:0;border-top:1px solid var(--line);opacity:.4}
+#cbapp .rv .tk.half{opacity:.75;border-top-style:dashed}
+#cbapp .rv .tk.hr{opacity:1;border-top-color:var(--line-hard)}
+#cbapp .rv .add{position:absolute;left:0;right:0;background:transparent;border:0;padding:0;
+  cursor:copy}
+#cbapp .rv .bkz{position:absolute;left:0;right:0;pointer-events:none;
+  background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,transparent 6px 12px);
+  border-top:1px dashed var(--line-hard);border-bottom:1px dashed var(--line-hard)}
+#cbapp .rv .bkz span{position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  font-family:var(--f-cond);font-size:8.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3)}
+#cbapp .rv .cd{position:absolute;border-radius:4px;border:1px solid var(--line);
+  border-left:4px solid var(--tc);background:var(--surface);padding:1px 5px 1px 6px;
+  overflow:hidden;text-align:left;font:inherit;color:var(--ink);cursor:pointer;display:block;
+  touch-action:auto}
+#cbapp .rv .cd.ease{transition:top .2s ease-out,transform .2s ease-out}
+@media (prefers-reduced-motion:reduce){#cbapp .rv .cd.ease{transition:none}}
+#cbapp .rv .cd .co{font-family:var(--f-cond);font-size:9px;font-weight:700;letter-spacing:.09em;
+  border-radius:2px;padding:0 4px;display:inline-block;background:var(--tc);color:var(--tci)}
+#cbapp .rv .cd .co i{font-style:normal;background:var(--tc2);color:var(--tc2i);
+  border-radius:2px;padding:0 3px;margin-left:3px}
+#cbapp .rv .cd .ds{font-size:10.5px;line-height:1.2}
+#cbapp .rv .cd .q{font-family:var(--f-num);font-size:8.5px;color:var(--ink-3);float:right;
+  padding-left:4px}
+#cbapp .rv .cd.one{white-space:nowrap;text-overflow:ellipsis;line-height:11px;padding:0 5px}
+#cbapp .rv .cd.one .co{line-height:10px}
+#cbapp .rv .cd.one .ds{display:inline;font-size:10px}
+#cbapp .rv .cd.two .ds{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+  overflow:hidden;padding-top:1px}
+#cbapp .rv .cd.narrow .ds{display:none}
+#cbapp .rv .cd.req{border-style:dashed;border-left-style:solid}
+#cbapp .rv .cd.done{opacity:.5}
+#cbapp .rv .cd.clash{border-color:var(--crit);box-shadow:inset 0 0 0 1px var(--crit)}
+#cbapp .rv .cd.picked{box-shadow:0 0 0 2px var(--clock)}
+#cbapp .rv .cd.pour{background:var(--crit-bg,var(--surface));border-color:var(--crit)}
+#cbapp .rv .cd.lift{box-shadow:0 11px 26px rgba(0,0,0,.45);transform:scale(1.03);z-index:30}
+/* a lift a delivery needs and nobody has booked */
+#cbapp .rv .cd.need{background:transparent;border-style:dashed;border-left-style:dashed;
+  color:var(--ink-2)}
+#cbapp .rv .cd.need .co{background:transparent;color:var(--tc);box-shadow:inset 0 0 0 1px var(--tc)}
+#cbapp .rv .cd.need .q{color:var(--warn);font-family:var(--f-cond);font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase}
+#cbapp .rv .nowl{position:absolute;left:46px;right:0;border-top:2px solid var(--alarm);
+  z-index:12;pointer-events:none}
+#cbapp .rv .nowl i{position:absolute;left:-5px;top:-5px;width:9px;height:9px;border-radius:50%;
+  background:var(--alarm)}
+#cbapp .rv .nowt{position:absolute;left:0;width:46px;text-align:right;padding-right:7px;
+  font-family:var(--f-num);font-size:9px;color:var(--alarm);transform:translateY(-6px);
+  z-index:12;pointer-events:none;background:var(--paper)}
+#cbapp .rv .rvf{font-family:var(--f-num);font-size:11px;color:var(--ink-3);padding:12px 0 2px;
+  border-top:1px solid var(--line);margin-top:12px;line-height:1.6}
+#cbapp .rv .rvf b{color:var(--warn);font-weight:600}
+#cbapp .rvghost{position:fixed;z-index:80;pointer-events:none;font-family:var(--f-num);
+  font-size:13px;font-weight:700;background:var(--ink);color:var(--paper);border-radius:5px;
+  padding:5px 10px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1438,6 +1522,11 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
 
 <div class="gut">
   <div id="cb-weekView" hidden></div>
+  <div class="vsw" id="cb-vsw" role="group" aria-label="Layout">
+    <button type="button" data-lay="list">List</button>
+    <button type="button" data-lay="rows">Rows</button>
+  </div>
+  <div class="rv" id="cb-rowsView" hidden></div>
   <button class="sechead" id="cb-craneHead" aria-expanded="true" aria-controls="cb-craneBody"><span class="caret">▾</span><h2>Crane</h2><span class="n" id="cb-craneN"></span><span class="ln"></span></button>
   <div id="cb-craneBody">
   <div class="legend" id="cb-legend"></div>
@@ -1700,7 +1789,7 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     <p class="note">Every labour job ticked off, newest first, kept by month. Jobs land here the moment the box is ticked and come back out if you untick one, so the log always matches the board.</p>
     <div class="addrow">
       <span class="exp-lab">Take it with you<b id="expMeta"></b></span>
-      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 13 Nov 19:43</span>
+      <span class="buildstamp" title="Which version of the board this device is running. If it does not match what Claude just shipped, the phone is holding an old copy.">Build 15 Nov 07:46</span>
       <button class="mini" id="expJson">Everything (JSON)</button>
       <button class="mini" id="expCsv">Spreadsheets (CSV)</button>
     </div>
@@ -2404,9 +2493,15 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
 
     /* Week mode swaps the day's timeline for six days side by side. */
     $("weekView").hidden=!weekMode;
+    /* Rows is a second way of drawing the same day; List is the default and
+       is drawn exactly as before whenever Rows is not picked. */
+    var rowsMode=layout==="rows"&&!weekMode;
+    $("vsw").hidden=weekMode;
+    $("rowsView").hidden=!rowsMode;
     ["craneHead","craneBody","delHead","delBody"].forEach(function(id){
-      var e=$(id);if(e)e.hidden=weekMode;
+      var e=$(id);if(e)e.hidden=weekMode||rowsMode;
     });
+    paintLayoutSwitch();
     $("weekBtn").textContent=weekMode?"Day":"Week";
     $("weekBtn").classList.toggle("primary",weekMode);
     if(weekMode)paintWeek();
@@ -2574,7 +2669,250 @@ html:fullscreen,body:fullscreen{overflow-y:auto}
     }
     $("dels").innerHTML=d;
     $("delEmpty").hidden=delItems.length>0;
+    if(rowsMode)paintRows(craneItems,delItems,cl);
   }
+
+  /* ---------------------------------------------------------------------
+     ROWS LAYOUT
+     Same bookings, same editor, same save path - only the drawing differs.
+     Tapping a card opens the booking sheet; dragging one calls moveBooking,
+     the function the List drag already uses, so Slide, the break rule,
+     Undo and the view-only lock all apply unchanged.
+     --------------------------------------------------------------------- */
+  var layout="list";
+  try{layout=localStorage.getItem("elise.layout")==="rows"?"rows":"list"}catch(_){}
+  var RV_PX=15;                                     /* one ten-minute row */
+  var rvNeeds=[];
+
+  function paintLayoutSwitch(){
+    var b=$("vsw");if(!b)return;
+    b.querySelectorAll("button").forEach(function(x){
+      var on=x.getAttribute("data-lay")===layout;
+      x.classList.toggle("on",on);x.setAttribute("aria-pressed",on?"true":"false");
+    });
+  }
+
+  /* Lifts a delivery needs that nothing on the crane side covers yet.
+     Harry's rules: forklift, hand-unload and Hiab drops never touch the
+     crane; a Neumann drop is Rize's lifts at one per tonne, rounded up; a
+     G+L Form formwork truck is 12 lifts unless it states its own count;
+     precast runs 15 minutes a lift; a pour stands the crane down for its
+     whole window. */
+  function neededLifts(craneItems,delItems){
+    var out=[];
+    delItems.forEach(function(D){
+      if(D.status==="done")return;
+      var k=String(D.kind||"").toUpperCase(),co=String(D.co||"").toUpperCase();
+      if(k==="FORK"||k==="HAND"||k==="HIAB")return;
+      var pour=(k==="BOOM"||k==="KIB");
+      var crewCo=co==="NEU"?"RZE":co;
+      var n=null,du=null;
+      if(pour){ du=D.dur||60; }
+      else if(co==="NEU"){ n=D.kg?Math.ceil(D.kg/1000):null; }
+      else if(co==="GLF"){ n=(D.qty>1)?D.qty:12; }
+      else if(k==="CRANE"||k==="SEMI"||co==="AP"){ n=D.qty>0?D.qty:null; }
+      else return;
+      var per=perCo(crewCo);
+      if(!pour)du=(n||1)*per;
+      /* covered: paired, or the right crew already on the hook near the drop */
+      var covered=craneItems.some(function(L){
+        if(L.status==="done")return false;
+        if((D.pair&&L.id===D.pair)||(L.pair&&L.pair===D.id))return true;
+        if(pour)return isPour(L)&&L.start<D.start+du&&D.start<L.start+L.dur;
+        return String(L.co||"").toUpperCase()===crewCo&&
+               L.start>=D.start-30&&L.start<=D.start+120;
+      });
+      if(covered)return;
+      out.push({need:true,id:"need-"+D.id,src:D,co:crewCo,start:D.start,dur:du,
+        qty:n,kg:D.kg||0,pour:pour,
+        desc:pour?("Crane stood down — "+(D.desc||"pour")):(D.desc||"")});
+    });
+    return out;
+  }
+
+  function rvLanes(set){
+    var cluster=[],open=[],clEnd=-1;
+    function flush(){var n=Math.max(1,open.length);cluster.forEach(function(x){x.__of=n});
+      cluster=[];open=[];clEnd=-1;}
+    set.slice().sort(function(a,b){return a.start-b.start}).forEach(function(r){
+      var st=r.start,en=st+(r.dur||10);
+      if(clEnd>=0&&st>=clEnd)flush();
+      var li=0;while(open[li]!==undefined&&open[li]>st)li++;
+      open[li]=en;r.__lane=li;cluster.push(r);if(en>clEnd)clEnd=en;
+    });
+    flush();
+  }
+
+  function paintRows(craneItems,delItems,cl){
+    var open=cfg.open,close=cfg.close,span=close-open,H=span/10*RV_PX;
+    function y(t){return (t-open)/span*H}
+    rvNeeds=neededLifts(craneItems,delItems);
+    var cols=[craneItems.concat(rvNeeds),delItems.slice()];
+    cols.forEach(rvLanes);
+    var isToday=cur===iso(new Date()),nowM=new Date().getHours()*60+new Date().getMinutes();
+
+    var real=craneItems.length,nNeed=rvNeeds.length;
+    var h='<div class="rvh"><span></span>'+
+      '<span class="c2">Crane<span class="n">'+real+(nNeed?" + "+nNeed+" to book":"")+'</span></span>'+
+      '<span class="c2">Deliveries<span class="n">'+delItems.length+' trucks</span></span></div>'+
+      '<div class="rvg" id="cb-rvg"><div class="rul" style="height:'+H+'px">';
+    for(var t=open;t<=close;t+=10){
+      var hr=t%60===0;
+      h+='<b class="'+(hr?"hr":"ten")+'" style="top:'+y(t)+'px">'+(hr?clock(t):pad(t%60))+'</b>';
+    }
+    h+='</div>';
+
+    cols.forEach(function(set,ci){
+      h+='<div class="ln2" style="height:'+H+'px">';
+      for(var t2=open;t2<=close;t2+=10){
+        h+='<div class="tk'+(t2%60===0?" hr":(t2%30===0?" half":""))+'" style="top:'+y(t2)+'px"></div>';
+        /* an empty ten minutes is a place to book into, same as the List */
+        if(t2<close)h+='<button class="add" data-add="'+t2+'" aria-label="Book at '+clock(t2)+
+          '" style="top:'+y(t2)+'px;height:'+RV_PX+'px"></button>';
+      }
+      if(ci===0)breaksFor(cur).forEach(function(b){
+        h+='<div class="bkz" style="top:'+y(b[0])+'px;height:'+(b[1]/span*H)+'px"><span>Break</span></div>';
+      });
+      set.forEach(function(L){
+        var v=vars(L),hh=Math.max(13,(L.dur||10)/span*H-2);
+        var wpc=100/(L.__of||1),lpc=(L.__lane||0)*wpc;
+        var cls=(hh<30?"one":"two")+(wpc<62&&hh<30?" narrow":"")+
+          (L.need?" need":"")+(!L.need&&L.status==="req"?" req":"")+
+          (L.status==="done"?" done":"")+(cl&&cl[L.id]?" clash":"")+
+          (sel[L.id]?" picked":"")+(!L.need&&isPour(L)?" pour":"");
+        var q=L.need?(L.pour?"crane down":(L.qty?L.qty+" to book":"book")):
+          (L.qty?L.qty+"×":(L.kg?kgTxt(L.kg):""));
+        h+='<button class="cd '+cls+'" '+(L.need?'data-need="'+esc(L.id)+'"':'data-id="'+esc(L.id)+'"')+
+          ' title="'+esc(clock(L.start)+" · "+(L.desc||""))+'"'+
+          ' style="'+v.s+';top:'+y(L.start)+'px;height:'+hh+'px;left:calc('+lpc+'% + 2px);'+
+          'width:calc('+wpc+'% - 4px)">'+
+          (q?'<span class="q">'+esc(q)+'</span>':'')+
+          '<span class="co">'+esc(L.co)+(L.co2?'<i>'+esc(L.co2)+'</i>':'')+'</span> '+
+          /* as many whole lines as the card has room for, never a sliced one */
+          '<span class="ds"'+(hh>=30?' style="-webkit-line-clamp:'+
+            Math.max(1,Math.floor((hh-16)/13))+'"':'')+'>'+esc(L.desc||"")+'</span></button>';
+      });
+      h+='</div>';
+    });
+    if(isToday&&nowM>=open&&nowM<=close){
+      h+='<div class="nowt" style="top:'+y(nowM)+'px">'+clock(nowM)+'</div>'+
+         '<div class="nowl" style="top:'+y(nowM)+'px"><i></i></div>';
+    }
+    h+='</div><div class="rvf">Every line is ten minutes. Tap a card to open it, tap an empty '+
+      'line to book into it, press and hold then drag to move one.'+
+      (nNeed?' <b>'+nNeed+' dashed '+(nNeed===1?"card is a lift":"cards are lifts")+
+        ' a delivery needs that nobody has booked</b> — tap one to put it on.':'')+'</div>';
+    $("rowsView").innerHTML=h;
+  }
+
+  /* a needed lift opens a new booking already filled in from its delivery */
+  function bookNeed(N){
+    openSheet(null);
+    var D=N.src;
+    $("fType").value="lift";fillKinds(false);
+    try{$("fKind").value=N.pour?"BOOM":"DECK"}catch(_){}
+    relabelDur();
+    $("fCo").value=N.co;
+    $("fStart").value=clock(N.start);
+    fill($("fDur"),durOpts());
+    $("fDur").value=String(N.dur);
+    $("fQty").value=N.pour?0:(N.qty||1);
+    $("fKg").value=N.kg||"";
+    /* the trade's own default run off Setup, else ground to the live deck -
+       only ever a value the board's list actually holds */
+    var rr=N.pour?null:runFor(N.co);
+    $("fFrom").value=rr?place(rr[0]):(place("GROUND")||place("GF")||place("YARD"));
+    $("fTo").value=rr?place(rr[1]):place("LIVE DECK");
+    $("fDesc").value=N.pour?("Crane stood down — "+(D.desc||"pour")):(D.desc||"");
+    $("fStatus").value=D.status==="con"?"con":"req";
+    $("fNotes").value="Booked against the "+clock(D.start)+" "+(D.co||"")+" delivery.";
+    semiToggle();
+    var note=$("sheetNote");
+    note.textContent=N.pour?"A pour stands the crane down for its whole window.":
+      (String(D.co).toUpperCase()==="NEU"?"Neumann drop — Rize lifts, one per tonne.":
+       "Lifts the "+(D.co||"")+" delivery needs.");
+    note.className="note";note.hidden=false;
+  }
+
+  /* tap, book-into, and press-and-hold drag for the Rows layout */
+  (function(){
+    var rv=$("rowsView"),g=null,HOLD=240,ghost=null;
+    function slotAt(y0){
+      var grid=document.getElementById("cb-rvg");if(!grid)return null;
+      var top=grid.getBoundingClientRect().top;
+      return cfg.open+Math.round((y0-top)/RV_PX)*10;
+    }
+    function hideGhost(){if(ghost){ghost.remove();ghost=null}}
+    rv.addEventListener("pointerdown",function(e){
+      var c=e.target.closest(".cd[data-id]");
+      if(!c||selMode)return;
+      g={el:c,id:c.dataset.id,x0:e.clientX,y0:e.clientY,top0:parseFloat(c.style.top)||0,
+         mode:null,timer:null,touch:e.pointerType==="touch"};
+      g.timer=setTimeout(function(){
+        if(!g||g.mode)return;
+        g.mode="drag";c.classList.add("lift");
+        if(navigator.vibrate)try{navigator.vibrate(12)}catch(_){}
+      },g.touch?HOLD:HOLD+120);
+      try{c.setPointerCapture(e.pointerId)}catch(_){}
+    });
+    rv.addEventListener("touchmove",function(e){if(g&&g.mode==="drag")e.preventDefault()},{passive:false});
+    rv.addEventListener("pointermove",function(e){
+      if(!g)return;
+      var dy=e.clientY-g.y0;
+      if(!g.mode){
+        if(Math.abs(dy)>12||Math.abs(e.clientX-g.x0)>12){clearTimeout(g.timer);g=null}
+        return;
+      }
+      var L=null;for(var i=0;i<items.length;i++)if(items[i].id===g.id)L=items[i];
+      if(!L)return;
+      var step=Math.max(5,cfg.per||10);
+      var nt=L.start+Math.round(dy/RV_PX*10/step)*step;
+      nt=Math.max(cfg.open,Math.min(cfg.close-(L.dur||10),nt));
+      g.target=nt;
+      g.el.style.top=(g.top0+(nt-L.start)/10*RV_PX)+"px";
+      if(!ghost){ghost=document.createElement("div");ghost.className="rvghost";
+        document.getElementById("cbapp").appendChild(ghost)}
+      var lands=L.crane!=="none"?pushBreak(nt,L.dur,L.date):nt;
+      ghost.textContent=clock(lands)+" – "+clock(lands+(L.dur||10))+
+        (lands!==nt?"  · after the break":"");
+      ghost.style.left=Math.min(window.innerWidth-200,Math.max(10,e.clientX-80))+"px";
+      ghost.style.top=Math.max(10,e.clientY-52)+"px";
+      e.preventDefault();
+    });
+    function end(e){
+      if(!g)return;
+      var x=g;g=null;clearTimeout(x.timer);hideGhost();
+      if(x.mode==="drag"){
+        x.el.classList.remove("lift");x.el.classList.add("ease");
+        if(x.target!=null)moveBooking(x.id,x.target);
+        setTimeout(render,80);
+        e.preventDefault();
+        rv.__swallow=true;setTimeout(function(){rv.__swallow=false},350);
+      }
+    }
+    rv.addEventListener("pointerup",end);
+    rv.addEventListener("pointercancel",function(){
+      if(g&&g.el){g.el.classList.remove("lift");}
+      g=null;hideGhost();render();
+    });
+    rv.addEventListener("click",function(e){
+      if(rv.__swallow){e.preventDefault();return}
+      var n=e.target.closest("[data-need]");
+      if(n){
+        for(var i=0;i<rvNeeds.length;i++)if(rvNeeds[i].id===n.dataset.need)return bookNeed(rvNeeds[i]);
+        return;
+      }
+      pick(e);
+    });
+  })();
+
+  $("vsw").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-lay]");
+    if(!b||b.getAttribute("data-lay")===layout)return;
+    layout=b.getAttribute("data-lay");
+    try{localStorage.setItem("elise.layout",layout)}catch(_){}
+    render();
+  });
 
   /* Rained out: shift the day onto the next working day. Sunday is skipped,
      and what lands on a day that already has work slides in behind it. */
