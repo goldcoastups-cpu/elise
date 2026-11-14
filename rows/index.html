@@ -92,6 +92,12 @@ main{padding:0 var(--gut-r) 30px var(--gut-l)}
   border:1px solid var(--line);border-radius:4px;color:var(--ink-3);padding:4px 9px;
   cursor:pointer}
 .zoom button.on{border-color:var(--ink);color:var(--ink)}
+.nav{display:flex;gap:6px;flex-wrap:wrap;padding:16px 0 0;border-top:1px solid var(--line);
+  margin-top:18px}
+.nav a{font-family:var(--f-cond);font-size:11px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-2);text-decoration:none;border:1px solid var(--line);
+  border-radius:4px;padding:7px 11px}
+.nav a.on{border-color:var(--ink);color:var(--ink)}
 </style>
 </head>
 <body>
@@ -129,6 +135,13 @@ main{padding:0 var(--gut-r) 30px var(--gut-l)}
       <button type="button" data-z="21">Roomy</button>
     </span>
   </div>
+  <nav class="nav">
+    <a href="../today/">Today</a>
+    <a href="../rows/" class="on">Rows</a>
+    <a href="../cal/">Day view</a>
+    <a href="../strips/">Strips</a>
+    <a href="../board/">Real board</a>
+  </nav>
   <div class="hint">Every line is ten minutes. Dashed outlines in the crane column are
     lifts the board has not booked yet, worked out from a delivery that needs them
     &mdash; tap one to put it on. <b>Press and hold</b> then drag to move a card;

@@ -55,6 +55,12 @@ main{padding:9px var(--gut-r) 30px var(--gut-l)}
 .ghost.on{display:block}
 .legend{display:flex;gap:11px;flex-wrap:wrap;padding:11px 0 0;font-size:11px;color:var(--ink-3)}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px}
+.nav{display:flex;gap:6px;flex-wrap:wrap;padding:16px 0 0;border-top:1px solid var(--line);
+  margin-top:18px}
+.nav a{font-family:var(--f-cond);font-size:11px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-2);text-decoration:none;border:1px solid var(--line);
+  border-radius:4px;padding:7px 11px}
+.nav a.on{border-color:var(--ink);color:var(--ink)}
 </style>
 </head>
 <body>
@@ -80,6 +86,13 @@ main{padding:9px var(--gut-r) 30px var(--gut-l)}
   <div class="grid" id="grid"></div>
   <div class="foot" id="foot">Loading&hellip;</div>
   <div class="legend" id="legend"></div>
+  <nav class="nav">
+    <a href="../today/">Today</a>
+    <a href="../rows/">Rows</a>
+    <a href="../cal/" class="on">Day view</a>
+    <a href="../strips/">Strips</a>
+    <a href="../board/">Real board</a>
+  </nav>
   <div class="hint">Tap a block to change anything about it. <b>Press and hold</b>
     then drag to move it &mdash; it snaps to 10 minutes. <b>+ Add</b> puts a new one on.
     Everything you do stays on this phone; the real board is never written to.</div>

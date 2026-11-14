@@ -22,11 +22,12 @@ function writeAll(o){
 var mem = readAll();
 
 function day(date){
-  if(!mem[date]) mem[date] = {edits:{}, added:[], deleted:[]};
+  if(!mem[date]) mem[date] = {edits:{}, added:[], deleted:[], docs:{}};
   var d = mem[date];
   if(!d.edits) d.edits = {};
   if(!d.added) d.added = [];
   if(!d.deleted) d.deleted = [];
+  if(!d.docs) d.docs = {};
   return d;
 }
 
@@ -91,10 +92,36 @@ var SB = {
     writeAll(mem);
   },
 
+  /* ---- the per-day documents: jobs, safety, labour ----
+     Same idea, but those collections are one row per day holding an items
+     array, so the overlay is keyed by item id inside that document. */
+  docEdit: function(kind, date, itemId, patch){
+    var d = day(date);
+    if(!d.docs) d.docs = {};
+    if(!d.docs[kind]) d.docs[kind] = {};
+    var e = d.docs[kind][itemId] || (d.docs[kind][itemId] = {});
+    for(var k in patch) e[k] = patch[k];
+    writeAll(mem);
+  },
+  docApply: function(kind, date, items){
+    var d = day(date);
+    var o = (d.docs && d.docs[kind]) || {};
+    return (items || []).map(function(it){
+      var e = o[it.id] || o[it.text];       /* safety items have no id */
+      if(!e) return it;
+      var c = {}; for(var k in it) c[k] = it[k];
+      for(var k2 in e) c[k2] = e[k2];
+      c.__edited = true;
+      return c;
+    });
+  },
+
   /* how many changes are sitting on this day */
   count: function(date){
     var d = day(date);
-    return Object.keys(d.edits).length + d.added.length + d.deleted.length;
+    var n = Object.keys(d.edits).length + d.added.length + d.deleted.length;
+    if(d.docs) for(var k in d.docs) n += Object.keys(d.docs[k]).length;
+    return n;
   },
 
   reset: function(date){

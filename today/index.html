@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en-AU"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="apple-touch-icon" href="../board/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Today">
+<meta name="theme-color" content="#111110">
+<meta name="robots" content="noindex,nofollow">
+<title>ELISE &middot; Today</title>
+<link rel="stylesheet" href="../board/fonts.css">
+<link rel="stylesheet" href="../test.css">
+<style>
+main{padding:0 var(--gut-r) 34px var(--gut-l)}
+
+/* the strip that never moves: time, what is on the hook, the weather */
+.nowstrip{display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center;
+  padding:11px 0 12px;border-bottom:1px solid var(--line)}
+.nowstrip .big{font-family:var(--f-num);font-size:27px;font-weight:700;line-height:1;
+  color:var(--clock);letter-spacing:-.02em}
+.nowstrip .big small{display:block;font-family:var(--f-cond);font-size:9px;font-weight:700;
+  letter-spacing:.17em;text-transform:uppercase;color:var(--ink-3);padding-top:3px}
+.hook{min-width:0}
+.hook .k{font-family:var(--f-cond);font-size:9px;font-weight:700;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--ink-3);display:block}
+.hook .v{font-size:13px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden}
+.wx{text-align:right;white-space:nowrap}
+.wx .t{display:block;font-family:var(--f-num);font-size:19px;font-weight:600;line-height:1}
+.wx .w{display:block;font-family:var(--f-num);font-size:10.5px;color:var(--ink-3);
+  padding-top:3px}
+.wx .w.blow{color:var(--warn)}
+
+section{padding:0 0 4px}
+.sh{display:flex;align-items:baseline;gap:9px;padding:15px 0 7px;
+  border-bottom:2px solid var(--acc,var(--line));margin-bottom:2px}
+.sh h2{margin:0;font-family:var(--f-cond);font-size:14px;font-weight:700;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--acc-ink,var(--ink))}
+.sh .n{margin-left:auto;font-family:var(--f-num);font-size:10.5px;color:var(--ink-3)}
+.sh a{font-family:var(--f-cond);font-size:10px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3);text-decoration:none;border:1px solid var(--line);
+  border-radius:3px;padding:2px 7px}
+#s-crane{--acc:var(--acc-crane,#9A5A1E);--acc-ink:var(--acc-crane,#9A5A1E)}
+#s-jobs{--acc:var(--acc-jobs,#2B5F8C);--acc-ink:var(--acc-jobs,#2B5F8C)}
+#s-safety{--acc:var(--crit);--acc-ink:var(--crit)}
+#s-crew{--acc:var(--line-hard);--acc-ink:var(--ink-2)}
+#s-done{--acc:var(--ok);--acc-ink:var(--ok)}
+
+/* two mini columns, same split as the boards */
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.mini .mh{font-family:var(--f-cond);font-size:9.5px;font-weight:700;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--ink-3);padding:7px 0 5px 8px}
+.mini .mh:last-of-type,.mini .mc:last-of-type{border-left:2px solid var(--line-hard)}
+.mc{padding:0 4px 6px 8px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.mv{display:flex;align-items:flex-start;gap:7px;background:transparent;border:0;padding:3px 0;
+  font-family:inherit;color:inherit;text-align:left;cursor:pointer;min-width:0;width:100%}
+.mv .t{font-family:var(--f-num);font-size:10.5px;color:var(--ink-2);flex:none;padding-top:1px}
+.mv .co{font-family:var(--f-cond);font-size:9px;font-weight:700;letter-spacing:.09em;
+  border-radius:2px;padding:0 4px;flex:none;margin-top:1px}
+.mv .d{font-size:11.5px;line-height:1.25;min-width:0;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.mv.past{opacity:.42}
+.mv.live .t{color:var(--clock);font-weight:700}
+.mv.auto .d{color:var(--warn)}
+.none{font-family:var(--f-num);font-size:10.5px;color:var(--ink-3);padding:2px 0 6px}
+
+/* rows you can tick */
+.tick{display:grid;grid-template-columns:22px 1fr auto;gap:9px;align-items:start;
+  width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);
+  padding:9px 0;font-family:inherit;color:inherit;text-align:left;cursor:pointer}
+.tick .bx{width:18px;height:18px;border:1.5px solid var(--ink-3);border-radius:3px;
+  margin-top:1px;position:relative}
+.tick.on .bx{background:var(--ok);border-color:var(--ok)}
+.tick.on .bx::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;
+  border:solid var(--paper);border-width:0 2px 2px 0;transform:rotate(42deg)}
+.tick .tx{font-size:13px;line-height:1.3;min-width:0}
+.tick.on .tx{text-decoration:line-through;color:var(--ink-3)}
+.tick .tx small{display:block;font-family:var(--f-num);font-size:10px;color:var(--ink-3);
+  padding-top:2px}
+.tick .st{font-size:15px;line-height:1;color:var(--ink-3);padding:0 2px}
+.tick .st.on{color:var(--acc-jobs,#2B5F8C)}
+.tick.crit .tx{color:var(--crit)}
+.tick.edited{box-shadow:inset 2px 0 0 var(--warn)}
+
+.crew{display:flex;flex-wrap:wrap;gap:5px;padding:9px 0 2px}
+.crew span{font-family:var(--f-cond);font-size:11px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;border:1px solid var(--line);border-radius:3px;padding:3px 7px;
+  color:var(--ink-2)}
+.crew span i{font-style:normal;color:var(--ink-3);font-size:9px;padding-left:4px}
+.crewdate{font-family:var(--f-num);font-size:10px;color:var(--ink-3);padding-top:6px}
+
+.nav{display:flex;gap:6px;flex-wrap:wrap;padding:16px 0 0;border-top:1px solid var(--line);
+  margin-top:18px}
+.nav a{font-family:var(--f-cond);font-size:11px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-2);text-decoration:none;border:1px solid var(--line);
+  border-radius:4px;padding:7px 11px}
+.nav a.on{border-color:var(--ink);color:var(--ink)}
+.empty{font-family:var(--f-num);font-size:11.5px;color:var(--ink-3);padding:10px 2px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <span class="wm">Elise</span>
+    <span class="clk" id="clk">--:--</span>
+    <span class="badge" id="sbadge">Sandbox</span>
+    <a class="back" href="../board/">Board</a>
+  </div>
+  <div class="datebar">
+    <button type="button" id="prev" aria-label="Previous day">&lsaquo;</button>
+    <span class="dlab" id="dlab">&nbsp;<small>&nbsp;</small></span>
+    <button type="button" class="act undo" id="sreset" hidden>Undo all</button>
+    <button type="button" id="next" aria-label="Next day">&rsaquo;</button>
+  </div>
+</header>
+
+<main>
+  <div class="nowstrip">
+    <span class="big" id="bigclk">--:--<small id="bigday">&nbsp;</small></span>
+    <span class="hook"><span class="k" id="hookk">On the hook</span>
+      <span class="v" id="hookv">&hellip;</span></span>
+    <span class="wx" id="wx"><span class="t">&nbsp;</span><span class="w">&nbsp;</span></span>
+  </div>
+
+  <section id="s-crane">
+    <div class="sh"><h2>Crane &amp; deliveries</h2>
+      <span class="n" id="nCrane"></span><a href="../rows/" id="lRows">Open</a></div>
+    <div class="mini">
+      <span class="mh">Crane</span><span class="mh">Deliveries</span>
+      <div class="mc" id="mcCrane"></div><div class="mc" id="mcDel"></div>
+    </div>
+  </section>
+
+  <section id="s-jobs">
+    <div class="sh"><h2>Labour &amp; jobs</h2>
+      <span class="n" id="nJobs"></span></div>
+    <div id="jobList"></div>
+  </section>
+
+  <section id="s-safety">
+    <div class="sh"><h2>Safety</h2><span class="n" id="nSafety"></span></div>
+    <div id="safeList"></div>
+  </section>
+
+  <section id="s-crew">
+    <div class="sh"><h2>Who&rsquo;s on</h2><span class="n" id="nCrew"></span></div>
+    <div class="crew" id="crew"></div>
+    <div class="crewdate" id="crewDate"></div>
+  </section>
+
+  <section id="s-done">
+    <div class="sh"><h2>Completed works</h2><span class="n" id="nDone"></span></div>
+    <div id="doneList"></div>
+  </section>
+
+  <nav class="nav">
+    <a href="./" class="on">Today</a>
+    <a href="../rows/">Rows</a>
+    <a href="../cal/">Day view</a>
+    <a href="../strips/">Strips</a>
+    <a href="../board/">Real board</a>
+  </nav>
+  <div class="hint">Tick a job or a safety item, tap the star to make a job a priority,
+    tap a movement to change it. Everything stays on this phone &mdash; the real board
+    is never written to.</div>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Booking"></div>
+
+<script src="../board/config.js"></script>
+<script src="../sandbox.js"></script>
+<script src="../testkit.js"></script>
+<script>
+"use strict";
+var S = TK.state, hm = TK.hm, esc = TK.esc, two = TK.two;
+var CRANE = [], DEL = [];
+
+/* a delivery needing lifts commits the hook even when nothing is booked */
+function autoLifts(){
+  var crane = S.rows.filter(function(r){ return r.type !== "del"; });
+  return S.rows.filter(function(r){ return r.type === "del" && (r.qty||0) > 0; })
+    .filter(function(d){
+      return !crane.some(function(x){
+        return (d.pair && x.id === d.pair) || (x.pair && x.pair === d.id) ||
+               (x.co === d.co && Math.abs(x.start_min - d.start_min) <= 30);
+      });
+    })
+    .map(function(d){
+      var per = TK.perLift(d.co);
+      return {__auto:true, id:"auto-"+d.id, co:d.co, descr:d.descr, start_min:d.start_min,
+        dur:(d.qty||1)*per, qty:d.qty, kg:d.kg, type:"lift", status:d.status,
+        notes:"Worked out from the delivery at " + hm(d.start_min) + ". Not booked yet."};
+    });
+}
+
+function mv(r, i, col){
+  var tr = TK.trade(r.co), c = tr[1];
+  var today = S.date === TK.iso(new Date()), nm = TK.nowMin();
+  var live = today && nm >= r.start_min && nm < r.start_min + (r.dur||10);
+  var past = today && r.start_min + (r.dur||10) <= nm;
+  return '<button class="mv' + (live?" live":"") + (past?" past":"") +
+    (r.__auto?" auto":"") + '" data-c="' + col + '" data-i="' + i + '">' +
+    '<span class="t">' + hm(r.start_min) + '</span>' +
+    '<span class="co" style="background:' + (r.__auto?"transparent":c) + ';color:' +
+      (r.__auto?c:TK.onColour(c)) + (r.__auto?';box-shadow:inset 0 0 0 1px '+c:'') + '">' +
+      esc(r.co) + '</span>' +
+    '<span class="d">' + esc(r.descr||"") + (r.__auto?" — lift not booked":"") +
+    '</span></button>';
+}
+
+function render(){
+  var today = S.date === TK.iso(new Date()), nm = TK.nowMin();
+  document.getElementById("bigday").textContent = today ? "Now" : TK.dayName(S.date);
+
+  /* ---- crane and deliveries ---- */
+  CRANE = S.rows.filter(function(r){ return r.type !== "del"; }).concat(autoLifts())
+            .sort(function(a,b){ return a.start_min - b.start_min; });
+  DEL   = S.rows.filter(function(r){ return r.type === "del"; });
+  document.getElementById("mcCrane").innerHTML =
+    CRANE.length ? CRANE.map(function(r,i){ return mv(r,i,0); }).join("")
+                 : '<span class="none">Nothing on the hook</span>';
+  document.getElementById("mcDel").innerHTML =
+    DEL.length ? DEL.map(function(r,i){ return mv(r,i,1); }).join("")
+               : '<span class="none">No deliveries</span>';
+  var hook = CRANE.reduce(function(a,r){ return a + (r.dur||0); }, 0);
+  var auto = CRANE.filter(function(r){ return r.__auto; }).length;
+  document.getElementById("nCrane").textContent =
+    Math.floor(hook/60) + "h" + two(hook%60) + " hook" +
+    (auto ? " · " + auto + " to book" : "");
+  document.getElementById("lRows").href = "../rows/#" + S.date;
+
+  /* ---- on the hook right now ---- */
+  var hk = document.getElementById("hookv"), kk = document.getElementById("hookk");
+  var now = CRANE.filter(function(r){ return today && nm >= r.start_min && nm < r.start_min + (r.dur||10); })[0];
+  var nxt = CRANE.filter(function(r){ return !today || r.start_min > nm; })[0];
+  if(now){ kk.textContent = "On the hook"; hk.textContent = now.co + " · " + (now.descr||""); }
+  else if(nxt){ kk.textContent = "Next up · " + hm(nxt.start_min);
+                hk.textContent = nxt.co + " · " + (nxt.descr||""); }
+  else { kk.textContent = "On the hook"; hk.textContent = "Nothing left today"; }
+
+  /* ---- jobs ---- */
+  var open = S.jobs.filter(function(j){ return !j.done; });
+  var done = S.jobs.filter(function(j){ return j.done; });
+  open.sort(function(a,b){ return (b.pri?1:0) - (a.pri?1:0); });
+  document.getElementById("jobList").innerHTML = open.length
+    ? open.map(function(j){
+        return '<button class="tick' + (j.__edited?" edited":"") + '" data-j="' +
+          esc(j.id) + '"><span class="bx"></span>' +
+          '<span class="tx">' + esc(j.text||"") +
+          (j.from && j.from !== S.date ? '<small>carried from ' + esc(j.from) + '</small>' : '') +
+          '</span><span class="st' + (j.pri?" on":"") + '" data-star="' + esc(j.id) +
+          '">' + (j.pri ? "★" : "☆") + '</span></button>';
+      }).join("")
+    : '<div class="none">No open jobs for this day.</div>';
+  document.getElementById("nJobs").textContent =
+    open.filter(function(j){ return j.pri; }).length + " priority · " +
+    open.length + " open";
+
+  /* ---- safety ---- */
+  var sOpen = S.safety.filter(function(x){ return !x.done; });
+  document.getElementById("safeList").innerHTML = sOpen.length
+    ? sOpen.map(function(x, i){
+        return '<button class="tick' + (x.kind === "CRIT" ? " crit" : "") +
+          (x.__edited?" edited":"") + '" data-s="' + esc(x.id || x.text) + '">' +
+          '<span class="bx"></span><span class="tx">' + esc(x.text||"") +
+          '<small>' + (x.kind === "CRIT" ? "Critical" : (x.kind || "Item")) + '</small>' +
+          '</span><span class="st">&nbsp;</span></button>';
+      }).join("")
+    : '<div class="none">Nothing open.</div>';
+  document.getElementById("nSafety").textContent =
+    sOpen.length + " open · " + (S.safety.length - sOpen.length) + " fixed";
+
+  /* ---- who is on ---- */
+  var by = {};
+  S.labour.forEach(function(r){ (by[r.supplier||"—"] = by[r.supplier||"—"] || []).push(r.name); });
+  var ch = "";
+  Object.keys(by).forEach(function(sup){
+    by[sup].forEach(function(n){ ch += '<span>' + esc(n) + '<i>' + esc(sup) + '</i></span>'; });
+  });
+  document.getElementById("crew").innerHTML = ch || '<span class="none">No names in yet.</span>';
+  document.getElementById("nCrew").textContent = S.labour.length + " on";
+  document.getElementById("crewDate").textContent = S.labourDate
+    ? "From the ELISE HOURS group, " + TK.dayName(S.labourDate) : "";
+
+  /* ---- completed ---- */
+  var fixed = S.safety.filter(function(x){ return x.done; });
+  document.getElementById("doneList").innerHTML = (done.length + fixed.length)
+    ? done.map(function(j){
+        return '<button class="tick on" data-j="' + esc(j.id) + '"><span class="bx"></span>' +
+          '<span class="tx">' + esc(j.text||"") + '</span><span class="st">&nbsp;</span></button>';
+      }).join("") +
+      fixed.map(function(x){
+        return '<button class="tick on" data-s="' + esc(x.id || x.text) + '">' +
+          '<span class="bx"></span><span class="tx">' + esc(x.text||"") +
+          '<small>safety</small></span><span class="st">&nbsp;</span></button>';
+      }).join("")
+    : '<div class="none">Nothing closed out yet today.</div>';
+  document.getElementById("nDone").textContent = (done.length + fixed.length) + " closed";
+}
+
+/* ---- ticking ---- */
+document.addEventListener("click", function(e){
+  var star = e.target.closest("[data-star]");
+  if(star){
+    e.stopPropagation();
+    var jid = star.getAttribute("data-star");
+    var j = S.jobs.filter(function(x){ return x.id === jid; })[0];
+    if(j){ SB.docEdit("jobs", S.date, jid, {pri: !j.pri}); TK.refresh(); }
+    return;
+  }
+  var jb = e.target.closest("[data-j]");
+  if(jb){
+    var id = jb.getAttribute("data-j");
+    var job = S.jobs.filter(function(x){ return x.id === id; })[0];
+    if(job){ SB.docEdit("jobs", S.date, id, {done: !job.done}); TK.refresh(); }
+    return;
+  }
+  var sb = e.target.closest("[data-s]");
+  if(sb){
+    var key = sb.getAttribute("data-s");
+    var it = S.safety.filter(function(x){ return (x.id || x.text) === key; })[0];
+    if(it){ SB.docEdit("safety", S.date, key, {done: !it.done}); TK.refresh(); }
+    return;
+  }
+  var m = e.target.closest(".mv");
+  if(m){
+    var r = (+m.getAttribute("data-c") ? DEL : CRANE)[+m.getAttribute("data-i")];
+    if(!r) return;
+    if(r.__auto) TK.openSheet({co:r.co, descr:r.descr, start_min:r.start_min, dur:r.dur,
+      qty:r.qty, kg:r.kg, type:"lift", status:r.status, notes:r.notes}, true);
+    else TK.openSheet(r, false);
+  }
+});
+
+/* ---- weather, straight from Open-Meteo ---- */
+function weather(){
+  var u = "https://api.open-meteo.com/v1/forecast?latitude=-28.1174&longitude=153.4617" +
+    "&current=temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code" +
+    "&timezone=Australia%2FBrisbane";
+  fetch(u).then(function(r){ return r.json(); }).then(function(j){
+    var c = j && j.current;
+    if(!c) return;
+    var dirs = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+    var d = dirs[Math.round((c.wind_direction_10m || 0) / 22.5) % 16];
+    var blow = (c.wind_gusts_10m || 0) >= 40;
+    document.getElementById("wx").innerHTML =
+      '<span class="t">' + Math.round(c.temperature_2m) + '°</span>' +
+      '<span class="w' + (blow ? " blow" : "") + '">' +
+      Math.round(c.wind_speed_10m) + " " + d +
+      (c.wind_gusts_10m ? " · g" + Math.round(c.wind_gusts_10m) : "") + '</span>';
+  }).catch(function(){ /* no signal, no weather - the rest of the page is fine */ });
+}
+
+function bigTick(){
+  var n = new Date();
+  document.getElementById("bigclk").firstChild.nodeValue =
+    two(n.getHours()) + ":" + two(n.getMinutes());
+}
+
+TK.boot(function(){ render(); bigTick(); });
+TK.loadDocs().then(TK.refresh);
+setInterval(bigTick, 20000);
+weather();
+setInterval(weather, 300000);
+/* the day documents follow the date, same as the lifts do */
+window.addEventListener("hashchange", function(){ setTimeout(function(){
+  TK.loadDocs().then(TK.refresh); }, 60); });
+document.getElementById("prev").addEventListener("click", function(){
+  setTimeout(function(){ TK.loadDocs().then(TK.refresh); }, 60); });
+document.getElementById("next").addEventListener("click", function(){
+  setTimeout(function(){ TK.loadDocs().then(TK.refresh); }, 60); });
+</script>
+</body></html>

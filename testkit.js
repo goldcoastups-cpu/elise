@@ -56,7 +56,9 @@ var LKIND = {LOAD:"Load in",BAYS:"Loading bays",SPIN:"Spin up",SNGL:"Single heig
 var state = {
   date: (location.hash || "").replace(/^#/, "") || boardDate(),
   open: 360, close: 1080, per: 10, per15: ["AP"], breaks: [[600,30],[780,30]],
-  trades: {}, order: [], raw: [], rows: [], err: "", note: ""
+  trades: {}, order: [], raw: [], rows: [], err: "", note: "",
+  rawJobs: [], jobs: [], rawSafety: [], safety: [], safetyPhotos: [],
+  labour: [], labourDate: ""
 };
 DEF_TRADES.forEach(function(t){ state.trades[t[0]] = [t[1], t[2]]; state.order.push(t[0]); });
 
@@ -87,7 +89,31 @@ function loadConfig(){
     }
   }).catch(function(){});
 }
-function merge(){ state.rows = global.SB.apply(state.raw, state.date); }
+function merge(){
+  state.rows = global.SB.apply(state.raw, state.date);
+  state.jobs   = global.SB.docApply("jobs",   state.date, state.rawJobs);
+  state.safety = global.SB.docApply("safety", state.date, state.rawSafety);
+}
+
+/* the day documents - jobs, safety, labour - are one row each, holding an
+   items array. Only the Today page needs them, so they load on request. */
+function loadDocs(){
+  var d = state.date;
+  return Promise.all([
+    api("jobs?select=data&id=eq." + d + "&project=eq." + PROJ).catch(function(){ return []; }),
+    api("safety?select=data&id=eq." + d + "&project=eq." + PROJ).catch(function(){ return []; }),
+    api("labour?select=data&id=lte." + d + "&project=eq." + PROJ +
+        "&order=id.desc&limit=1").catch(function(){ return []; })
+  ]).then(function(r){
+    var j = r[0][0] && r[0][0].data, sf = r[1][0] && r[1][0].data, lb = r[2][0] && r[2][0].data;
+    state.rawJobs   = (j  && j.items)  || [];
+    state.rawSafety = (sf && sf.items) || [];
+    state.safetyPhotos = (sf && sf.photos) || [];
+    state.labour    = (lb && lb.rows)  || [];
+    state.labourDate = (lb && lb.date) || "";
+    merge();
+  });
+}
 function loadDay(){
   return api("lifts?select=*&project=eq." + PROJ + "&date=eq." + state.date +
              "&order=start_min.asc").then(function(rows){
@@ -294,7 +320,7 @@ global.TK = {
   state:state, PROJ:PROJ, LKIND:LKIND,
   api:api, esc:esc, two:two, hm:hm, mins:mins, iso:iso, nowMin:nowMin,
   dayName:dayName, shift:shift, trade:trade, onColour:onColour, perLift:perLift,
-  boot:boot, refresh:refresh, paint:paint, go:go,
+  boot:boot, refresh:refresh, paint:paint, go:go, loadDocs:loadDocs, loadDay:loadDay,
   openSheet:openSheet, closeSheet:closeSheet, addNew:addNew
 };
 })(window);
