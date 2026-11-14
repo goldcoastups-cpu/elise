@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en-AU"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="apple-touch-icon" href="../board/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Day">
+<meta name="theme-color" content="#111110">
+<meta name="robots" content="noindex,nofollow">
+<title>ELISE &middot; Day board</title>
+<link rel="stylesheet" href="../board/fonts.css">
+<link rel="stylesheet" href="../test.css">
+<style>
+:root{--pxh:82px;--px10:15px}
+main{padding:0 var(--gut-r) 30px var(--gut-l)}
+
+/* the switch */
+.seg2{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line-hard);
+  border-radius:6px;overflow:hidden;margin:2px 0 9px}
+.seg2 button{font:inherit;font-family:var(--f-cond);font-size:12px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;background:transparent;border:0;
+  color:var(--ink-3);padding:9px 4px;cursor:pointer;min-height:40px}
+.seg2 button + button{border-left:1px solid var(--line)}
+.seg2 button.on{background:var(--ink);color:var(--paper)}
+.seg2 button:focus-visible{outline:2px solid var(--clock);outline-offset:-3px}
+
+.hdrow{display:grid;position:sticky;top:0;z-index:14;background:var(--paper);
+  border-top:1px solid var(--line-hard);border-bottom:2px solid var(--line-hard)}
+.hdrow span{font-family:var(--f-cond);font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink);padding:7px 0 6px 9px}
+.hdrow .c2{border-left:2px solid var(--line-hard)}
+.hdrow .n{display:block;font-family:var(--f-num);font-size:9.5px;font-weight:400;
+  letter-spacing:0;color:var(--ink-3);text-transform:none;padding-top:1px}
+#view.v-cal ~ .hdrow span,.hdrow span{font-size:12px}
+
+.grid{display:grid;position:relative;margin-top:10px}
+.ruler{position:relative}
+.ruler b{position:absolute;right:7px;font-family:var(--f-num);font-weight:400;
+  transform:translateY(-6px);white-space:nowrap}
+.ruler b.hr{font-size:11px;color:var(--ink-2);font-weight:600}
+.ruler b.ten{font-size:8.5px;color:var(--ink-3);opacity:.72}
+.lane{position:relative;border-left:2px solid var(--line-hard)}
+.tk{position:absolute;left:0;right:0;border-top:1px solid var(--line);opacity:.4}
+.tk.half{opacity:.75;border-top-style:dashed}
+.tk.hr{opacity:1;border-top-color:var(--line-hard)}
+.brk{position:absolute;left:0;right:0;
+  background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,transparent 6px 12px);
+  border-top:1px dashed var(--line-hard);border-bottom:1px dashed var(--line-hard)}
+.brk span{position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  font-family:var(--f-cond);font-size:8.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3)}
+
+.card{position:absolute;border-radius:4px;overflow:hidden;text-align:left;
+  font-family:inherit;cursor:pointer;display:block;border:1px solid transparent}
+.card.ease{transition:top .2s ease-out,transform .2s ease-out}
+@media (prefers-reduced-motion:reduce){.card.ease{transition:none}}
+.card.req{border-style:dashed}
+.card.edited{box-shadow:inset 0 0 0 1px var(--warn)}
+.card.lift{box-shadow:0 11px 26px rgba(0,0,0,.52);transform:scale(1.03);z-index:40}
+
+/* --- calendar: solid trade blocks, roomy, hour ruler --- */
+.v-cal .card{padding:3px 6px;font-size:11.5px;line-height:1.22}
+.v-cal .card b{font-family:var(--f-cond);font-weight:700;letter-spacing:.06em}
+.v-cal .card .q{font-family:var(--f-num);font-size:9.5px;opacity:.82}
+.v-cal .card.one{white-space:nowrap;text-overflow:ellipsis}
+.v-cal .card.tiny{padding:0 5px;font-size:9.5px;line-height:15px}
+.v-cal .card.live{box-shadow:0 0 0 2px var(--clock)}
+.v-cal .card.auto{background:transparent !important;border-style:dashed}
+
+/* --- rows: outlined cards on a ten-minute ruler --- */
+.v-rows .card{background:var(--surface);border-color:var(--line);border-left-width:4px;
+  padding:1px 5px 1px 6px;color:inherit}
+.v-rows .card .co{font-family:var(--f-cond);font-size:9px;font-weight:700;letter-spacing:.09em;
+  border-radius:2px;padding:0 4px;display:inline-block}
+.v-rows .card .ds{font-size:10.5px;line-height:1.2}
+.v-rows .card .q{font-family:var(--f-num);font-size:8.5px;color:var(--ink-3);float:right}
+/* requested is dashed on three sides; the trade bar on the left stays solid */
+.v-rows .card.req{border-style:dashed;border-left-style:solid}
+.v-rows .card.one{white-space:nowrap;text-overflow:ellipsis;line-height:11px;padding:0 5px}
+.v-rows .card.one .co{line-height:10px;vertical-align:0}
+.v-rows .card.one .ds{display:inline;font-size:10px}
+.v-rows .card.two .ds{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;padding-top:1px}
+.v-rows .card.narrow .ds{display:none}
+.v-rows .card.live{border-color:var(--clock);box-shadow:0 0 0 1px var(--clock)}
+.v-rows .card.auto{background:transparent;border-style:dashed;color:var(--ink-2)}
+.v-rows .card.auto .tagn{font-family:var(--f-cond);font-size:8px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--warn);float:right;padding-left:4px}
+
+.nowline{position:absolute;right:0;border-top:2px solid var(--alarm);z-index:12;
+  pointer-events:none}
+.nowline i{position:absolute;left:-5px;top:-5px;width:9px;height:9px;border-radius:50%;
+  background:var(--alarm)}
+.nowtag{position:absolute;left:0;text-align:right;padding-right:7px;font-family:var(--f-num);
+  font-size:9px;color:var(--alarm);transform:translateY(-6px);z-index:12;pointer-events:none;
+  background:var(--paper)}
+.ghost{position:fixed;z-index:60;pointer-events:none;font-family:var(--f-num);font-size:13px;
+  font-weight:700;background:var(--ink);color:var(--paper);border-radius:5px;padding:5px 10px;
+  display:none;white-space:nowrap}
+.ghost.on{display:block}
+.empty{font-family:var(--f-num);font-size:11.5px;color:var(--ink-3);padding:12px 2px}
+.zoom{display:flex;gap:6px;align-items:center;margin-left:auto}
+.zoom button{font:inherit;font-family:var(--f-cond);font-size:11px;font-weight:700;
+  letter-spacing:.11em;text-transform:uppercase;background:transparent;
+  border:1px solid var(--line);border-radius:4px;color:var(--ink-3);padding:4px 9px;
+  cursor:pointer}
+.zoom button.on{border-color:var(--ink);color:var(--ink)}
+.zrow{display:flex;align-items:center;gap:9px;padding-top:11px}
+.zrow .zl{font-family:var(--f-cond);font-size:10px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3)}
+.nav{display:flex;gap:6px;flex-wrap:wrap;padding:16px 0 0;border-top:1px solid var(--line);
+  margin-top:18px}
+.nav a{font-family:var(--f-cond);font-size:11px;font-weight:700;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-2);text-decoration:none;border:1px solid var(--line);
+  border-radius:4px;padding:7px 11px}
+.nav a.on{border-color:var(--ink);color:var(--ink)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <span class="wm">Elise</span>
+    <span class="clk" id="clk">--:--</span>
+    <span class="badge" id="sbadge">Sandbox</span>
+    <a class="back" href="../today2/">Today</a>
+  </div>
+  <div class="datebar">
+    <button type="button" id="prev" aria-label="Previous day">&lsaquo;</button>
+    <span class="dlab" id="dlab">&nbsp;<small>&nbsp;</small></span>
+    <button type="button" class="act undo" id="sreset" hidden>Undo all</button>
+    <button type="button" class="act go" id="sadd">+ Add</button>
+    <button type="button" id="next" aria-label="Next day">&rsaquo;</button>
+  </div>
+  <div class="seg2" id="seg" role="group" aria-label="View">
+    <button type="button" data-v="cal">Calendar</button>
+    <button type="button" data-v="rows">Rows</button>
+  </div>
+  <div class="hdrow" id="hdrow">
+    <span></span>
+    <span class="c2">Crane<span class="n" id="nCrane">&nbsp;</span></span>
+    <span class="c2">Deliveries<span class="n" id="nDel">&nbsp;</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="grid" id="view"></div>
+  <div class="foot" id="foot"></div>
+  <div class="zrow" id="zrow">
+    <span class="zl" id="zlab">Rows</span>
+    <span class="zoom" id="zoom"></span>
+  </div>
+  <nav class="nav">
+    <a href="../today2/">Today</a>
+    <a href="./" class="on">Day board</a>
+    <a href="../strips/">Strips</a>
+    <a href="../board/">Real board</a>
+  </nav>
+  <div class="hint" id="hint"></div>
+</main>
+
+<div class="ghost" id="ghost"></div>
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Booking"></div>
+
+<script src="../board/config.js"></script>
+<script src="../sandbox.js"></script>
+<script src="../testkit.js"></script>
+<script>
+"use strict";
+/* ==========================================================================
+   One day, two ways of drawing it. Both are the same time-proportional grid
+   over the same rows, so the switch only changes the ruler and the card
+   treatment - the date, the sandbox and the scroll position all survive it.
+   ========================================================================== */
+var S = TK.state, hm = TK.hm, esc = TK.esc, two = TK.two;
+var COLS = [[], []];
+var VIEW = "cal";
+try{ VIEW = localStorage.getItem("elise_day_view") || "cal"; }catch(e){}
+
+var VSET = {
+  cal:  {label:"Hours", steps:[[62,"Tight"],[82,"Normal"],[112,"Roomy"]],
+         hint:"A calendar day. <b>Press and hold</b> then drag a block to move it, "+
+              "tap it to change anything about it."},
+  rows: {label:"Rows",  steps:[[11,"Tight"],[15,"Normal"],[21,"Roomy"]],
+         hint:"Every line is ten minutes. Dashed cards in the crane column are lifts "+
+              "a delivery needs that nobody has booked — tap one to put it on."}
+};
+
+function unit(){
+  var v = getComputedStyle(document.documentElement)
+    .getPropertyValue(VIEW === "cal" ? "--pxh" : "--px10");
+  return parseFloat(v) || (VIEW === "cal" ? 82 : 15);
+}
+function geom(){
+  var span = S.close - S.open;
+  return {span: span, H: span / (VIEW === "cal" ? 60 : 10) * unit()};
+}
+function yOf(t){ var G = geom(); return (t - S.open) / G.span * G.H; }
+
+/* a delivery that needs lifts commits the hook, booked or not */
+function autoLifts(){
+  var crane = S.rows.filter(function(r){ return r.type !== "del"; });
+  return S.rows.filter(function(r){ return r.type === "del" && (r.qty||0) > 0; })
+    .filter(function(d){
+      return !crane.some(function(x){
+        return (d.pair && x.id === d.pair) || (x.pair && x.pair === d.id) ||
+               (x.co === d.co && Math.abs(x.start_min - d.start_min) <= 30);
+      });
+    })
+    .map(function(d){
+      var per = TK.perLift(d.co);
+      return {__auto:true, id:"auto-"+d.id, co:d.co, descr:d.descr, start_min:d.start_min,
+        dur:(d.qty||1)*per, qty:d.qty, kg:d.kg, type:"lift", status:d.status,
+        notes:"Worked out from the delivery at " + hm(d.start_min) + ": " + d.qty +
+              (d.qty === 1 ? " lift" : " lifts") + " at " + per + " min. Not booked yet."};
+    });
+}
+function lanes(set){
+  var cluster = [], open = [], clEnd = -1;
+  function flush(){
+    var n = Math.max(1, open.length);
+    cluster.forEach(function(x){ x.__of = n; });
+    cluster = []; open = []; clEnd = -1;
+  }
+  set.slice().sort(function(a,b){ return a.start_min - b.start_min; })
+    .forEach(function(r){
+      var st = r.start_min, en = st + (r.dur || 10);
+      if(clEnd >= 0 && st >= clEnd) flush();
+      var li = 0;
+      while(open[li] !== undefined && open[li] > st) li++;
+      open[li] = en; r.__lane = li; cluster.push(r);
+      if(en > clEnd) clEnd = en;
+    });
+  flush();
+}
+
+function cardHtml(r, ci, i){
+  var tr = TK.trade(r.co), c = tr[1], G = geom();
+  var top = yOf(r.start_min);
+  var hh = Math.max(VIEW === "cal" ? 15 : 13, (r.dur||10) / G.span * G.H - 2);
+  var wpc = 100 / (r.__of || 1), lpc = (r.__lane || 0) * wpc;
+  var today = S.date === TK.iso(new Date()), nm = TK.nowMin();
+  var live = today && nm >= r.start_min && nm < r.start_min + (r.dur||10);
+  var pos = 'top:' + top + 'px;height:' + hh + 'px;left:calc(' + lpc +
+            '% + 2px);width:calc(' + wpc + '% - 4px)';
+  var common = ' data-k="' + ci + ':' + i + '" title="' +
+    esc(hm(r.start_min) + " · " + (r.descr||"")) + '"';
+
+  if(VIEW === "cal"){
+    var ink = TK.onColour(c);
+    var qty = r.qty ? r.qty + (r.qty === 1 ? " lift" : " lifts")
+                    : (r.kg ? (r.kg/1000).toFixed(1) + "t" : "");
+    return '<button class="card' + (r.status === "req" && !r.__auto ? " req" : "") +
+      (hh < 34 ? " one" : "") + (hh < 22 ? " tiny" : "") + (live ? " live" : "") +
+      (r.__auto ? " auto" : "") + (r.__added || r.__edited ? " edited" : "") + '"' + common +
+      ' style="' + pos + ';background:' + c + ';color:' + (r.__auto ? c : ink) +
+      ';border-color:' + (r.__auto ? c : ink) + '">' +
+      '<b>' + esc(r.co) + '</b> ' + esc(r.descr || "") +
+      (r.__auto ? " — not booked" : (qty ? ' <span class="q">' + esc(qty) + '</span>' : '')) +
+      '</button>';
+  }
+  var q2 = r.qty ? r.qty + "×" : (r.kg ? (r.kg/1000).toFixed(1) + "t" : "");
+  /* only hide the text when a card is both squeezed sideways and short */
+  return '<button class="card ' + (hh < 30 ? "one" : "two") +
+    (wpc < 62 && hh < 30 ? " narrow" : "") +
+    (r.__auto ? " auto" : "") + (r.status !== "con" && !r.__auto ? " req" : "") +
+    (r.__added || r.__edited ? " edited" : "") + (live ? " live" : "") + '"' + common +
+    ' style="' + pos + ';border-left-color:' + c + '">' +
+    (r.__auto ? '<span class="tagn">' + (wpc < 62 ? "+" : "add") + '</span>'
+              : (q2 ? '<span class="q">' + q2 + '</span>' : '')) +
+    '<span class="co" style="background:' + (r.__auto ? "transparent" : c) + ';color:' +
+      (r.__auto ? c : TK.onColour(c)) +
+      (r.__auto ? ';box-shadow:inset 0 0 0 1px ' + c : '') + '">' + esc(r.co) + '</span>' +
+    ' <span class="ds">' + esc(r.descr || "") + '</span></button>';
+}
+
+function render(){
+  var v = document.getElementById("view");
+  v.className = "grid v-" + VIEW;
+  var gutter = VIEW === "cal" ? 42 : 46;
+  v.style.gridTemplateColumns = gutter + "px 1fr 1fr";
+  document.getElementById("hdrow").style.gridTemplateColumns = gutter + "px 1fr 1fr";
+  if(S.err){ v.innerHTML = '<div class="empty">' + esc(S.err) + '</div>'; return; }
+
+  var G = geom(), H = G.H, today = S.date === TK.iso(new Date()), nm = TK.nowMin();
+  COLS = [S.rows.filter(function(r){ return r.type !== "del"; }).concat(autoLifts()),
+          S.rows.filter(function(r){ return r.type === "del"; })];
+  COLS.forEach(lanes);
+
+  var step = VIEW === "cal" ? 30 : 10;
+  var h = '<div class="ruler" style="height:' + H + 'px">';
+  for(var t = S.open; t <= S.close; t += step){
+    var onHr = t % 60 === 0;
+    if(VIEW === "cal" && !onHr) continue;
+    h += '<b class="' + (onHr ? "hr" : "ten") + '" style="top:' + yOf(t) + 'px">' +
+         (onHr ? hm(t) : two(t % 60)) + '</b>';
+  }
+  h += '</div>';
+
+  COLS.forEach(function(set, ci){
+    h += '<div class="lane" style="height:' + H + 'px">';
+    for(var t2 = S.open; t2 <= S.close; t2 += step)
+      h += '<div class="tk' + (t2 % 60 === 0 ? " hr" : (t2 % 30 === 0 ? " half" : "")) +
+           '" style="top:' + yOf(t2) + 'px"></div>';
+    if(ci === 0) S.breaks.forEach(function(b){
+      h += '<div class="brk" style="top:' + yOf(b[0]) + 'px;height:' +
+           (b[1]/G.span*H) + 'px"><span>Break</span></div>';
+    });
+    set.forEach(function(r, i){ h += cardHtml(r, ci, i); });
+    h += '</div>';
+  });
+
+  if(today && nm >= S.open && nm <= S.close){
+    h += '<div class="nowtag" style="top:' + yOf(nm) + 'px;width:' + gutter + 'px">' +
+         hm(nm) + '</div>' +
+         '<div class="nowline" style="top:' + yOf(nm) + 'px;left:' + gutter + 'px"><i></i></div>';
+  }
+  v.innerHTML = h;
+
+  var real = COLS[0].filter(function(r){ return !r.__auto; });
+  var auto = COLS[0].length - real.length;
+  var hook = COLS[0].reduce(function(a,r){ return a + (r.dur||0); }, 0);
+  document.getElementById("nCrane").textContent =
+    real.length + (auto ? " + " + auto + " to book" : "");
+  document.getElementById("nDel").textContent = COLS[1].length + " trucks";
+  var con = S.rows.filter(function(r){ return r.status === "con"; }).length;
+  document.getElementById("foot").textContent =
+    (S.note ? S.note + "  " : "") +
+    Math.floor(hook/60) + "h" + two(hook%60) + " on the hook · " +
+    con + " of " + S.rows.length + " confirmed" +
+    (auto ? " · " + auto + " lift" + (auto > 1 ? "s" : "") +
+            " a delivery needs and nobody has booked" : "");
+}
+
+function rowAt(el){
+  var k = el.getAttribute("data-k").split(":");
+  return COLS[+k[0]][+k[1]];
+}
+
+/* ---------- the switch ---------- */
+function paintSwitch(){
+  document.querySelectorAll("#seg button").forEach(function(b){
+    b.classList.toggle("on", b.getAttribute("data-v") === VIEW);
+    b.setAttribute("aria-pressed", b.getAttribute("data-v") === VIEW ? "true" : "false");
+  });
+  var set = VSET[VIEW];
+  document.getElementById("zlab").textContent = set.label;
+  document.getElementById("hint").innerHTML = set.hint +
+    " <b>Swipe right</b> to confirm, <b>left</b> to delete. " +
+    "Everything stays on this phone — the real board is never written to.";
+  var key = "elise_day_" + VIEW;
+  var cur;
+  try{ cur = localStorage.getItem(key); }catch(e){}
+  if(cur) document.documentElement.style.setProperty(
+    VIEW === "cal" ? "--pxh" : "--px10", cur + "px");
+  document.getElementById("zoom").innerHTML = set.steps.map(function(s){
+    var on = String(s[0]) === String(cur || set.steps[1][0]);
+    return '<button type="button" data-z="' + s[0] + '"' + (on ? ' class="on"' : '') +
+           '>' + s[1] + '</button>';
+  }).join("");
+}
+function setView(v){
+  if(v === VIEW) return;
+  /* hold the clock time under the top of the screen, so the switch does not
+     throw away where you were looking */
+  var anchor = S.open + (window.scrollY / geom().H) * (S.close - S.open);
+  VIEW = v;
+  try{ localStorage.setItem("elise_day_view", v); }catch(e){}
+  paintSwitch(); render();
+  window.scrollTo({top: Math.max(0, (anchor - S.open) / (S.close - S.open) * geom().H)});
+}
+document.getElementById("seg").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-v]");
+  if(b) setView(b.getAttribute("data-v"));
+});
+document.getElementById("zoom").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-z]");
+  if(!b) return;
+  var z = b.getAttribute("data-z");
+  document.documentElement.style.setProperty(VIEW === "cal" ? "--pxh" : "--px10", z + "px");
+  try{ localStorage.setItem("elise_day_" + VIEW, z); }catch(err){}
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x === b); });
+  render();
+});
+
+/* ---------- press and hold to move, swipe for the two actions ---------- */
+var view = document.getElementById("view"), ghost = document.getElementById("ghost");
+var g = null, HOLD = 240;
+
+function beginHold(){
+  if(!g || g.mode || g.row.__auto) return;
+  g.mode = "drag";
+  g.el.classList.remove("ease");
+  g.el.classList.add("lift");
+  if(navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
+}
+view.addEventListener("pointerdown", function(e){
+  var el = e.target.closest(".card");
+  if(!el) return;
+  var r = rowAt(el);
+  if(!r) return;
+  g = {el:el, row:r, x0:e.clientX, y0:e.clientY, mode:null, start:r.start_min,
+       touch:(e.pointerType === "touch"), timer:null};
+  try{ el.setPointerCapture(e.pointerId); }catch(err){}
+  g.timer = setTimeout(beginHold, g.touch ? HOLD : HOLD + 120);
+});
+view.addEventListener("touchmove", function(e){
+  if(g && g.mode === "drag") e.preventDefault();
+}, {passive:false});
+view.addEventListener("pointermove", function(e){
+  if(!g) return;
+  var dx = e.clientX - g.x0, dy = e.clientY - g.y0;
+  if(!g.mode){
+    if(Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.4 && !g.row.__auto){
+      clearTimeout(g.timer); g.mode = "swipe";
+    } else if(Math.abs(dy) > 12){
+      clearTimeout(g.timer); g = null; return;
+    } else return;
+  }
+  if(g.mode === "swipe"){
+    g.dx = Math.max(-130, Math.min(130, dx));
+    g.el.style.transform = "translateX(" + g.dx + "px)";
+    return;
+  }
+  var G = geom(), step = S.per || 10;
+  var mv = Math.round(dy * (G.span / G.H) / step) * step;
+  var d = g.row.dur || 10;
+  var nt = Math.max(S.open, Math.min(S.close - d, g.start + mv));
+  g.target = nt;
+  g.el.style.top = yOf(nt) + "px";
+  var inBrk = S.breaks.some(function(b){ return nt < b[0]+b[1] && nt+d > b[0]; });
+  ghost.textContent = hm(nt) + " – " + hm(nt + d) + (inBrk ? "  · in a break" : "");
+  ghost.style.left = Math.min(window.innerWidth - 180, Math.max(10, e.clientX - 76)) + "px";
+  ghost.style.top  = Math.max(10, e.clientY - 50) + "px";
+  ghost.classList.add("on");
+  e.preventDefault();
+});
+function endGesture(){
+  if(!g) return;
+  var x = g; g = null;
+  clearTimeout(x.timer);
+  ghost.classList.remove("on");
+  if(x.mode === "swipe"){
+    x.el.classList.add("ease");
+    if(x.dx > 80){ x.el.style.transform = ""; SB.edit(S.date, x.row, {status:"con"}); TK.refresh(); }
+    else if(x.dx < -80){
+      x.el.style.transform = "translateX(-130%)";
+      setTimeout(function(){ SB.remove(S.date, x.row); TK.refresh(); }, 200);
+    } else x.el.style.transform = "";
+    return;
+  }
+  if(x.mode === "drag"){
+    x.el.classList.remove("lift");
+    x.el.classList.add("ease");
+    if(x.target != null && x.target !== x.start)
+      SB.edit(S.date, x.row, {start_min: x.target});
+    setTimeout(TK.refresh, 60);
+    return;
+  }
+  if(x.row.__auto){
+    TK.openSheet({co:x.row.co, descr:x.row.descr, start_min:x.row.start_min, dur:x.row.dur,
+      qty:x.row.qty, kg:x.row.kg, type:"lift", status:x.row.status, notes:x.row.notes}, true);
+  } else TK.openSheet(x.row, false);
+}
+view.addEventListener("pointerup", endGesture);
+view.addEventListener("pointercancel", function(){
+  if(g && g.el){ g.el.style.transform = ""; g.el.classList.remove("lift"); }
+  g = null; ghost.classList.remove("on");
+});
+
+paintSwitch();
+TK.boot(render);
+setTimeout(function(){
+  if(S.date !== TK.iso(new Date())) return;
+  var nm = TK.nowMin();
+  if(nm < S.open || nm > S.close) return;
+  window.scrollTo({top: Math.max(0, yOf(nm) - 160)});
+}, 800);
+</script>
+</body></html>

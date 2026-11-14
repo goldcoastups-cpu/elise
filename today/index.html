@@ -128,7 +128,7 @@ section{padding:0 0 4px}
 
   <section id="s-crane">
     <div class="sh"><h2>Crane &amp; deliveries</h2>
-      <span class="n" id="nCrane"></span><a href="../rows/" id="lRows">Open</a></div>
+      <span class="n" id="nCrane"></span><a href="../day/" id="lRows">Open</a></div>
     <div class="mini">
       <span class="mh">Crane</span><span class="mh">Deliveries</span>
       <div class="mc" id="mcCrane"></div><div class="mc" id="mcDel"></div>
@@ -159,8 +159,7 @@ section{padding:0 0 4px}
 
   <nav class="nav">
     <a href="./" class="on">Today</a>
-    <a href="../rows/">Rows</a>
-    <a href="../cal/">Day view</a>
+    <a href="../day/">Day board</a>
     <a href="../strips/">Strips</a>
     <a href="../board/">Real board</a>
   </nav>
@@ -232,7 +231,7 @@ function render(){
   document.getElementById("nCrane").textContent =
     Math.floor(hook/60) + "h" + two(hook%60) + " hook" +
     (auto ? " · " + auto + " to book" : "");
-  document.getElementById("lRows").href = "../rows/#" + S.date;
+  document.getElementById("lRows").href = "../day/#" + S.date;
 
   /* ---- on the hook right now ---- */
   var hk = document.getElementById("hookv"), kk = document.getElementById("hookk");

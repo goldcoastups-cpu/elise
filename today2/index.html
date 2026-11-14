@@ -180,8 +180,7 @@ main{padding:0 var(--gut-r) 26px var(--gut-l)}
   <nav class="nav">
     <a href="../today/">Today 1</a>
     <a href="./" class="on">Today 2</a>
-    <a href="../rows/">Rows</a>
-    <a href="../cal/">Day view</a>
+    <a href="../day/">Day board</a>
     <a href="../strips/">Strips</a>
   </nav>
   <div class="hint">One screen. The three numbers open the detail in place rather than
@@ -433,7 +432,7 @@ document.addEventListener("click", function(e){
   }
 });
 document.getElementById("rib").addEventListener("click", function(){
-  location.href = "../rows/#" + S.date;
+  location.href = "../day/#" + S.date;
 });
 
 function weather(){
