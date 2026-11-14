@@ -14,71 +14,84 @@
 <link rel="stylesheet" href="../board/fonts.css">
 <link rel="stylesheet" href="../test.css">
 <style>
+:root{--px10:15px}                       /* one ten-minute increment */
 main{padding:0 var(--gut-r) 30px var(--gut-l)}
-.hdrow{display:grid;grid-template-columns:50px 1fr 1fr;border-top:1px solid var(--line);
-  position:sticky;top:0;z-index:12;background:var(--paper)}
-.hdrow span{font-family:var(--f-cond);font-size:10px;font-weight:700;letter-spacing:.15em;
-  text-transform:uppercase;color:var(--ink-3);padding:6px 0 6px 8px;
-  border-left:1px solid var(--line)}
-.hdrow span:first-child{border-left:0}
 
-.list{position:relative;padding-top:4px}
+/* the two columns are the whole point, so the split is a hard rule that
+   runs the full height, not a hairline */
+.hdrow{display:grid;grid-template-columns:46px 1fr 1fr;position:sticky;
+  top:0;z-index:14;background:var(--paper);border-top:1px solid var(--line-hard);
+  border-bottom:2px solid var(--line-hard)}
+.hdrow span{font-family:var(--f-cond);font-size:12px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ink);padding:8px 0 7px 10px}
+.hdrow .ch2{border-left:2px solid var(--line-hard)}
+.hdrow .n{display:block;font-family:var(--f-num);font-size:9.5px;font-weight:400;
+  letter-spacing:0;color:var(--ink-3);text-transform:none;padding-top:1px}
 
-/* one row per time slot: the clock on the left, crane and deliveries beside it */
-/* one hairline per time slot, so two cards stacked at the same time read as
-   one row rather than two */
-.trow{display:grid;grid-template-columns:50px 1fr 1fr;gap:0;align-items:stretch;
-  margin-top:0;padding:7px 0;border-top:1px solid var(--line);will-change:transform}
-.trow:first-child{border-top:0}
-.trow.slide{transition:transform .18s ease-out}
-.trow.fade{transition:transform .18s ease-out,opacity .18s ease-out}
-@media (prefers-reduced-motion:reduce){.trow.slide,.trow.fade{transition:none}}
-.trow .clock{font-family:var(--f-num);font-size:12.5px;font-weight:600;padding:1px 7px 0 0;
-  text-align:right;color:var(--ink-2)}
-.trow.liveslot .clock{color:var(--clock)}
-.trow.pastslot{opacity:.46}
-.cell{min-width:0;padding:0 3px;display:flex;flex-direction:column;gap:5px}
-.trow.target .cell{outline:1px dashed var(--clock);outline-offset:1px;border-radius:7px}
+.sheetgrid{display:grid;grid-template-columns:46px 1fr 1fr;position:relative;
+  margin-top:11px}
+.ruler{position:relative}
+.ruler b{position:absolute;right:7px;font-family:var(--f-num);font-weight:400;
+  transform:translateY(-6px);white-space:nowrap}
+.ruler b.hr{font-size:11px;color:var(--ink-2);font-weight:600}
+.ruler b.ten{font-size:8.5px;color:var(--ink-3);opacity:.72}
+.lane{position:relative;border-left:2px solid var(--line-hard)}
+.tick{position:absolute;left:0;right:0;border-top:1px solid var(--line);opacity:.4}
+.tick.half{opacity:.75;border-top-style:dashed}
+.tick.hr{opacity:1;border-top-color:var(--line-hard)}
+.brk{position:absolute;left:0;right:0;
+  background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,transparent 6px 12px);
+  border-top:1px dashed var(--line-hard);border-bottom:1px dashed var(--line-hard)}
+.brk span{position:absolute;left:6px;top:50%;transform:translateY(-50%);
+  font-family:var(--f-cond);font-size:8.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3)}
 
-.slot{position:relative}
-.beh{position:absolute;inset:0;border-radius:6px;display:flex;align-items:center;
-  justify-content:space-between;padding:0 9px;font-family:var(--f-cond);font-size:9.5px;
-  font-weight:700;letter-spacing:.11em;text-transform:uppercase;overflow:hidden}
-.beh .l{color:var(--ok)} .beh .r{color:var(--crit)}
-
-.card{position:relative;display:block;width:100%;text-align:left;font-family:inherit;
-  color:inherit;background:var(--surface);border:1px solid var(--line);
-  border-left:5px solid var(--line);border-radius:6px;padding:7px 8px 7px 9px;
-  cursor:pointer;min-height:52px;overflow:hidden}
-.card.slide{transition:transform .2s ease-out}
-.card .co{font-family:var(--f-cond);font-size:10px;font-weight:700;letter-spacing:.1em;
-  border-radius:3px;padding:1px 5px;display:inline-block;vertical-align:1px}
-.card .q{font-family:var(--f-num);font-size:9.5px;color:var(--ink-3);float:right;
-  padding-top:2px}
-.card .ds{display:block;font-size:12px;line-height:1.25;padding-top:4px;overflow:hidden;
-  -webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical}
+.card{position:absolute;border-radius:4px;border:1px solid var(--line);
+  border-left:4px solid var(--line);background:var(--surface);padding:1px 5px 1px 6px;
+  overflow:hidden;text-align:left;font-family:inherit;color:inherit;cursor:pointer;
+  display:block}
+.card.ease{transition:top .2s ease-out,transform .2s ease-out}
+@media (prefers-reduced-motion:reduce){.card.ease{transition:none}}
+.card .co{font-family:var(--f-cond);font-size:9px;font-weight:700;letter-spacing:.09em;
+  border-radius:2px;padding:0 4px;display:inline-block}
+.card .ds{font-size:10.5px;line-height:1.2}
+.card .q{font-family:var(--f-num);font-size:8.5px;color:var(--ink-3);float:right}
+.card.one{white-space:nowrap;text-overflow:ellipsis;line-height:13px}
+.card.narrow .ds{display:none}
+.card.narrow .tagn{font-size:7.5px;letter-spacing:.04em}
+.card.narrow .q{font-size:8px}
+.card.one .ds{display:inline;font-size:10px}
+.card.two .ds{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;padding-top:1px}
 .card.req{border-top-style:dashed;border-right-style:dashed;border-bottom-style:dashed}
 .card.edited{box-shadow:inset 0 0 0 1px var(--warn)}
-.card.live{box-shadow:0 0 0 1px var(--clock);border-color:var(--clock)}
-.card.lift{box-shadow:0 11px 28px rgba(0,0,0,.5);transform:scale(1.03);z-index:30;
+.card.live{border-color:var(--clock);box-shadow:0 0 0 1px var(--clock)}
+.card.lift{box-shadow:0 11px 26px rgba(0,0,0,.52);transform:scale(1.03);z-index:40;
   border-color:var(--line-hard)}
-.card.clash{border-color:var(--crit)}
-.card .warnx{display:block;font-family:var(--f-cond);font-size:9px;font-weight:700;
-  letter-spacing:.09em;text-transform:uppercase;color:var(--crit);padding-top:3px}
+/* a lift the board has not booked, worked out from a delivery that needs one */
+.card.auto{background:transparent;border-style:dashed;border-left-style:dashed;
+  color:var(--ink-2)}
+.card.auto .tagn{font-family:var(--f-cond);font-size:8px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--warn);float:right;padding-left:4px}
 
-.brkrow{display:grid;grid-template-columns:50px 1fr;gap:0;padding:7px 0;
-  border-top:1px solid var(--line);align-items:center}
-.brkrow .b{margin-left:3px;padding:5px 10px;border:1px dashed var(--line-hard);border-radius:6px;
-  font-family:var(--f-cond);font-size:9.5px;font-weight:700;letter-spacing:.17em;
-  text-transform:uppercase;color:var(--ink-3);
-  background:repeating-linear-gradient(135deg,var(--surface-2) 0 6px,transparent 6px 12px)}
-.brkrow .t{font-family:var(--f-num);font-size:11px;color:var(--ink-3);text-align:right;
-  padding-right:7px}
+.nowline{position:absolute;left:46px;right:0;border-top:2px solid var(--alarm);z-index:12;
+  pointer-events:none}
+.nowline i{position:absolute;left:-5px;top:-5px;width:9px;height:9px;border-radius:50%;
+  background:var(--alarm)}
+.nowtag{position:absolute;left:0;width:46px;text-align:right;padding-right:7px;
+  font-family:var(--f-num);font-size:9px;color:var(--alarm);transform:translateY(-6px);
+  z-index:12;pointer-events:none;background:var(--paper)}
 .empty{font-family:var(--f-num);font-size:11.5px;color:var(--ink-3);padding:12px 2px}
 .ghost{position:fixed;z-index:60;pointer-events:none;font-family:var(--f-num);font-size:13px;
   font-weight:700;background:var(--ink);color:var(--paper);border-radius:5px;padding:5px 10px;
   display:none;white-space:nowrap}
 .ghost.on{display:block}
+.zoom{display:flex;gap:6px;align-items:center;margin-left:auto}
+.zoom button{font:inherit;font-family:var(--f-cond);font-size:11px;font-weight:700;
+  letter-spacing:.11em;text-transform:uppercase;background:transparent;
+  border:1px solid var(--line);border-radius:4px;color:var(--ink-3);padding:4px 9px;
+  cursor:pointer}
+.zoom button.on{border-color:var(--ink);color:var(--ink)}
 </style>
 </head>
 <body>
@@ -100,12 +113,26 @@ main{padding:0 var(--gut-r) 30px var(--gut-l)}
 </header>
 
 <main>
-  <div class="hdrow"><span></span><span>Crane</span><span>Deliveries</span></div>
-  <div class="list" id="list"><div class="empty">Loading&hellip;</div></div>
+  <div class="hdrow">
+    <span></span>
+    <span class="ch2">Crane<span class="n" id="nCrane">&nbsp;</span></span>
+    <span class="ch2">Deliveries<span class="n" id="nDel">&nbsp;</span></span>
+  </div>
+  <div class="sheetgrid" id="grid"></div>
   <div class="foot" id="foot"></div>
-  <div class="hint">Tap a card to change it. <b>Press and hold</b> then drag it up or down
-    &mdash; drop it on a row to put it at that time, or between rows for a slot of its own.
-    <b>Swipe right</b> to confirm, <b>left</b> to delete. Everything stays on this phone.</div>
+  <div style="display:flex;align-items:center;gap:9px;padding-top:10px">
+    <span style="font-family:var(--f-cond);font-size:10px;font-weight:700;letter-spacing:.14em;
+      text-transform:uppercase;color:var(--ink-3)">Rows</span>
+    <span class="zoom" id="zoom">
+      <button type="button" data-z="11">Tight</button>
+      <button type="button" data-z="15" class="on">Normal</button>
+      <button type="button" data-z="21">Roomy</button>
+    </span>
+  </div>
+  <div class="hint">Every line is ten minutes. Dashed outlines in the crane column are
+    lifts the board has not booked yet, worked out from a delivery that needs them
+    &mdash; tap one to put it on. <b>Press and hold</b> then drag to move a card;
+    <b>swipe right</b> to confirm, <b>left</b> to delete.</div>
 </main>
 
 <div class="ghost" id="ghost"></div>
@@ -118,211 +145,198 @@ main{padding:0 var(--gut-r) 30px var(--gut-l)}
 <script>
 "use strict";
 var S = TK.state, hm = TK.hm, esc = TK.esc, two = TK.two;
-var EASE = 190;
-var GROUPS = [];     /* [{t, crane:[rows], gate:[rows]}] in time order */
-var FLAT = [];       /* every booking, for lookup by index */
+var COLS = [[], []];
 
+function px10(){
+  return parseFloat(getComputedStyle(document.documentElement)
+    .getPropertyValue("--px10")) || 15;
+}
+function geom(){
+  var span = S.close - S.open;
+  return {span: span, H: span / 10 * px10()};
+}
+function yOf(t){ var G = geom(); return (t - S.open) / G.span * G.H; }
 function snap(t){ var p = S.per || 10; return Math.round(t / p) * p; }
-function inBreak(t, d){
-  return S.breaks.some(function(b){ return t < b[0] + b[1] && t + d > b[0]; });
+
+/* ---------- a delivery that needs lifts commits the hook ----------
+   If nothing on the crane side covers it, work the lift out and show it,
+   dashed, so the hook time is never invisible. */
+function autoLifts(){
+  var craneRows = S.rows.filter(function(r){ return r.type !== "del"; });
+  var out = [];
+  S.rows.filter(function(r){ return r.type === "del" && (r.qty || 0) > 0; })
+    .forEach(function(d){
+      var covered = craneRows.some(function(x){
+        if(d.pair && x.id === d.pair) return true;
+        if(x.pair && x.pair === d.id) return true;
+        /* or a lift already sitting against the same drop */
+        return x.co === d.co && Math.abs(x.start_min - d.start_min) <= 30;
+      });
+      if(covered) return;
+      var per = TK.perLift(d.co);
+      out.push({__auto:true, __src:d, id:"auto-" + d.id, co:d.co,
+        descr:d.descr, start_min:d.start_min, dur:(d.qty || 1) * per,
+        qty:d.qty, kg:d.kg, type:"lift", status:d.status, crane:"tower",
+        kind:"DECK", from_loc:"GROUND", to_loc:"LIVE DECK", notes:
+          "Worked out from the delivery at " + hm(d.start_min) + ": " +
+          d.qty + (d.qty === 1 ? " lift" : " lifts") + " at " + per +
+          " min. Not on the board yet."});
+    });
+  return out;
 }
 
-function group(){
-  GROUPS = []; FLAT = S.rows.slice();
-  var by = {};
-  FLAT.forEach(function(r, i){
-    r.__i = i;
-    var k = r.start_min;
-    if(!by[k]) { by[k] = {t:k, crane:[], gate:[]}; GROUPS.push(by[k]); }
-    (r.type === "del" ? by[k].gate : by[k].crane).push(r);
-  });
-  GROUPS.sort(function(a,b){ return a.t - b.t; });
+/* overlapping cards sit side by side, per cluster */
+function lanes(set){
+  var cluster = [], open = [], clEnd = -1;
+  function flush(){
+    var n = Math.max(1, open.length);
+    cluster.forEach(function(x){ x.__of = n; });
+    cluster = []; open = []; clEnd = -1;
+  }
+  set.slice().sort(function(a,b){ return a.start_min - b.start_min; })
+    .forEach(function(r){
+      var st = r.start_min, en = st + (r.dur || 10);
+      if(clEnd >= 0 && st >= clEnd) flush();
+      var li = 0;
+      while(open[li] !== undefined && open[li] > st) li++;
+      open[li] = en; r.__lane = li; cluster.push(r);
+      if(en > clEnd) clEnd = en;
+    });
+  flush();
 }
 
-function cardHtml(r, clash){
+function cardHtml(r, ci, i){
   var tr = TK.trade(r.co), c = tr[1];
-  var qty = r.qty ? r.qty + (r.qty === 1 ? " lift" : " lifts")
-                  : (r.kg ? (r.kg/1000).toFixed(1) + "t" : (r.type === "del" ? "truck" : ""));
+  var G = geom();
+  var top = yOf(r.start_min);
+  var hh = Math.max(13, (r.dur || 10) / G.span * G.H - 2);
+  var wpc = 100 / (r.__of || 1), lpc = (r.__lane || 0) * wpc;
   var today = S.date === TK.iso(new Date()), nm = TK.nowMin();
-  var live = today && nm >= r.start_min && nm < r.start_min + (r.dur||10);
-  return '<div class="slot">' +
-    '<div class="beh"><span class="l">✓</span><span class="r">✕</span></div>' +
-    '<button class="card' + (r.status !== "con" ? " req" : "") +
-      (r.__added || r.__edited ? " edited" : "") + (live ? " live" : "") +
-      (clash ? " clash" : "") + '" data-i="' + r.__i +
-      '" style="border-left-color:' + c + '">' +
-      (qty ? '<span class="q">' + esc(qty) + '</span>' : '') +
-      '<span class="co" style="background:' + c + ';color:' + TK.onColour(c) + '">' +
-      esc(r.co) + '</span>' +
-      '<span class="ds">' + esc(r.descr || "") + '</span>' +
-      (clash ? '<span class="warnx">runs into the next one</span>' : '') +
-    '</button></div>';
+  var live = today && nm >= r.start_min && nm < r.start_min + (r.dur || 10);
+  var qty = r.qty ? r.qty + "×" : (r.kg ? (r.kg/1000).toFixed(1) + "t" : "");
+  var cls = (hh < 30 ? "one" : "two") + (wpc < 62 ? " narrow" : "") +
+    (r.__auto ? " auto" : "") + (r.status !== "con" && !r.__auto ? " req" : "") +
+    (r.__added || r.__edited ? " edited" : "") + (live ? " live" : "");
+  return '<button class="card ' + cls + '" title="' +
+    esc(hm(r.start_min) + " \u00b7 " + (r.descr || "")) + '" data-k="' + ci + ':' + i + '" ' +
+    'style="top:' + top + 'px;height:' + hh + 'px;left:calc(' + lpc + '% + 2px);' +
+    'width:calc(' + wpc + '% - 4px);border-left-color:' + c + '">' +
+    (r.__auto ? '<span class="tagn">' + (wpc < 62 ? "+" : "add") + '</span>'
+              : (qty ? '<span class="q">' + qty + '</span>' : '')) +
+    '<span class="co" style="background:' + (r.__auto ? "transparent" : c) +
+      ';color:' + (r.__auto ? c : TK.onColour(c)) +
+      (r.__auto ? ';box-shadow:inset 0 0 0 1px ' + c : '') + '">' + esc(r.co) + '</span>' +
+    ' <span class="ds">' + esc(r.descr || "") + '</span></button>';
 }
 
 function render(){
-  var m = document.getElementById("list");
-  if(S.err){ m.innerHTML = '<div class="empty">' + esc(S.err) + '</div>'; return; }
-  group();
-  if(!GROUPS.length){
-    m.innerHTML = (S.note ? '<div class="empty">' + esc(S.note) + '</div>' : '') +
-      '<div class="empty">Nothing booked for this day. Use + Add to try one.</div>';
-    document.getElementById("foot").textContent = "";
-    return;
-  }
-
+  var g = document.getElementById("grid");
+  if(S.err){ g.innerHTML = '<div class="empty">' + esc(S.err) + '</div>'; return; }
+  var G = geom(), H = G.H;
   var today = S.date === TK.iso(new Date()), nm = TK.nowMin();
-  var h = S.note ? '<div class="empty">' + esc(S.note) + '</div>' : '';
-  var brkDone = S.breaks.map(function(){ return false; });
 
-  GROUPS.forEach(function(G, gi){
-    S.breaks.forEach(function(b, bi){
-      if(!brkDone[bi] && G.t >= b[0]){
-        brkDone[bi] = true;
-        h += '<div class="brkrow"><span class="t">' + hm(b[0]) + '</span>' +
-             '<span class="b">Crane break · ' + hm(b[0]) + "–" + hm(b[0]+b[1]) +
-             '</span></div>';
-      }
+  COLS = [S.rows.filter(function(r){ return r.type !== "del"; }).concat(autoLifts()),
+          S.rows.filter(function(r){ return r.type === "del"; })];
+  COLS.forEach(lanes);
+
+  /* ruler: a line every ten minutes, a label on every one of them */
+  var h = '<div class="ruler" style="height:' + H + 'px">';
+  for(var t = S.open; t <= S.close; t += 10){
+    var onHr = t % 60 === 0;
+    h += '<b class="' + (onHr ? "hr" : "ten") + '" style="top:' + yOf(t) + 'px">' +
+         (onHr ? hm(t) : two(t % 60)) + '</b>';
+  }
+  h += '</div>';
+
+  COLS.forEach(function(set, ci){
+    h += '<div class="lane" style="height:' + H + 'px">';
+    for(var t2 = S.open; t2 <= S.close; t2 += 10)
+      h += '<div class="tick' + (t2 % 60 === 0 ? " hr" : (t2 % 30 === 0 ? " half" : "")) +
+           '" style="top:' + yOf(t2) + 'px"></div>';
+    if(ci === 0) S.breaks.forEach(function(b){
+      h += '<div class="brk" style="top:' + yOf(b[0]) + 'px;height:' +
+           (b[1]/G.span*H) + 'px"><span>Break</span></div>';
     });
-    /* does anything in this slot run into the next slot */
-    var nextT = GROUPS[gi+1] ? GROUPS[gi+1].t : 1e9;
-    function cells(set){
-      return set.map(function(r){
-        return cardHtml(r, (r.start_min + (r.dur||10)) > nextT);
-      }).join("");
-    }
-    var end = Math.max.apply(null, [0].concat(
-      G.crane.concat(G.gate).map(function(r){ return r.start_min + (r.dur||10); })));
-    var live = today && nm >= G.t && nm < end;
-    var past = today && end <= nm;
-    h += '<div class="trow' + (live ? " liveslot" : "") + (past ? " pastslot" : "") +
-         '" data-g="' + gi + '">' +
-      '<span class="clock">' + hm(G.t) + '</span>' +
-      '<div class="cell">' + cells(G.crane) + '</div>' +
-      '<div class="cell">' + cells(G.gate) + '</div>' +
-      '</div>';
+    set.forEach(function(r, i){ h += cardHtml(r, ci, i); });
+    h += '</div>';
   });
-  S.breaks.forEach(function(b, bi){
-    if(brkDone[bi]) return;
-    h += '<div class="brkrow"><span class="t">' + hm(b[0]) + '</span>' +
-         '<span class="b">Crane break · ' + hm(b[0]) + "–" + hm(b[0]+b[1]) +
-         '</span></div>';
-  });
-  m.innerHTML = h;
 
-  var lifts = FLAT.filter(function(r){ return r.type !== "del"; });
-  var hook = lifts.reduce(function(a,r){ return a + (r.dur||0); }, 0);
-  var con  = FLAT.filter(function(r){ return r.status === "con"; }).length;
+  if(today && nm >= S.open && nm <= S.close){
+    h += '<div class="nowtag" style="top:' + yOf(nm) + 'px">' + hm(nm) + '</div>' +
+         '<div class="nowline" style="top:' + yOf(nm) + 'px"><i></i></div>';
+  }
+  g.innerHTML = h;
+
+  var real = COLS[0].filter(function(r){ return !r.__auto; });
+  var auto = COLS[0].length - real.length;
+  var hook = COLS[0].reduce(function(a,r){ return a + (r.dur||0); }, 0);
+  document.getElementById("nCrane").textContent =
+    real.length + (auto ? " + " + auto + " to book" : "");
+  document.getElementById("nDel").textContent = COLS[1].length + " trucks";
+  var con = S.rows.filter(function(r){ return r.status === "con"; }).length;
   document.getElementById("foot").textContent =
-    lifts.length + " on the hook · " + (FLAT.length - lifts.length) + " deliveries · " +
-    Math.floor(hook/60) + "h" + two(hook%60) + " hook time · " +
-    con + " of " + FLAT.length + " confirmed";
+    (S.note ? S.note + "  " : "") +
+    Math.floor(hook/60) + "h" + two(hook%60) + " on the hook · " +
+    con + " of " + S.rows.length + " confirmed" +
+    (auto ? " · " + auto + " lift" + (auto>1?"s":"") + " needed by a delivery and not booked" : "");
 }
 
-/* ---------- FLIP: everything glides to its new place on the same curve ------ */
-function refreshAnimated(){
-  var was = {};
-  document.querySelectorAll("#list .trow").forEach(function(el){
-    var G = GROUPS[+el.getAttribute("data-g")];
-    if(G) was["t" + G.t] = el.getBoundingClientRect().top;
-  });
-  TK.refresh();
-  document.querySelectorAll("#list .trow").forEach(function(el){
-    var G = GROUPS[+el.getAttribute("data-g")];
-    var from = G && was["t" + G.t];
-    if(from === undefined) return;
-    var dy = from - el.getBoundingClientRect().top;
-    if(!dy) return;
-    el.style.transform = "translateY(" + dy + "px)";
-    requestAnimationFrame(function(){
-      el.classList.add("slide");
-      el.style.transform = "";
-      setTimeout(function(){ el.classList.remove("slide"); }, EASE + 50);
-    });
-  });
+function rowAt(el){
+  var k = el.getAttribute("data-k").split(":");
+  return COLS[+k[0]][+k[1]];
 }
 
 /* ---------- press and hold to move, swipe for the two actions ---------- */
-var list = document.getElementById("list"), ghost = document.getElementById("ghost");
+var grid = document.getElementById("grid"), ghost = document.getElementById("ghost");
 var g = null, HOLD = 240;
 
 function beginHold(){
-  if(!g || g.mode) return;
+  if(!g || g.mode || g.row.__auto) return;
   g.mode = "drag";
-  g.card.classList.add("lift");
-  g.rows = Array.prototype.slice.call(list.querySelectorAll(".trow"));
-  g.mids = g.rows.map(function(e){
-    var b = e.getBoundingClientRect(); return b.top + b.height / 2;
-  });
+  g.el.classList.remove("ease");
+  g.el.classList.add("lift");
   if(navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
 }
 
-/* where this booking lands if dropped at y */
-function landing(y){
-  var me = FLAT[g.i], d = me.dur || 10;
-  var best = null, mode = "join";
-  for(var k = 0; k < g.rows.length; k++){
-    var b = g.rows[k].getBoundingClientRect();
-    if(y >= b.top && y <= b.bottom){ best = k; mode = "join"; break; }
-    if(y < b.top){ best = k; mode = "before"; break; }
-  }
-  if(best === null){ best = g.rows.length; mode = "after"; }
-  var t;
-  if(mode === "join" && GROUPS[best]){
-    t = GROUPS[best].t;                               /* same slot as that row */
-  } else {
-    var prev = GROUPS[best - 1], next = GROUPS[best];
-    if(prev){
-      var pe = Math.max.apply(null, prev.crane.concat(prev.gate)
-        .map(function(r){ return r.start_min + (r.dur||10); }));
-      t = snap(pe);
-    } else if(next){ t = snap(next.t - d); }
-    else t = S.open;
-  }
-  return {t: Math.max(S.open, Math.min(S.close - d, t)), row: best, mode: mode};
-}
-
-list.addEventListener("pointerdown", function(e){
-  var card = e.target.closest(".card");
-  if(!card) return;
-  g = {card:card, i:+card.getAttribute("data-i"), x0:e.clientX, y0:e.clientY,
-       mode:null, touch:(e.pointerType === "touch"), timer:null};
-  try{ card.setPointerCapture(e.pointerId); }catch(err){}
+grid.addEventListener("pointerdown", function(e){
+  var el = e.target.closest(".card");
+  if(!el) return;
+  var r = rowAt(el);
+  if(!r) return;
+  g = {el:el, row:r, x0:e.clientX, y0:e.clientY, mode:null, start:r.start_min,
+       touch:(e.pointerType === "touch"), timer:null};
+  try{ el.setPointerCapture(e.pointerId); }catch(err){}
   g.timer = setTimeout(beginHold, g.touch ? HOLD : HOLD + 120);
 });
 
-list.addEventListener("touchmove", function(e){
+grid.addEventListener("touchmove", function(e){
   if(g && g.mode === "drag") e.preventDefault();
 }, {passive:false});
 
-list.addEventListener("pointermove", function(e){
+grid.addEventListener("pointermove", function(e){
   if(!g) return;
   var dx = e.clientX - g.x0, dy = e.clientY - g.y0;
-
   if(!g.mode){
-    if(Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.4){
+    if(Math.abs(dx) > 14 && Math.abs(dx) > Math.abs(dy) * 1.4 && !g.row.__auto){
       clearTimeout(g.timer); g.mode = "swipe";
     } else if(Math.abs(dy) > 12){
-      clearTimeout(g.timer); g = null; return;   /* a scroll - let the page have it */
+      clearTimeout(g.timer); g = null; return;
     } else return;
   }
-
   if(g.mode === "swipe"){
     g.dx = Math.max(-130, Math.min(130, dx));
-    g.card.style.transform = "translateX(" + g.dx + "px)";
+    g.el.style.transform = "translateX(" + g.dx + "px)";
     return;
   }
-
-  g.card.style.transform = "translateY(" + dy + "px) scale(1.03)";
-  var L = landing(e.clientY);
-  g.land = L;
-  g.rows.forEach(function(el, k){
-    el.classList.toggle("target", L.mode === "join" && k === L.row);
-  });
-  var d = FLAT[g.i].dur || 10;
-  ghost.textContent = hm(L.t) + " – " + hm(L.t + d) +
-    (L.mode === "join" ? "  · same slot" : "") +
-    (inBreak(L.t, d) ? "  · in a break" : "");
-  ghost.style.left = Math.min(window.innerWidth - 190, Math.max(10, e.clientX - 80)) + "px";
+  var G = geom(), step = S.per || 10;
+  var mv = Math.round(dy * (G.span / G.H) / step) * step;
+  var d = g.row.dur || 10;
+  var nt = Math.max(S.open, Math.min(S.close - d, g.start + mv));
+  g.target = nt;
+  g.el.style.top = yOf(nt) + "px";
+  var clash = S.breaks.some(function(b){ return nt < b[0]+b[1] && nt+d > b[0]; });
+  ghost.textContent = hm(nt) + " – " + hm(nt + d) + (clash ? "  · in a break" : "");
+  ghost.style.left = Math.min(window.innerWidth - 180, Math.max(10, e.clientX - 76)) + "px";
   ghost.style.top  = Math.max(10, e.clientY - 50) + "px";
   ghost.classList.add("on");
   e.preventDefault();
@@ -333,46 +347,68 @@ function endGesture(){
   var x = g; g = null;
   clearTimeout(x.timer);
   ghost.classList.remove("on");
-  document.querySelectorAll("#list .trow.target")
-    .forEach(function(el){ el.classList.remove("target"); });
 
   if(x.mode === "swipe"){
-    var r = FLAT[x.i];
-    x.card.classList.add("slide");
+    x.el.classList.add("ease");
     if(x.dx > 80){
-      x.card.style.transform = "";
-      SB.edit(S.date, r, {status:"con"});
-      setTimeout(refreshAnimated, 70);
+      x.el.style.transform = "";
+      SB.edit(S.date, x.row, {status:"con"}); TK.refresh();
     } else if(x.dx < -80){
-      x.card.style.transform = "translateX(-115%)";
-      setTimeout(function(){ SB.remove(S.date, r); refreshAnimated(); }, EASE);
+      x.el.style.transform = "translateX(-130%)";
+      setTimeout(function(){ SB.remove(S.date, x.row); TK.refresh(); }, 200);
     } else {
-      x.card.style.transform = "";
-      setTimeout(function(){ x.card.classList.remove("slide"); }, EASE + 40);
+      x.el.style.transform = "";
     }
     return;
   }
 
   if(x.mode === "drag"){
-    x.card.classList.remove("lift");
-    x.card.style.transform = "";
-    var r2 = FLAT[x.i];
-    if(x.land && x.land.t !== r2.start_min) SB.edit(S.date, r2, {start_min: x.land.t});
-    refreshAnimated();
+    x.el.classList.remove("lift");
+    x.el.classList.add("ease");
+    if(x.target != null && x.target !== x.start)
+      SB.edit(S.date, x.row, {start_min: x.target});
+    setTimeout(TK.refresh, 60);
     return;
   }
 
-  var row = FLAT[x.i];
-  if(row) TK.openSheet(row, false);
+  /* a tap. On a worked-out lift that means "put it on the board". */
+  if(x.row.__auto){
+    TK.openSheet({co:x.row.co, descr:x.row.descr, start_min:x.row.start_min,
+      dur:x.row.dur, qty:x.row.qty, kg:x.row.kg, type:"lift",
+      status:x.row.status, notes:x.row.notes}, true);
+  } else {
+    TK.openSheet(x.row, false);
+  }
 }
-list.addEventListener("pointerup", endGesture);
-list.addEventListener("pointercancel", function(){
-  if(g && g.card){ g.card.style.transform = ""; g.card.classList.remove("lift"); }
-  document.querySelectorAll("#list .trow.target")
-    .forEach(function(el){ el.classList.remove("target"); });
+grid.addEventListener("pointerup", endGesture);
+grid.addEventListener("pointercancel", function(){
+  if(g && g.el){ g.el.style.transform = ""; g.el.classList.remove("lift"); }
   g = null; ghost.classList.remove("on");
 });
 
+document.getElementById("zoom").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-z]");
+  if(!b) return;
+  document.documentElement.style.setProperty("--px10", b.getAttribute("data-z") + "px");
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x === b); });
+  try{ localStorage.setItem("elise_rows_zoom", b.getAttribute("data-z")); }catch(err){}
+  render();
+});
+try{
+  var z = localStorage.getItem("elise_rows_zoom");
+  if(z){
+    document.documentElement.style.setProperty("--px10", z + "px");
+    document.querySelectorAll("#zoom button").forEach(function(x){
+      x.classList.toggle("on", x.getAttribute("data-z") === z); });
+  }
+}catch(err){}
+
 TK.boot(render);
+setTimeout(function(){
+  if(S.date !== TK.iso(new Date())) return;
+  var nm = TK.nowMin();
+  if(nm < S.open || nm > S.close) return;
+  window.scrollTo({top: Math.max(0, yOf(nm) - 160)});
+}, 800);
 </script>
 </body></html>

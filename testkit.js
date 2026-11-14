@@ -55,12 +55,14 @@ var LKIND = {LOAD:"Load in",BAYS:"Loading bays",SPIN:"Spin up",SNGL:"Single heig
 
 var state = {
   date: (location.hash || "").replace(/^#/, "") || boardDate(),
-  open: 360, close: 1080, per: 10, breaks: [[600,30],[780,30]],
+  open: 360, close: 1080, per: 10, per15: ["AP"], breaks: [[600,30],[780,30]],
   trades: {}, order: [], raw: [], rows: [], err: "", note: ""
 };
 DEF_TRADES.forEach(function(t){ state.trades[t[0]] = [t[1], t[2]]; state.order.push(t[0]); });
 
 function trade(c){ return state.trades[c] || [c || "Other", "#B9B2A6"]; }
+/* AP take 15 minutes a lift, everyone else the board's increment */
+function perLift(co){ return (state.per15 || []).indexOf(co) >= 0 ? 15 : (state.per || 10); }
 function onColour(hex){
   var h = String(hex || "").replace("#","");
   if(h.length !== 6) return "#FFFFFF";
@@ -77,6 +79,7 @@ function loadConfig(){
     if(typeof d.open  === "number") state.open  = d.open;
     if(typeof d.close === "number") state.close = d.close;
     if(typeof d.per   === "number") state.per   = d.per;
+    if(Array.isArray(d.per15)) state.per15 = d.per15;
     if(Array.isArray(d.breaks)) state.breaks = d.breaks;
     if(Array.isArray(d.trades) && d.trades.length){
       state.trades = {}; state.order = [];
@@ -290,7 +293,7 @@ function boot(render){
 global.TK = {
   state:state, PROJ:PROJ, LKIND:LKIND,
   api:api, esc:esc, two:two, hm:hm, mins:mins, iso:iso, nowMin:nowMin,
-  dayName:dayName, shift:shift, trade:trade, onColour:onColour,
+  dayName:dayName, shift:shift, trade:trade, onColour:onColour, perLift:perLift,
   boot:boot, refresh:refresh, paint:paint, go:go,
   openSheet:openSheet, closeSheet:closeSheet, addNew:addNew
 };
